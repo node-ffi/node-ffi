@@ -36,18 +36,6 @@ Handle<FunctionTemplate> Pointer::MakeTemplate()
     return scope.Close(t);
 }
 
-void FFI::InitializeStaticFunctions(Handle<Object> target)
-{
-    Local<Object>       o = Object::New();
-    
-    o->Set(String::New("dlopen"),   Pointer::WrapPointer((unsigned char *)dlopen));
-    o->Set(String::New("dlclose"),  Pointer::WrapPointer((unsigned char *)dlclose));
-    o->Set(String::New("dlsym"),    Pointer::WrapPointer((unsigned char *)dlsym));
-    o->Set(String::New("dlerror"),  Pointer::WrapPointer((unsigned char *)dlerror));
-    
-    target->Set(String::NewSymbol("StaticFunctions"), o);
-}
-
 void Pointer::Initialize(Handle<Object> target)
 {
     HandleScope scope;
@@ -275,11 +263,62 @@ Handle<Value> Pointer::GetPointerMethod(const Arguments& args)
 
 ///////////////
 
+
+void FFI::InitializeStaticFunctions(Handle<Object> target)
+{
+    Local<Object>       o = Object::New();
+    
+    o->Set(String::New("dlopen"),   Pointer::WrapPointer((unsigned char *)dlopen));
+    o->Set(String::New("dlclose"),  Pointer::WrapPointer((unsigned char *)dlclose));
+    o->Set(String::New("dlsym"),    Pointer::WrapPointer((unsigned char *)dlsym));
+    o->Set(String::New("dlerror"),  Pointer::WrapPointer((unsigned char *)dlerror));
+    
+    target->Set(String::NewSymbol("StaticFunctions"), o);
+}
+
+///////////////
+
+void FFI::InitializeBindings(Handle<Object> target)
+{
+    Local<Object> o = Object::New();
+    
+    o->Set(String::New("call"),     FunctionTemplate::New(FFICall));
+    
+    target->Set(String::NewSymbol("Bindings"), o);
+}
+
+Handle<Value> FFI::FFICall(const Arguments& args)
+{
+    HandleScope scope;
+    
+    if (args.Length() == 3) {
+        Pointer     *cif    = Object::Unwrap<Pointer>(args[0]);
+        Pointer     *fn     = Object::Unwrap<Pointer>(args[1]);
+        Pointer     *args   = Object::Unwrap<Pointer>(args[2]);
+        ffi_arg     res;
+        
+        ffi_call(
+            (ffi_cif *)cif->GetAddress(),
+            (void (*)(void))fn->GetAddress(),
+            &res,
+            (void **)args->GetAddress()
+        );
+    }
+    else {
+        return ThrowException(String::New("Not Enough Parameters"));
+    }
+    
+    return Undefined();
+}
+
+///////////////
+
 extern "C" void init(Handle<Object> target)
 {
     HandleScope scope;
     
     Pointer::Initialize(target);
+    FFI::InitializeBindings(target);
     FFI::InitializeStaticFunctions(target);
 }
 
