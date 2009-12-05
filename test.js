@@ -178,24 +178,36 @@ assertEquals(200, stptr.getByte(true));
 
 var allStruct = new FFI.StructType([
     ["byte", "byteVal"],
+    ["int8", "int8Val"],
+    ["int16", "int16Val"],
+    ["uint16", "uint16Val"],
     ["int32", "int32Val"],
     ["uint32", "uint32Val"],
+    ["float", "floatVal"],
     ["double", "doubleVal"],
     ["pointer", "pointerVal"]
 ]);
 var allStruct_testPtr = new Pointer(4);
 var allptr = allStruct.allocate({
    "byteVal": 100,
+   "int8Val": -100,
+   "int16Val": -1000,
+   "uint16Val": 1000,
    "int32Val": -10000,
    "uint32Val": 10000,
-   "doubleVal": 1.25,
+   "floatVal": 1.25,
+   "doubleVal": 1000.0005,
    "pointerVal": allStruct_testPtr
 });
 
 assertEquals(100, allStruct.readField(allptr, "byteVal"));
+assertEquals(-100, allStruct.readField(allptr, "int8Val"));
+assertEquals(-1000, allStruct.readField(allptr, "int16Val"));
+assertEquals(1000, allStruct.readField(allptr, "uint16Val"));
 assertEquals(-10000, allStruct.readField(allptr, "int32Val"));
 assertEquals(10000, allStruct.readField(allptr, "uint32Val"));
-assertEquals(1.25, allStruct.readField(allptr, "doubleVal"));
+assertEquals(1.25, allStruct.readField(allptr, "floatVal"));
+assertEquals(1000.0005, allStruct.readField(allptr, "doubleVal"));
 assertEquals(allStruct_testPtr.address, allStruct.readField(allptr, "pointerVal").address);
 
 //////////////////////

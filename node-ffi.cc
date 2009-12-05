@@ -526,10 +526,9 @@ void FFI::InitializeBindings(Handle<Object> target)
     
     Local<Object> smap = Object::New();
     smap->Set(String::New("byte"),      Integer::New(sizeof(unsigned char)));
-    smap->Set(String::New("uint8"),     Integer::New(sizeof(unsigned char)));    
-    smap->Set(String::New("int16"),     Integer::New(sizeof(unsigned short)));    
+    smap->Set(String::New("int8"),      Integer::New(sizeof(char)));    
     smap->Set(String::New("int16"),     Integer::New(sizeof(short)));
-    smap->Set(String::New("uint16"),    Integer::New(sizeof(short)));    
+    smap->Set(String::New("uint16"),    Integer::New(sizeof(unsigned short)));    
     smap->Set(String::New("int32"),     Integer::New(sizeof(int)));
     smap->Set(String::New("uint32"),    Integer::New(sizeof(unsigned int)));
     smap->Set(String::New("float"),     Integer::New(sizeof(float)));
