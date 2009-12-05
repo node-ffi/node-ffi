@@ -117,11 +117,9 @@ Handle<Value> Pointer::GetAddress(Local<String> name, const AccessorInfo& info)
 {
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(info.Holder());
-    unsigned int    ptr;
     Handle<Value>   ret;
     
-    ptr = (unsigned int)self->GetPointer();
-    ret = Integer::New(ptr);
+    ret = Number::New((size_t)self->GetPointer());
     
     return scope.Close(ret);
 }
@@ -133,7 +131,7 @@ Handle<Value> Pointer::Seek(const Arguments& args)
     Handle<Value>   ret;
     
     if (args.Length() > 0 && args[0]->IsNumber()) {
-        int offset = args[0]->Int32Value();
+        size_t offset = args[0]->IntegerValue();
         ret = WrapPointer(static_cast<unsigned char *>(self->GetPointer()) + offset);      
     }
     else {
@@ -350,7 +348,6 @@ Handle<Value> Pointer::IsNull(const Arguments& args)
 {
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
-
     return scope.Close(Boolean::New(self->GetPointer() == NULL));
 }
 
