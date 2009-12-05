@@ -142,5 +142,38 @@ assertEquals(FFI.Bindings.FFI_TYPES["double"].address,  cifat.getPointer(true).a
 
 //////////////////////
 
+var cifArgTypeProto = [ "uint32" ];
+var cifArgTypes = FFI.Internal.buildCIFArgTypes(cifArgTypeProto);
+
+assertInstanceof(cifArgTypes, FFI.Pointer);
+
+var cifPtr = FFI.Bindings.prepCif(
+    cifArgTypeProto.length,
+    FFI.Bindings.FFI_TYPES["uint32"],
+    cifArgTypes
+);
+
+assertInstanceof(cifPtr, FFI.Pointer);
+
+var cifArgInteger = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["int32"]);
+cifArgInteger.putInt32(-1234);
+
+var cifArgValues = FFI.Internal.buildCIFArgValues([cifArgInteger]);
+assertInstanceof(cifArgValues, FFI.Pointer);
+
+// cif, fun, args, res
+var resPtr = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["int32"]);
+
+FFI.Bindings.call(
+    cifPtr,
+    FFI.StaticFunctions.abs,
+    cifArgValues,
+    resPtr
+);
+
+assertEquals(1234, resPtr.getInt32());
+
+//////////////////////
+
 sys.puts("Heap increased by " + ((process.memoryUsage()["rss"] - rss) / 1024) + " KB");
 sys.puts("Tests pass!");

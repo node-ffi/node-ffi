@@ -80,15 +80,17 @@ void Pointer::Alloc(size_t bytes)
     }
 }
 
+Handle<Object> Pointer::WrapInstance(Pointer *inst)
+{
+    HandleScope     scope;
+    Local<Object>   obj = pointer_template->GetFunction()->NewInstance();
+    inst->Wrap(obj);
+    return scope.Close(obj);
+}
+
 Handle<Object> Pointer::WrapPointer(unsigned char *ptr)
 {
-    HandleScope             scope;
-    Local<Object>           obj = pointer_template->GetFunction()->NewInstance();
-    Pointer                 *inst = new Pointer(ptr);
-    
-    inst->Wrap(obj);
-
-    return scope.Close(obj);
+    return WrapInstance(new Pointer(ptr));
 }
 
 Handle<Value> Pointer::New(const Arguments& args)
@@ -312,6 +314,8 @@ void FFI::InitializeStaticFunctions(Handle<Object> target)
 {
     Local<Object>       o = Object::New();
     
+    // abs is here for testing purposes
+    o->Set(String::New("abs"),      Pointer::WrapPointer((unsigned char *)abs));
     o->Set(String::New("dlopen"),   Pointer::WrapPointer((unsigned char *)dlopen));
     o->Set(String::New("dlclose"),  Pointer::WrapPointer((unsigned char *)dlclose));
     o->Set(String::New("dlsym"),    Pointer::WrapPointer((unsigned char *)dlsym));
@@ -327,6 +331,8 @@ void FFI::InitializeBindings(Handle<Object> target)
     Local<Object> o = Object::New();
     
     o->Set(String::New("call"),             FunctionTemplate::New(FFICall)->GetFunction());
+    o->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
+    
     o->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
     o->Set(String::New("SIZE_SIZE"),        Integer::New(sizeof(size_t)));
     o->Set(String::New("FFI_TYPE_SIZE"),    Integer::New(sizeof(ffi_type)));
@@ -366,16 +372,16 @@ Handle<Value> FFI::FFICall(const Arguments& args)
 {
     HandleScope scope;
     
-    if (args.Length() == 3) {
-        Pointer     *cif    = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
-        Pointer     *fn     = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
-        Pointer     *fnargs = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
-        ffi_arg     res;
+    if (args.Length() == 4) {
+        Pointer *cif    = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
+        Pointer *fn     = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
+        Pointer *fnargs = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
+        Pointer *res    = ObjectWrap::Unwrap<Pointer>(args[3]->ToObject());
         
         ffi_call(
             (ffi_cif *)cif->GetPointer(),
             (void (*)(void))fn->GetPointer(),
-            &res,
+            (void *)res->GetPointer(),
             (void **)fnargs->GetPointer()
         );
     }
@@ -384,6 +390,37 @@ Handle<Value> FFI::FFICall(const Arguments& args)
     }
     
     return Undefined();
+}
+
+Handle<Value> FFI::FFIPrepCif(const Arguments& args)
+{
+    HandleScope     scope;
+
+    if (args.Length() == 3) {
+        unsigned int nargs  = args[0]->Uint32Value();
+        Pointer *rtype      = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
+        Pointer *atypes     = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
+        ffi_status status;
+        
+        Pointer *cif = new Pointer(NULL);
+        cif->Alloc(sizeof(ffi_cif));
+        
+        if ((status = ffi_prep_cif(
+            (ffi_cif *)cif->GetPointer(),
+            FFI_DEFAULT_ABI,
+            nargs,
+            (ffi_type *)rtype->GetPointer(),
+            (ffi_type **)atypes->GetPointer()))) {
+                
+            delete cif;
+            return ThrowException(String::New("ffi_prep_cif() returned error."));
+        }
+        
+        return scope.Close(Pointer::WrapInstance(cif));
+    }
+    else {
+        return ThrowException(String::New("Not Enough Arguments"));
+    }
 }
 
 ///////////////

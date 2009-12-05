@@ -140,5 +140,16 @@ FFI.Internal.buildCIFArgTypes = function(types) {
     return ptr;
 };
 
+FFI.Internal.buildCIFArgValues = function(vals) {
+    var ptr = new FFI.Pointer(vals.length * FFI.Bindings.POINTER_SIZE);
+    var cptr = ptr.seek(0);
+    
+    for (var i = 0; i < vals.length; i++) {
+        cptr.putPointer(vals[i], true);
+    }
+    
+    return ptr;
+};
+
 exports.Internal = FFI.Internal;
 exports.StructType = FFI.StructType;
