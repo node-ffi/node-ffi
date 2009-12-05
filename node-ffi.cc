@@ -277,6 +277,7 @@ Handle<Value> Pointer::PutPointerMethod(const Arguments& args)
     if (args.Length() >= 1) {
         Pointer *obj = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
         *((unsigned char **)ptr) = obj->GetPointer();
+        //printf("Pointer::PutPointerMethod: writing pointer %p at %p\n", *((unsigned char **)ptr), ptr);
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(unsigned char *));
@@ -294,6 +295,8 @@ Handle<Value> Pointer::GetPointerMethod(const Arguments& args)
     unsigned char   **dptr = (unsigned char **)ptr;
     
     val = *((unsigned char **)ptr);
+    
+    //printf("Pointer::GetPointerMethod: got %p from %p\n", val, ptr);
     
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(unsigned char *));
@@ -323,8 +326,10 @@ void FFI::InitializeBindings(Handle<Object> target)
 {
     Local<Object> o = Object::New();
     
-    o->Set(String::New("call"),         FunctionTemplate::New(FFICall)->GetFunction());
-    o->Set(String::New("POINTER_SIZE"), Integer::New(sizeof(unsigned char *)));
+    o->Set(String::New("call"),             FunctionTemplate::New(FFICall)->GetFunction());
+    o->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
+    o->Set(String::New("SIZE_SIZE"),        Integer::New(sizeof(size_t)));
+    o->Set(String::New("FFI_TYPE_SIZE"),    Integer::New(sizeof(ffi_type)));
     
     Local<Object> smap = Object::New();
     smap->Set(String::New("byte"),      Integer::New(sizeof(unsigned char)));
@@ -338,6 +343,21 @@ void FFI::InitializeBindings(Handle<Object> target)
     smap->Set(String::New("double"),    Integer::New(sizeof(double)));
     smap->Set(String::New("pointer"),   Integer::New(sizeof(unsigned char *)));
     
+    Local<Object> ftmap = Object::New();
+    ftmap->Set(String::New("void"),     Pointer::WrapPointer((unsigned char *)&ffi_type_void));
+    ftmap->Set(String::New("uint8"),    Pointer::WrapPointer((unsigned char *)&ffi_type_uint8));
+    ftmap->Set(String::New("sint8"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint8));
+    ftmap->Set(String::New("uint16"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint16));
+    ftmap->Set(String::New("sint16"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint16));
+    ftmap->Set(String::New("uint32"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint32));
+    ftmap->Set(String::New("sint32"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint32));
+    ftmap->Set(String::New("uint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
+    ftmap->Set(String::New("sint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
+    ftmap->Set(String::New("float"),    Pointer::WrapPointer((unsigned char *)&ffi_type_float));
+    ftmap->Set(String::New("double"),   Pointer::WrapPointer((unsigned char *)&ffi_type_double));
+    ftmap->Set(String::New("pointer"),  Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
+    
+    o->Set(String::New("FFI_TYPES"), ftmap);
     o->Set(String::New("TYPE_SIZE_MAP"), smap);
     target->Set(String::NewSymbol("Bindings"), o);
 }

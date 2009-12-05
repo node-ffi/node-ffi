@@ -128,6 +128,19 @@ assertEquals(1.25, allStruct.readField(allptr, "doubleVal"));
 assertEquals(allStruct_testPtr.address, allStruct.readField(allptr, "pointerVal").address);
 
 //////////////////////
+assertInstanceof(FFI.Bindings.FFI_TYPES["void"], FFI.Pointer);
+assertInstanceof(FFI.Bindings.FFI_TYPES["uint8"], FFI.Pointer);
+
+//////////////////////
+
+var cifatInitial = FFI.Internal.buildCIFArgTypes(["uint8", "double"]);
+assertInstanceof(cifatInitial, FFI.Pointer);
+
+var cifat = cifatInitial.seek(0);
+assertEquals(FFI.Bindings.FFI_TYPES["uint8"].address,   cifat.getPointer(true).address);
+assertEquals(FFI.Bindings.FFI_TYPES["double"].address,  cifat.getPointer(true).address);
+
+//////////////////////
 
 sys.puts("Heap increased by " + ((process.memoryUsage()["rss"] - rss) / 1024) + " KB");
 sys.puts("Tests pass!");

@@ -53,7 +53,6 @@ exports.buildCif = function(nargs, types, rtype, bytes, flags) {
     var cifPtr = new Pointer(FFI.Bindings.CIF_SIZE);
 };
 
-
 FFI.StructType = function(fields) {
     this._struct = {};
     this._members = [];
@@ -67,6 +66,7 @@ FFI.StructType = function(fields) {
     }
 };
 
+// WARNING: This call is going to be unsafe if called after the constructor
 FFI.StructType.prototype.addField = function(type, name) {
     // TODO: check to see if name already exists
     var sz = FFI.Bindings.TYPE_SIZE_MAP[type];
@@ -118,4 +118,27 @@ FFI.StructType.prototype.allocate = function(data) {
     return ptr;
 };
 
+FFI.Internal = {};
+
+FFI.Internal.CIF = new FFI.StructType([
+    [ "uint32",     "ffi_abi" ],
+    [ "uint32",     "nargs" ],
+    [ "pointer",    "arg_types" ],
+    [ "pointer",    "rtype" ],
+    [ "uint32",     "bytes" ],
+    [ "uint32",     "flags" ]
+]);
+
+FFI.Internal.buildCIFArgTypes = function(types) {
+    var ptr = new FFI.Pointer(types.length * FFI.Bindings.FFI_TYPE_SIZE);
+    var cptr = ptr.seek(0);
+    
+    for (var i = 0; i < types.length; i++) {
+        cptr.putPointer(FFI.Bindings.FFI_TYPES[types[i]], true);
+    }
+    
+    return ptr;
+};
+
+exports.Internal = FFI.Internal;
 exports.StructType = FFI.StructType;
