@@ -5,29 +5,13 @@ exports.Pointer = FFI.Pointer;
 exports.StaticFunctions = FFI.StaticFunctions;
 exports.Bindings = FFI.Bindings;
 
-exports.FFI_TYPE_MAP = {
-    "void":     0,
-    "int":      1,
-    "float":    2,
-    "double":   3,
-    "ldouble":  3,
-    "uint8":    5,
-    "sint8":    6,
-    "uint16":   7,
-    "sint16":   8,
-    "uint32":   9,
-    "sint32":   10,
-    "uint64":   11,
-    "sint64":   12,
-    "struct":   13,
-    "pointer":  14
-};
-
 FFI.TYPE_TO_POINTER_METHOD_MAP = {
     "byte":     "Byte",
-    "int32":    "Int32", 
+    "int32":    "Int32",
+    "sint32":   "Int32", 
     "uint32":   "UInt32", 
     "double":   "Double",
+    "string":   "CString", 
     "pointer":  "Pointer"
 };
 
@@ -120,20 +104,14 @@ FFI.StructType.prototype.allocate = function(data) {
 
 FFI.Internal = {};
 
-FFI.Internal.CIF = new FFI.StructType([
-    [ "uint32",     "ffi_abi" ],
-    [ "uint32",     "nargs" ],
-    [ "pointer",    "arg_types" ],
-    [ "pointer",    "rtype" ],
-    [ "uint32",     "bytes" ],
-    [ "uint32",     "flags" ]
-]);
-
 FFI.Internal.buildCIFArgTypes = function(types) {
     var ptr = new FFI.Pointer(types.length * FFI.Bindings.FFI_TYPE_SIZE);
     var cptr = ptr.seek(0);
     
     for (var i = 0; i < types.length; i++) {
+        if (FFI.Bindings.FFI_TYPES[types[i]] == undefined) {
+            throw "buildCIFArgTypes: Invalid Type: " + types[i];
+        }
         cptr.putPointer(FFI.Bindings.FFI_TYPES[types[i]], true);
     }
     
@@ -151,5 +129,80 @@ FFI.Internal.buildCIFArgValues = function(vals) {
     return ptr;
 };
 
+FFI.Internal.bareMethodFactory = function(ptr, returnType, types) {
+    var atypes  = FFI.Internal.buildCIFArgTypes(types);
+    var rtype   = FFI.Bindings.FFI_TYPES[returnType];
+    var cif     = FFI.Bindings.prepCif(types.length, rtype, atypes);
+    
+    return function(argPtrs) {
+        var res     = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[returnType]);
+        var args    = FFI.Internal.buildCIFArgValues(argPtrs);
+        
+        FFI.Bindings.call(cif, ptr, args, res);
+        
+        return res;
+    };
+};
+
+FFI.Internal.buildValue = function(type, val) {
+    var ptr;
+    
+    if (type == "string") {
+        // we have to actually build an "in-between" pointer for strings
+        var sptr    = new FFI.Pointer(val.length + 1);
+        ptr         = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["pointer"]);
+        sptr.putCString(val);
+        ptr.putPointer(sptr);
+    }
+    else {
+        ptr = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[type]);
+        ptr["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]](val);        
+    }
+    
+    return ptr;
+};
+
+FFI.Internal.extractValue = function(type, ptr) {
+    if (type == "string") {
+        // "dereference" the string first
+        return ptr.getPointer().getCString();
+    }
+    else {
+        return ptr["get" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]]();        
+    }
+};
+
+FFI.Internal.methodFactory = function(ptr, returnType, types) {
+    var bareMethod = FFI.Internal.bareMethodFactory(ptr, returnType, types);
+    
+    return function() {
+        var args = [];
+        
+        for (var i = 0; i < types.length; i++) {
+            args[i] = FFI.Internal.buildValue(types[i], arguments[i]);
+        }
+        
+        return FFI.Internal.extractValue(returnType, bareMethod(args));
+    };
+};
+
+FFI.DynamicLibrary = function(path, mode) {
+    this._handle = this._dlopen(path, mode);
+};
+
+FFI.DynamicLibrary.FLAGS = {
+    "RTLD_LAZY":    0x1,
+    "RTLD_NOW":     0x2,
+    "RTLD_LOCAL":   0x4,
+    "RTLD_GLOBAL":  0x8
+};
+
+FFI.DynamicLibrary.prototype._dlopen = FFI.Internal.methodFactory(
+    FFI.StaticFunctions.dlopen,
+    "pointer",
+    [ "string", "sint32" ]
+);
+
 exports.Internal = FFI.Internal;
 exports.StructType = FFI.StructType;
+exports.DynamicLibrary = FFI.DynamicLibrary;

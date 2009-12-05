@@ -27,6 +27,8 @@ class Pointer : public ObjectWrap {
         static Handle<Value> GetDouble(const Arguments& args);
         static Handle<Value> PutPointerMethod(const Arguments& args);
         static Handle<Value> GetPointerMethod(const Arguments& args);
+        static Handle<Value> PutCString(const Arguments& args);
+        static Handle<Value> GetCString(const Arguments& args);
         
         static Handle<Value> GetAddress(Local<String> name, const AccessorInfo& info);
         

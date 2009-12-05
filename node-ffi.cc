@@ -58,6 +58,8 @@ void Pointer::Initialize(Handle<Object> target)
     NODE_SET_PROTOTYPE_METHOD(t, "getDouble", GetDouble);
     NODE_SET_PROTOTYPE_METHOD(t, "putPointer", PutPointerMethod);
     NODE_SET_PROTOTYPE_METHOD(t, "getPointer", GetPointerMethod);
+    NODE_SET_PROTOTYPE_METHOD(t, "putCString", PutCString);
+    NODE_SET_PROTOTYPE_METHOD(t, "getCString", GetCString);
     
     target->Set(String::NewSymbol("Pointer"), t->GetFunction());
 }
@@ -280,9 +282,10 @@ Handle<Value> Pointer::PutPointerMethod(const Arguments& args)
         Pointer *obj = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
         *((unsigned char **)ptr) = obj->GetPointer();
         //printf("Pointer::PutPointerMethod: writing pointer %p at %p\n", *((unsigned char **)ptr), ptr);
-    }
-    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
-        self->MovePointer(sizeof(unsigned char *));
+
+        if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+            self->MovePointer(sizeof(unsigned char *));
+        }
     }
     
     return Undefined();
@@ -307,6 +310,42 @@ Handle<Value> Pointer::GetPointerMethod(const Arguments& args)
     return scope.Close(WrapPointer(val));
 }
 
+Handle<Value> Pointer::PutCString(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+
+    if (args.Length() >= 1 && args[0]->IsString()) {
+        String::Utf8Value str(args[0]->ToString());
+        strcpy((char *)ptr, *str);
+        
+        //printf("Pointer::PutCString: (%p) %s\n", ptr, *str);
+        
+        if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+            self->MovePointer(strlen(*str));
+        }
+    }
+    
+    return Undefined();
+}
+
+Handle<Value> Pointer::GetCString(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    char            *val = (char *)self->GetPointer();
+    
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(unsigned char *));
+    }
+    
+    //printf("Pointer::GetCString (%p): %s\n", self->GetPointer(), val);
+    
+    return scope.Close(String::New(val));
+}
+
+
 ///////////////
 
 
@@ -314,8 +353,9 @@ void FFI::InitializeStaticFunctions(Handle<Object> target)
 {
     Local<Object>       o = Object::New();
     
-    // abs is here for testing purposes
+    // abs and atoi here for testing purposes
     o->Set(String::New("abs"),      Pointer::WrapPointer((unsigned char *)abs));
+    o->Set(String::New("atoi"),     Pointer::WrapPointer((unsigned char *)atoi));
     o->Set(String::New("dlopen"),   Pointer::WrapPointer((unsigned char *)dlopen));
     o->Set(String::New("dlclose"),  Pointer::WrapPointer((unsigned char *)dlclose));
     o->Set(String::New("dlsym"),    Pointer::WrapPointer((unsigned char *)dlsym));
@@ -332,22 +372,26 @@ void FFI::InitializeBindings(Handle<Object> target)
     
     o->Set(String::New("call"),             FunctionTemplate::New(FFICall)->GetFunction());
     o->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
-    
+   
     o->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
     o->Set(String::New("SIZE_SIZE"),        Integer::New(sizeof(size_t)));
     o->Set(String::New("FFI_TYPE_SIZE"),    Integer::New(sizeof(ffi_type)));
     
     Local<Object> smap = Object::New();
     smap->Set(String::New("byte"),      Integer::New(sizeof(unsigned char)));
-    smap->Set(String::New("int8"),      Integer::New(sizeof(unsigned char)));    
-    smap->Set(String::New("uint8"),     Integer::New(sizeof(char)));    
+    smap->Set(String::New("int8"),      Integer::New(sizeof(char)));    
+    smap->Set(String::New("sint8"),     Integer::New(sizeof(char)));    
+    smap->Set(String::New("uint8"),     Integer::New(sizeof(unsigned char)));    
     smap->Set(String::New("int16"),     Integer::New(sizeof(unsigned short)));    
+    smap->Set(String::New("sint16"),    Integer::New(sizeof(short)));
     smap->Set(String::New("uint16"),    Integer::New(sizeof(short)));    
     smap->Set(String::New("int32"),     Integer::New(sizeof(int)));
+    smap->Set(String::New("sint32"),    Integer::New(sizeof(int)));
     smap->Set(String::New("uint32"),    Integer::New(sizeof(unsigned int)));
     smap->Set(String::New("float"),     Integer::New(sizeof(float)));
     smap->Set(String::New("double"),    Integer::New(sizeof(double)));
     smap->Set(String::New("pointer"),   Integer::New(sizeof(unsigned char *)));
+    smap->Set(String::New("string"),    Integer::New(sizeof(char *)));
     
     Local<Object> ftmap = Object::New();
     ftmap->Set(String::New("void"),     Pointer::WrapPointer((unsigned char *)&ffi_type_void));
@@ -362,6 +406,7 @@ void FFI::InitializeBindings(Handle<Object> target)
     ftmap->Set(String::New("float"),    Pointer::WrapPointer((unsigned char *)&ffi_type_float));
     ftmap->Set(String::New("double"),   Pointer::WrapPointer((unsigned char *)&ffi_type_double));
     ftmap->Set(String::New("pointer"),  Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
+    ftmap->Set(String::New("string"),   Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
     
     o->Set(String::New("FFI_TYPES"), ftmap);
     o->Set(String::New("TYPE_SIZE_MAP"), smap);
@@ -378,6 +423,12 @@ Handle<Value> FFI::FFICall(const Arguments& args)
         Pointer *fnargs = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
         Pointer *res    = ObjectWrap::Unwrap<Pointer>(args[3]->ToObject());
         
+        // printf("FFI::FFICall: ffi_call(%p, %p, %p, %p)\n",
+        //         (ffi_cif *)cif->GetPointer(),
+        //         (void (*)(void))fn->GetPointer(),
+        //         (void *)res->GetPointer(),
+        //         (void **)fnargs->GetPointer());
+                
         ffi_call(
             (ffi_cif *)cif->GetPointer(),
             (void (*)(void))fn->GetPointer(),

@@ -34,6 +34,9 @@ ptr.putPointer(nptr);
 assertEquals(nptr.address, ptr.getPointer().address);
 assertEquals(1234.5678, ptr.getPointer().getDouble());
 
+ptr.putCString("Hello World!");
+assertEquals("Hello World!", ptr.getCString());
+
 //////////////////////
 
 // test put + advance calls
@@ -62,6 +65,11 @@ assertTrue(advptr.address == ptr.address);
 advptr.putPointer(ptr, true);
 assertTrue(advptr.address > ptr.address);
 
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.putCString("hi", true);
+assertTrue(advptr.address > ptr.address);
+
 // test get + advance calls
 
 advptr = ptr.seek(0);
@@ -87,6 +95,11 @@ assertTrue(advptr.address > ptr.address);
 advptr = ptr.seek(0);
 assertTrue(advptr.address == ptr.address);
 advptr.getPointer(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getCString(true);
 assertTrue(advptr.address > ptr.address);
 
 //////////////////////
@@ -142,14 +155,14 @@ assertEquals(FFI.Bindings.FFI_TYPES["double"].address,  cifat.getPointer(true).a
 
 //////////////////////
 
-var cifArgTypeProto = [ "uint32" ];
+var cifArgTypeProto = [ "sint32" ];
 var cifArgTypes = FFI.Internal.buildCIFArgTypes(cifArgTypeProto);
 
 assertInstanceof(cifArgTypes, FFI.Pointer);
 
 var cifPtr = FFI.Bindings.prepCif(
     cifArgTypeProto.length,
-    FFI.Bindings.FFI_TYPES["uint32"],
+    FFI.Bindings.FFI_TYPES["sint32"],
     cifArgTypes
 );
 
@@ -161,7 +174,6 @@ cifArgInteger.putInt32(-1234);
 var cifArgValues = FFI.Internal.buildCIFArgValues([cifArgInteger]);
 assertInstanceof(cifArgValues, FFI.Pointer);
 
-// cif, fun, args, res
 var resPtr = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["int32"]);
 
 FFI.Bindings.call(
@@ -174,6 +186,37 @@ FFI.Bindings.call(
 assertEquals(1234, resPtr.getInt32());
 
 //////////////////////
+
+var bareAbs = FFI.Internal.bareMethodFactory(FFI.StaticFunctions.abs, "sint32", [ "sint32" ]);
+assertInstanceof(bareAbs, Function);
+
+var bareAbsTestArg = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["sint32"]);
+bareAbsTestArg.putInt32(-1234);
+
+assertEquals(1234, bareAbs([bareAbsTestArg]).getInt32());
+
+//////////////////////
+
+var builtValuePtr = FFI.Internal.buildValue("int32", 1234);
+assertEquals(1234, builtValuePtr.getInt32());
+assertEquals(1234, FFI.Internal.extractValue("int32", builtValuePtr));
+
+var builtStringPtr = FFI.Internal.buildValue("string", "Hello World!");
+assertEquals("Hello World!", FFI.Internal.extractValue("string", builtStringPtr));
+
+//////////////////////
+
+var abs = FFI.Internal.methodFactory(FFI.StaticFunctions.abs, "sint32", [ "sint32" ]);
+assertEquals(1234, abs(-1234));
+
+var atoi = FFI.Internal.methodFactory(FFI.StaticFunctions.atoi, "sint32", [ "string" ]);
+assertEquals(1234, atoi("1234"));
+
+//////////////////////
+
+//var libc = new FFI.DynamicLibrary("libc", FFI.DynamicLibrary.FLAGS.RTLD_NOW);
+
+///////////////////////
 
 sys.puts("Heap increased by " + ((process.memoryUsage()["rss"] - rss) / 1024) + " KB");
 sys.puts("Tests pass!");
