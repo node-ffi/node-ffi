@@ -29,6 +29,7 @@ class Pointer : public ObjectWrap {
         static Handle<Value> GetPointerMethod(const Arguments& args);
         static Handle<Value> PutCString(const Arguments& args);
         static Handle<Value> GetCString(const Arguments& args);
+        static Handle<Value> IsNull(const Arguments& args);
         
         static Handle<Value> GetAddress(Local<String> name, const AccessorInfo& info);
         

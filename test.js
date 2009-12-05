@@ -39,6 +39,9 @@ assertEquals("Hello World!", ptr.getCString());
 
 //////////////////////
 
+var nullptr = ptr.seek(0 - ptr.address);
+assertTrue(nullptr.isNull());
+
 // test put + advance calls
 var advptr = ptr.seek(0);
 assertTrue(advptr.address == ptr.address);
@@ -214,7 +217,19 @@ assertEquals(1234, atoi("1234"));
 
 //////////////////////
 
-//var libc = new FFI.DynamicLibrary("libc", FFI.DynamicLibrary.FLAGS.RTLD_NOW);
+var libc = new FFI.DynamicLibrary("libc.dylib", FFI.DynamicLibrary.FLAGS.RTLD_NOW);
+assertInstanceof(libc, FFI.DynamicLibrary);
+
+var atofPtr = libc.get("atof");
+assertInstanceof(atofPtr, FFI.Pointer);
+assertFalse(atofPtr.isNull());
+
+var atof = FFI.Internal.methodFactory(atofPtr, "double", [ "string" ]);
+assertInstanceof(atof, Function);
+
+assertEquals(1.5, atof("1.5"));
+
+libc.close();
 
 ///////////////////////
 

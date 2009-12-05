@@ -145,31 +145,32 @@ FFI.Internal.bareMethodFactory = function(ptr, returnType, types) {
 };
 
 FFI.Internal.buildValue = function(type, val) {
-    var ptr;
+    var ptr = new FFI.Pointer(type == "string" ? val.length + 1 : FFI.Bindings.TYPE_SIZE_MAP[type]);
+    ptr["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]](val);
     
     if (type == "string") {
         // we have to actually build an "in-between" pointer for strings
-        var sptr    = new FFI.Pointer(val.length + 1);
-        ptr         = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["pointer"]);
-        sptr.putCString(val);
-        ptr.putPointer(sptr);
+        var dptr = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["pointer"]);
+        dptr.putPointer(ptr);
+        return dptr;
     }
     else {
-        ptr = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[type]);
-        ptr["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]](val);        
+        return ptr;
     }
     
-    return ptr;
 };
 
 FFI.Internal.extractValue = function(type, ptr) {
+    var dptr = ptr;
+    
     if (type == "string") {
-        // "dereference" the string first
-        return ptr.getPointer().getCString();
+        dptr = ptr.getPointer();
+        if (dptr.isNull()) {
+            throw "Attempted to dereference null string/pointer";
+        }
     }
-    else {
-        return ptr["get" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]]();        
-    }
+    
+    return dptr["get" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]]();
 };
 
 FFI.Internal.methodFactory = function(ptr, returnType, types) {
@@ -188,6 +189,11 @@ FFI.Internal.methodFactory = function(ptr, returnType, types) {
 
 FFI.DynamicLibrary = function(path, mode) {
     this._handle = this._dlopen(path, mode);
+    
+    if (this._handle.isNull()) {
+        sys.puts(this._dlerror());
+        throw "Dynamic Linking Error";
+    }
 };
 
 FFI.DynamicLibrary.FLAGS = {
@@ -202,6 +208,43 @@ FFI.DynamicLibrary.prototype._dlopen = FFI.Internal.methodFactory(
     "pointer",
     [ "string", "sint32" ]
 );
+
+FFI.DynamicLibrary.prototype._dlclose = FFI.Internal.methodFactory(
+    FFI.StaticFunctions.dlclose,
+    "sint32",
+    [ "pointer" ]
+);
+
+FFI.DynamicLibrary.prototype._dlsym = FFI.Internal.methodFactory(
+    FFI.StaticFunctions.dlsym,
+    "pointer",
+    [ "pointer", "string" ]
+);
+
+FFI.DynamicLibrary.prototype._dlerror = FFI.Internal.methodFactory (
+    FFI.StaticFunctions.dlerror,
+    "string",
+    [ ]
+);
+
+FFI.DynamicLibrary.prototype.close = function() {
+    return this._dlclose(this._handle);
+};
+
+FFI.DynamicLibrary.prototype.get = function(symbol) {
+    var ptr;
+
+    if ((ptr = this._dlsym(this._handle, symbol)).isNull()) {
+        sys.puts(this.error());
+        throw this.error();
+    }
+
+    return ptr;
+};
+
+FFI.DynamicLibrary.prototype.error = function() {
+    return this._dlerror();
+};
 
 exports.Internal = FFI.Internal;
 exports.StructType = FFI.StructType;

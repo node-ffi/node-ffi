@@ -60,6 +60,7 @@ void Pointer::Initialize(Handle<Object> target)
     NODE_SET_PROTOTYPE_METHOD(t, "getPointer", GetPointerMethod);
     NODE_SET_PROTOTYPE_METHOD(t, "putCString", PutCString);
     NODE_SET_PROTOTYPE_METHOD(t, "getCString", GetCString);
+    NODE_SET_PROTOTYPE_METHOD(t, "isNull", IsNull);
     
     target->Set(String::NewSymbol("Pointer"), t->GetFunction());
 }
@@ -345,6 +346,13 @@ Handle<Value> Pointer::GetCString(const Arguments& args)
     return scope.Close(String::New(val));
 }
 
+Handle<Value> Pointer::IsNull(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+
+    return scope.Close(Boolean::New(self->GetPointer() == NULL));
+}
 
 ///////////////
 
@@ -428,7 +436,7 @@ Handle<Value> FFI::FFICall(const Arguments& args)
         //         (void (*)(void))fn->GetPointer(),
         //         (void *)res->GetPointer(),
         //         (void **)fnargs->GetPointer());
-                
+        
         ffi_call(
             (ffi_cif *)cif->GetPointer(),
             (void (*)(void))fn->GetPointer(),
