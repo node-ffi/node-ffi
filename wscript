@@ -16,9 +16,8 @@ def configure(conf):
 
   conf.env['USE_DEBUG'] = Options.options.debug
 
-  # conf.env.append_value("LIBPATH_FFI", "/opt/local/lib")
-  # conf.env.append_value("LIB_FFI", "ffi")
-  # conf.env.append_value("CPPPATH_FFI", "/opt/local/include")
+  conf.env.append_value("LIB_FFI", "ffi")
+  conf.env.append_value("LIB_DL", "dl")
   
   if conf.env['USE_DEBUG']:
     conf.env.append_value('CCFLAGS', ['-DDEBUG', '-g', '-O0', '-Wall'])
@@ -28,7 +27,7 @@ def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
   obj.target = 'node-ffi'
   obj.source = "node-ffi.cc"
-  # obj.uselib = "FFI"
+  obj.uselib = "FFI DL"
     
 def shutdown():
   if Options.commands['clean']:

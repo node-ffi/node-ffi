@@ -36,11 +36,96 @@ assertEquals(1234.5678, ptr.getPointer().getDouble());
 
 //////////////////////
 
+// test put + advance calls
+var advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.putByte(1, true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.putInt32(1, true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.putUInt32(1, true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.putDouble(1, true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.putPointer(ptr, true);
+assertTrue(advptr.address > ptr.address);
+
+// test get + advance calls
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getByte(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getInt32(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getUInt32(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getDouble(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getPointer(true);
+assertTrue(advptr.address > ptr.address);
+
+//////////////////////
+
 assertInstanceof(FFI.StaticFunctions, Object);
 assertInstanceof(FFI.StaticFunctions.dlopen, Pointer);
 assertInstanceof(FFI.StaticFunctions.dlclose, Pointer);
 assertInstanceof(FFI.StaticFunctions.dlsym, Pointer);
 assertInstanceof(FFI.StaticFunctions.dlerror, Pointer);
+
+//////////////////////
+
+var testStruct = new FFI.StructType([["byte", "a"], ["byte", "b"]]);
+var stptr = testStruct.allocate({"a": 100, "b": 200});
+
+assertEquals(100, stptr.getByte(true));
+assertEquals(200, stptr.getByte(true));
+
+var allStruct = new FFI.StructType([
+    ["byte", "byteVal"],
+    ["int32", "int32Val"],
+    ["uint32", "uint32Val"],
+    ["double", "doubleVal"],
+    ["pointer", "pointerVal"]
+]);
+var allStruct_testPtr = new Pointer(4);
+var allptr = allStruct.allocate({
+   "byteVal": 100,
+   "int32Val": -10000,
+   "uint32Val": 10000,
+   "doubleVal": 1.25,
+   "pointerVal": allStruct_testPtr
+});
+
+assertEquals(100, allStruct.readField(allptr, "byteVal"));
+assertEquals(-10000, allStruct.readField(allptr, "int32Val"));
+assertEquals(10000, allStruct.readField(allptr, "uint32Val"));
+assertEquals(1.25, allStruct.readField(allptr, "doubleVal"));
+assertEquals(allStruct_testPtr.address, allStruct.readField(allptr, "pointerVal").address);
 
 //////////////////////
 

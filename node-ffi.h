@@ -9,6 +9,7 @@ class Pointer : public ObjectWrap {
         static void Initialize(Handle<Object> Target);
         static Handle<Object> WrapPointer(unsigned char *ptr);
         unsigned char *GetPointer();
+        void MovePointer(int bytes);
         void Alloc(size_t bytes);
         void Free();
         
@@ -35,7 +36,11 @@ class Pointer : public ObjectWrap {
         unsigned int m_allocated;
 };
 
-class FFI {
+class FFI : public ObjectWrap {
     public:
         static void InitializeStaticFunctions(Handle<Object> Target);
+        static void InitializeBindings(Handle<Object> Target);
+    
+    protected:
+        static Handle<Value> FFICall(const Arguments& args);
 };

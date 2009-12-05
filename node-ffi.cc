@@ -5,6 +5,7 @@
 #include <node_object_wrap.h>
 #include <string.h>
 #include <dlfcn.h>
+#include <ffi/ffi.h>
 #include "node-ffi.h"
 
 #define SZ_BYTE     255
@@ -66,6 +67,11 @@ unsigned char *Pointer::GetPointer()
     return this->m_ptr;
 }
 
+void Pointer::MovePointer(int bytes)
+{
+    this->m_ptr += bytes;
+}
+
 void Pointer::Alloc(size_t bytes)
 {
     if (!this->m_allocated) {
@@ -110,7 +116,7 @@ Handle<Value> Pointer::GetAddress(Local<String> name, const AccessorInfo& info)
     Handle<Value>   ret;
     
     ptr = (unsigned int)self->GetPointer();
-    ret = Number::New(ptr);
+    ret = Integer::New(ptr);
     
     return scope.Close(ret);
 }
@@ -138,7 +144,7 @@ Handle<Value> Pointer::PutByte(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
 
-    if (args.Length() == 1 && args[0]->IsNumber()) {
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
         unsigned int val = args[0]->Uint32Value();
         
         if (val <= SZ_BYTE) {
@@ -149,6 +155,9 @@ Handle<Value> Pointer::PutByte(const Arguments& args)
             return ThrowException(String::New("Byte out of Range."));
         }
     }
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(unsigned char));
+    }
 
     return Undefined();
 }
@@ -158,7 +167,11 @@ Handle<Value> Pointer::GetByte(const Arguments& args)
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
-    
+
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(unsigned char));
+    }
+
     return scope.Close(Integer::New(*ptr));
 }
 
@@ -168,11 +181,14 @@ Handle<Value> Pointer::PutInt32(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
 
-    if (args.Length() == 1 && args[0]->IsNumber()) {
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
         int val = args[0]->Int32Value();
         memcpy(ptr, &val, sizeof(int));
     }
-
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(int));
+    }
+    
     return Undefined();
 }
 
@@ -182,6 +198,10 @@ Handle<Value> Pointer::GetInt32(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
     int             val = *((int *)ptr);
+
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(int));
+    }
     
     return scope.Close(Integer::New(val));
 }
@@ -192,11 +212,14 @@ Handle<Value> Pointer::PutUInt32(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
 
-    if (args.Length() == 1 && args[0]->IsNumber()) {
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
         unsigned int val = args[0]->Uint32Value();
         memcpy(ptr, &val, sizeof(unsigned int));
     }
-
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(unsigned int));
+    }
+    
     return Undefined();
 }
 
@@ -206,7 +229,11 @@ Handle<Value> Pointer::GetUInt32(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
     unsigned int    val = *((unsigned int *)ptr);
-    
+
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(unsigned int));
+    }
+
     return scope.Close(Integer::New(val));
 }
 
@@ -216,11 +243,14 @@ Handle<Value> Pointer::PutDouble(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
 
-    if (args.Length() == 1 && args[0]->IsNumber()) {
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
         double val = args[0]->NumberValue();
         memcpy(ptr, &val, sizeof(double));
     }
-
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(double));
+    }
+    
     return Undefined();
 }
 
@@ -231,6 +261,10 @@ Handle<Value> Pointer::GetDouble(const Arguments& args)
     unsigned char   *ptr = self->GetPointer();
     double          val = *((double *)ptr);
     
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(double));
+    }
+    
     return scope.Close(Number::New(val));
 }
 
@@ -240,11 +274,14 @@ Handle<Value> Pointer::PutPointerMethod(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
 
-    if (args.Length() == 1) {
+    if (args.Length() >= 1) {
         Pointer *obj = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
         *((unsigned char **)ptr) = obj->GetPointer();
     }
-
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(unsigned char *));
+    }
+    
     return Undefined();
 }
 
@@ -257,6 +294,10 @@ Handle<Value> Pointer::GetPointerMethod(const Arguments& args)
     unsigned char   **dptr = (unsigned char **)ptr;
     
     val = *((unsigned char **)ptr);
+    
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(unsigned char *));
+    }
     
     return scope.Close(WrapPointer(val));
 }
@@ -282,8 +323,22 @@ void FFI::InitializeBindings(Handle<Object> target)
 {
     Local<Object> o = Object::New();
     
-    o->Set(String::New("call"),     FunctionTemplate::New(FFICall));
+    o->Set(String::New("call"),         FunctionTemplate::New(FFICall)->GetFunction());
+    o->Set(String::New("POINTER_SIZE"), Integer::New(sizeof(unsigned char *)));
     
+    Local<Object> smap = Object::New();
+    smap->Set(String::New("byte"),      Integer::New(sizeof(unsigned char)));
+    smap->Set(String::New("int8"),      Integer::New(sizeof(unsigned char)));    
+    smap->Set(String::New("uint8"),     Integer::New(sizeof(char)));    
+    smap->Set(String::New("int16"),     Integer::New(sizeof(unsigned short)));    
+    smap->Set(String::New("uint16"),    Integer::New(sizeof(short)));    
+    smap->Set(String::New("int32"),     Integer::New(sizeof(int)));
+    smap->Set(String::New("uint32"),    Integer::New(sizeof(unsigned int)));
+    smap->Set(String::New("float"),     Integer::New(sizeof(float)));
+    smap->Set(String::New("double"),    Integer::New(sizeof(double)));
+    smap->Set(String::New("pointer"),   Integer::New(sizeof(unsigned char *)));
+    
+    o->Set(String::New("TYPE_SIZE_MAP"), smap);
     target->Set(String::NewSymbol("Bindings"), o);
 }
 
@@ -292,16 +347,16 @@ Handle<Value> FFI::FFICall(const Arguments& args)
     HandleScope scope;
     
     if (args.Length() == 3) {
-        Pointer     *cif    = Object::Unwrap<Pointer>(args[0]);
-        Pointer     *fn     = Object::Unwrap<Pointer>(args[1]);
-        Pointer     *args   = Object::Unwrap<Pointer>(args[2]);
+        Pointer     *cif    = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
+        Pointer     *fn     = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
+        Pointer     *fnargs = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
         ffi_arg     res;
         
         ffi_call(
-            (ffi_cif *)cif->GetAddress(),
-            (void (*)(void))fn->GetAddress(),
+            (ffi_cif *)cif->GetPointer(),
+            (void (*)(void))fn->GetPointer(),
             &res,
-            (void **)args->GetAddress()
+            (void **)fnargs->GetPointer()
         );
     }
     else {
@@ -321,4 +376,3 @@ extern "C" void init(Handle<Object> target)
     FFI::InitializeBindings(target);
     FFI::InitializeStaticFunctions(target);
 }
-
