@@ -7,34 +7,15 @@ exports.Bindings = FFI.Bindings;
 
 FFI.TYPE_TO_POINTER_METHOD_MAP = {
     "byte":     "Byte",
+    "int8":     "Int8",
+    "int16":    "Int16",
+    "uint16":   "UInt16",      
     "int32":    "Int32",
-    "sint32":   "Int32", 
     "uint32":   "UInt32", 
+    "float":    "Float",
     "double":   "Double",
     "string":   "CString", 
     "pointer":  "Pointer"
-};
-
-// typedef struct   ffi_cif {
-//              ffi_abi     abi;
-//              unsigned    nargs;
-// /*@dependent@*/  ffi_type**  arg_types;
-// /*@dependent@*/  ffi_type*   rtype;
-//              unsigned    bytes;
-//              unsigned    flags;
-// #ifdef FFI_EXTRA_CIF_FIELDS
-//              FFI_EXTRA_CIF_FIELDS;
-// #endif
-// } ffi_cif;
-
-FFI.Bindings.CIF_SIZE = (
-    FFI.Bindings.ENUM_SIZE + 
-    (FFI.Bindings.POINTER_SIZE * 2) +
-    4 * 3
-);
-
-exports.buildCif = function(nargs, types, rtype, bytes, flags) {
-    var cifPtr = new Pointer(FFI.Bindings.CIF_SIZE);
 };
 
 FFI.StructType = function(fields) {
@@ -206,12 +187,12 @@ FFI.DynamicLibrary.FLAGS = {
 FFI.DynamicLibrary.prototype._dlopen = FFI.Internal.methodFactory(
     FFI.StaticFunctions.dlopen,
     "pointer",
-    [ "string", "sint32" ]
+    [ "string", "int32" ]
 );
 
 FFI.DynamicLibrary.prototype._dlclose = FFI.Internal.methodFactory(
     FFI.StaticFunctions.dlclose,
-    "sint32",
+    "int32",
     [ "pointer" ]
 );
 

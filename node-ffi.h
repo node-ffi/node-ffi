@@ -19,10 +19,18 @@ class Pointer : public ObjectWrap {
         static Handle<Value> Seek(const Arguments& args);
         static Handle<Value> PutByte(const Arguments& args);
         static Handle<Value> GetByte(const Arguments& args);
+        static Handle<Value> PutInt8(const Arguments& args);
+        static Handle<Value> GetInt8(const Arguments& args);
+        static Handle<Value> PutInt16(const Arguments& args);
+        static Handle<Value> GetInt16(const Arguments& args);
+        static Handle<Value> PutUInt16(const Arguments& args);
+        static Handle<Value> GetUInt16(const Arguments& args);
         static Handle<Value> PutInt32(const Arguments& args);
         static Handle<Value> GetInt32(const Arguments& args);
         static Handle<Value> PutUInt32(const Arguments& args);
         static Handle<Value> GetUInt32(const Arguments& args);
+        static Handle<Value> PutFloat(const Arguments& args);
+        static Handle<Value> GetFloat(const Arguments& args);
         static Handle<Value> PutDouble(const Arguments& args);
         static Handle<Value> GetDouble(const Arguments& args);
         static Handle<Value> PutPointerMethod(const Arguments& args);

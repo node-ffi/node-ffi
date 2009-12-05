@@ -50,10 +50,18 @@ void Pointer::Initialize(Handle<Object> target)
     NODE_SET_PROTOTYPE_METHOD(t, "seek", Seek);
     NODE_SET_PROTOTYPE_METHOD(t, "putByte", PutByte);
     NODE_SET_PROTOTYPE_METHOD(t, "getByte", GetByte);
+    NODE_SET_PROTOTYPE_METHOD(t, "putInt8", PutInt8);
+    NODE_SET_PROTOTYPE_METHOD(t, "getInt8", GetInt8);
+    NODE_SET_PROTOTYPE_METHOD(t, "putInt16", PutInt16);
+    NODE_SET_PROTOTYPE_METHOD(t, "getInt16", GetInt16);
+    NODE_SET_PROTOTYPE_METHOD(t, "putUInt16", PutUInt16);
+    NODE_SET_PROTOTYPE_METHOD(t, "getUInt16", GetUInt16);
     NODE_SET_PROTOTYPE_METHOD(t, "putInt32", PutInt32);
     NODE_SET_PROTOTYPE_METHOD(t, "getInt32", GetInt32);
     NODE_SET_PROTOTYPE_METHOD(t, "putUInt32", PutUInt32);
     NODE_SET_PROTOTYPE_METHOD(t, "getUInt32", GetUInt32);
+    NODE_SET_PROTOTYPE_METHOD(t, "putFloat", PutFloat);
+    NODE_SET_PROTOTYPE_METHOD(t, "getFloat", GetFloat);
     NODE_SET_PROTOTYPE_METHOD(t, "putDouble", PutDouble);
     NODE_SET_PROTOTYPE_METHOD(t, "getDouble", GetDouble);
     NODE_SET_PROTOTYPE_METHOD(t, "putPointer", PutPointerMethod);
@@ -178,6 +186,108 @@ Handle<Value> Pointer::GetByte(const Arguments& args)
     return scope.Close(Integer::New(*ptr));
 }
 
+Handle<Value> Pointer::PutInt8(const Arguments& args)
+{    
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
+        int val = args[0]->Int32Value();
+        
+        if (val >= (0 - (SZ_BYTE / 2)) && val <= (SZ_BYTE / 2)) {
+            char conv = val;
+            *ptr = conv;
+        }
+        else {
+            return ThrowException(String::New("Value out of Range."));
+        }
+    }
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(char));
+    }
+
+    return Undefined();
+}
+
+Handle<Value> Pointer::GetInt8(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(char));
+    }
+
+    return scope.Close(Integer::New(*(char *)ptr));
+}
+
+
+Handle<Value> Pointer::PutInt16(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+
+    // TODO: Exception handling here for out of range values
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
+        short val = args[0]->Int32Value();
+        memcpy(ptr, &val, sizeof(short));
+    }
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(short));
+    }
+    
+    return Undefined();
+}
+
+Handle<Value> Pointer::GetInt16(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+    short           val = *((short *)ptr);
+
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(short));
+    }
+    
+    return scope.Close(Integer::New(val));
+}
+
+Handle<Value> Pointer::PutUInt16(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+
+    // TODO: Exception handling here for out of range values
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
+        unsigned short val = (unsigned short)args[0]->Uint32Value();
+        memcpy(ptr, &val, sizeof(unsigned short));
+    }
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(unsigned short));
+    }
+    
+    return Undefined();
+}
+
+Handle<Value> Pointer::GetUInt16(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+    unsigned short  val = *((unsigned short *)ptr);
+
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(unsigned short));
+    }
+
+    return scope.Close(Integer::New(val));
+}
+
 Handle<Value> Pointer::PutInt32(const Arguments& args)
 {
     HandleScope     scope;
@@ -238,6 +348,38 @@ Handle<Value> Pointer::GetUInt32(const Arguments& args)
     }
 
     return scope.Close(Integer::New(val));
+}
+
+Handle<Value> Pointer::PutFloat(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
+        float val = args[0]->NumberValue();
+        memcpy(ptr, &val, sizeof(float));
+    }
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(float));
+    }
+    
+    return Undefined();
+}
+
+Handle<Value> Pointer::GetFloat(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+    float           val = *((float *)ptr);
+    double          valRet = val;
+    
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(float));
+    }
+    
+    return scope.Close(Number::New(valRet));
 }
 
 Handle<Value> Pointer::PutDouble(const Arguments& args)
@@ -384,14 +526,11 @@ void FFI::InitializeBindings(Handle<Object> target)
     
     Local<Object> smap = Object::New();
     smap->Set(String::New("byte"),      Integer::New(sizeof(unsigned char)));
-    smap->Set(String::New("int8"),      Integer::New(sizeof(char)));    
-    smap->Set(String::New("sint8"),     Integer::New(sizeof(char)));    
     smap->Set(String::New("uint8"),     Integer::New(sizeof(unsigned char)));    
     smap->Set(String::New("int16"),     Integer::New(sizeof(unsigned short)));    
-    smap->Set(String::New("sint16"),    Integer::New(sizeof(short)));
+    smap->Set(String::New("int16"),     Integer::New(sizeof(short)));
     smap->Set(String::New("uint16"),    Integer::New(sizeof(short)));    
     smap->Set(String::New("int32"),     Integer::New(sizeof(int)));
-    smap->Set(String::New("sint32"),    Integer::New(sizeof(int)));
     smap->Set(String::New("uint32"),    Integer::New(sizeof(unsigned int)));
     smap->Set(String::New("float"),     Integer::New(sizeof(float)));
     smap->Set(String::New("double"),    Integer::New(sizeof(double)));
@@ -401,13 +540,13 @@ void FFI::InitializeBindings(Handle<Object> target)
     Local<Object> ftmap = Object::New();
     ftmap->Set(String::New("void"),     Pointer::WrapPointer((unsigned char *)&ffi_type_void));
     ftmap->Set(String::New("uint8"),    Pointer::WrapPointer((unsigned char *)&ffi_type_uint8));
-    ftmap->Set(String::New("sint8"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint8));
+    ftmap->Set(String::New("int8"),     Pointer::WrapPointer((unsigned char *)&ffi_type_sint8));
     ftmap->Set(String::New("uint16"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint16));
-    ftmap->Set(String::New("sint16"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint16));
+    ftmap->Set(String::New("int16"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint16));
     ftmap->Set(String::New("uint32"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint32));
-    ftmap->Set(String::New("sint32"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint32));
-    ftmap->Set(String::New("uint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
-    ftmap->Set(String::New("sint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
+    ftmap->Set(String::New("int32"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint32));
+    //ftmap->Set(String::New("uint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
+    //ftmap->Set(String::New("sint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
     ftmap->Set(String::New("float"),    Pointer::WrapPointer((unsigned char *)&ffi_type_float));
     ftmap->Set(String::New("double"),   Pointer::WrapPointer((unsigned char *)&ffi_type_double));
     ftmap->Set(String::New("pointer"),  Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));

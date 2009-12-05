@@ -19,11 +19,26 @@ assertEquals(128, ptr.getByte());
 
 assertThrows("ptr.putByte(1024)");
 
+ptr.putInt8(-10);
+assertEquals(-10, ptr.getInt8());
+
+assertThrows("ptr.putInt8(-150)");
+
+ptr.putInt16(-1024);
+assertEquals(-1024, ptr.getInt16());
+
+ptr.putUInt16(1024);
+assertEquals(1024, ptr.getUInt16());
+
 ptr.putInt32(1024 * 1024);
 assertEquals(1024 * 1024, ptr.getInt32());
 
 ptr.putUInt32(1024 * 1024);
 assertEquals(1024 * 1024, ptr.getUInt32());
+
+// TODO: values outside of "float" precision create unpredictable results
+ptr.putFloat(1.5);
+assertEquals(1.5, ptr.getFloat());
 
 ptr.putDouble(1000.005);
 assertEquals(1000.005, ptr.getDouble());
@@ -50,12 +65,32 @@ assertTrue(advptr.address > ptr.address);
 
 advptr = ptr.seek(0);
 assertTrue(advptr.address == ptr.address);
+advptr.putInt8(1, true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.putInt16(1, true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.putUInt16(1, true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
 advptr.putInt32(1, true);
 assertTrue(advptr.address > ptr.address);
 
 advptr = ptr.seek(0);
 assertTrue(advptr.address == ptr.address);
 advptr.putUInt32(1, true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.putFloat(1, true);
 assertTrue(advptr.address > ptr.address);
 
 advptr = ptr.seek(0);
@@ -82,12 +117,32 @@ assertTrue(advptr.address > ptr.address);
 
 advptr = ptr.seek(0);
 assertTrue(advptr.address == ptr.address);
+advptr.getInt8(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getInt16(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getUInt16(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
 advptr.getInt32(true);
 assertTrue(advptr.address > ptr.address);
 
 advptr = ptr.seek(0);
 assertTrue(advptr.address == ptr.address);
 advptr.getUInt32(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getFloat(true);
 assertTrue(advptr.address > ptr.address);
 
 advptr = ptr.seek(0);
@@ -158,14 +213,14 @@ assertEquals(FFI.Bindings.FFI_TYPES["double"].address,  cifat.getPointer(true).a
 
 //////////////////////
 
-var cifArgTypeProto = [ "sint32" ];
+var cifArgTypeProto = [ "int32" ];
 var cifArgTypes = FFI.Internal.buildCIFArgTypes(cifArgTypeProto);
 
 assertInstanceof(cifArgTypes, FFI.Pointer);
 
 var cifPtr = FFI.Bindings.prepCif(
     cifArgTypeProto.length,
-    FFI.Bindings.FFI_TYPES["sint32"],
+    FFI.Bindings.FFI_TYPES["int32"],
     cifArgTypes
 );
 
@@ -190,10 +245,10 @@ assertEquals(1234, resPtr.getInt32());
 
 //////////////////////
 
-var bareAbs = FFI.Internal.bareMethodFactory(FFI.StaticFunctions.abs, "sint32", [ "sint32" ]);
+var bareAbs = FFI.Internal.bareMethodFactory(FFI.StaticFunctions.abs, "int32", [ "int32" ]);
 assertInstanceof(bareAbs, Function);
 
-var bareAbsTestArg = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["sint32"]);
+var bareAbsTestArg = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["int32"]);
 bareAbsTestArg.putInt32(-1234);
 
 assertEquals(1234, bareAbs([bareAbsTestArg]).getInt32());
@@ -209,10 +264,10 @@ assertEquals("Hello World!", FFI.Internal.extractValue("string", builtStringPtr)
 
 //////////////////////
 
-var abs = FFI.Internal.methodFactory(FFI.StaticFunctions.abs, "sint32", [ "sint32" ]);
+var abs = FFI.Internal.methodFactory(FFI.StaticFunctions.abs, "int32", [ "int32" ]);
 assertEquals(1234, abs(-1234));
 
-var atoi = FFI.Internal.methodFactory(FFI.StaticFunctions.atoi, "sint32", [ "string" ]);
+var atoi = FFI.Internal.methodFactory(FFI.StaticFunctions.atoi, "int32", [ "string" ]);
 assertEquals(1234, atoi("1234"));
 
 //////////////////////
