@@ -300,5 +300,12 @@ libc.close();
 
 ///////////////////////
 
+var libc = new FFI.Library("libc", { "atoi": [ "int32", [ "string" ] ] });
+assertInstanceof(libc, FFI.Library);
+assertInstanceof(libc.atoi, Function);
+assertEquals(1234, libc.atoi("1234"));
+
+///////////////////////
+
 sys.puts("Heap increased by " + ((process.memoryUsage()["rss"] - rss) / 1024) + " KB");
 sys.puts("Tests pass!");

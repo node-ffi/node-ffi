@@ -1,10 +1,6 @@
 var FFI = require("./node-ffi");
 var sys = require("sys");
 
-exports.Pointer = FFI.Pointer;
-exports.StaticFunctions = FFI.StaticFunctions;
-exports.Bindings = FFI.Bindings;
-
 FFI.TYPE_TO_POINTER_METHOD_MAP = {
     "byte":     "Byte",
     "int8":     "Int8",
@@ -16,6 +12,11 @@ FFI.TYPE_TO_POINTER_METHOD_MAP = {
     "double":   "Double",
     "string":   "CString", 
     "pointer":  "Pointer"
+};
+
+FFI.PLATFORM_LIBRARY_EXTENSIONS = {
+    "linux2":   ".so",
+    "darwin":   ".dylib"
 };
 
 FFI.StructType = function(fields) {
@@ -227,6 +228,20 @@ FFI.DynamicLibrary.prototype.error = function() {
     return this._dlerror();
 };
 
-exports.Internal = FFI.Internal;
-exports.StructType = FFI.StructType;
-exports.DynamicLibrary = FFI.DynamicLibrary;
+/////////////////////
+
+FFI.Library = function(libfile, funcs, options) {
+    var dl = new FFI.DynamicLibrary(
+        libfile + FFI.PLATFORM_LIBRARY_EXTENSIONS[process.platform],
+        FFI.DynamicLibrary.FLAGS.RTLD_NOW
+    );
+  
+    for (var k in funcs) {
+        var fptr = dl.get(k);
+        var resultType = funcs[k][0], paramTypes = funcs[k][1];
+        this[k] = FFI.Internal.methodFactory(fptr, resultType, paramTypes);
+    }
+};
+
+// Export Everything
+for (var k in FFI) { exports[k] = FFI[k]; }
