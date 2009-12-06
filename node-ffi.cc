@@ -538,7 +538,7 @@ void FFI::InitializeBindings(Handle<Object> target)
     
     Local<Object> ftmap = Object::New();
     ftmap->Set(String::New("void"),     Pointer::WrapPointer((unsigned char *)&ffi_type_void));
-    ftmap->Set(String::New("uint8"),    Pointer::WrapPointer((unsigned char *)&ffi_type_uint8));
+    ftmap->Set(String::New("byte"),     Pointer::WrapPointer((unsigned char *)&ffi_type_uint8));
     ftmap->Set(String::New("int8"),     Pointer::WrapPointer((unsigned char *)&ffi_type_sint8));
     ftmap->Set(String::New("uint16"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint16));
     ftmap->Set(String::New("int16"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint16));

@@ -212,16 +212,16 @@ assertEquals(allStruct_testPtr.address, allStruct.readField(allptr, "pointerVal"
 
 //////////////////////
 assertInstanceof(FFI.Bindings.FFI_TYPES["void"], FFI.Pointer);
-assertInstanceof(FFI.Bindings.FFI_TYPES["uint8"], FFI.Pointer);
+assertInstanceof(FFI.Bindings.FFI_TYPES["int8"], FFI.Pointer);
 
 //////////////////////
 
-var cifatInitial = FFI.Internal.buildCIFArgTypes(["uint8", "double"]);
+var cifatInitial = FFI.Internal.buildCIFArgTypes(["int8", "double"]);
 assertInstanceof(cifatInitial, FFI.Pointer);
 
 var cifat = cifatInitial.seek(0);
-assertEquals(FFI.Bindings.FFI_TYPES["uint8"].address,   cifat.getPointer(true).address);
-assertEquals(FFI.Bindings.FFI_TYPES["double"].address,  cifat.getPointer(true).address);
+assertEquals(FFI.Bindings.FFI_TYPES["int8"].address,   cifat.getPointer(true).address);
+assertEquals(FFI.Bindings.FFI_TYPES["double"].address, cifat.getPointer(true).address);
 
 //////////////////////
 
