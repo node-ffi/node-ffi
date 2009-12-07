@@ -1,4 +1,4 @@
-var FFI = require("./ffi");
+var FFI = require("ffi");
 var sys = require("sys");
 
 var SQLite3 = new FFI.Library("libsqlite3", {
