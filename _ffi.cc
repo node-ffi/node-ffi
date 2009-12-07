@@ -11,7 +11,7 @@
 #else
 #include <ffi.h>
 #endif
-#include "node-ffi.h"
+#include "_node-ffi.h"
 
 #define SZ_BYTE     255
 

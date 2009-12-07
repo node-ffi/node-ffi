@@ -25,13 +25,15 @@ def configure(conf):
 
 def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
-  obj.target = 'node-ffi'
-  obj.source = "node-ffi.cc"
-  obj.uselib = "FFI DL"
-    
+  obj.target = '_ffi'
+  obj.source = '_ffi.cc'
+  obj.uselib = 'FFI DL'
+  obj.install_path = "${PREFIX}/lib/node/libraries/"  
+  bld.install_files('${PREFIX}/lib/node/libraries/', 'ffi.js')
+
 def shutdown():
   if Options.commands['clean']:
-    if exists('node-ffi.node'): unlink('node-ffi.node')
+    if exists('_ffi.node'): unlink('_ffi.node')
   elif Options.commands['build']:
-    if exists('build/default/node-ffi.node') and not exists('node-ffi.node'):
-      symlink('build/default/node-ffi.node', 'node-ffi.node')
+    if exists('build/default/_ffi.node') and not exists('_ffi.node'):
+      symlink('build/default/_ffi.node', '_ffi.node')

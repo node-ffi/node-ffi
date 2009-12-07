@@ -1,4 +1,4 @@
-var FFI = require("./node-ffi");
+var FFI = require("./_ffi");
 var sys = require("sys");
 
 FFI.TYPE_TO_POINTER_METHOD_MAP = {
