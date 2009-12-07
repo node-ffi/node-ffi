@@ -85,6 +85,7 @@ FFI.StructType.prototype.allocate = function(data) {
 };
 
 FFI.Internal = {};
+FFI.Internal.NULL_POINTER = new FFI.Pointer(0);
 
 FFI.Internal.isValidParamType = function(typeName) {
     return FFI.Bindings.FFI_TYPES[typeName] != undefined;
@@ -142,6 +143,9 @@ FFI.Internal.bareMethodFactory = function(ptr, returnType, types) {
 FFI.Internal.buildValue = function(type, val) {
     if (!FFI.Internal.isValidParamType(type)) throw new Error("Invalid Type: " + type);
     
+    if (val == null)
+        return FFI.Internal.NULL_POINTER;
+    
     var ptr = new FFI.Pointer(type == "string" ? val.length + 1 : FFI.Bindings.TYPE_SIZE_MAP[type]);
     ptr["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]](val);
     
@@ -191,11 +195,20 @@ FFI.Internal.methodFactory = function(ptr, returnType, types) {
     };
 };
 
+// From <dlfcn.h> on Darwin: #define RTLD_DEFAULT    ((void *) -2)
+FFI.DARWIN_RTLD_DEFAULT = FFI.Internal.NULL_POINTER.seek(-2);
+
 FFI.DynamicLibrary = function(path, mode) {
-    this._handle = this._dlopen(path, mode);
-    
-    if (this._handle.isNull()) {
-        throw new Error("Dynamic Linking Error: " + this._dlerror());
+    if (path == null && process.platform == "darwin") {
+        this._handle = FFI.DARWIN_RTLD_DEFAULT;
+        this.close = function() { }; // neuter close
+    }
+    else {
+        this._handle = this._dlopen(path, mode);
+
+        if (this._handle.isNull()) {
+            throw new Error("Dynamic Linking Error: " + this._dlerror());
+        }
     }
 };
 
@@ -252,12 +265,13 @@ FFI.DynamicLibrary.prototype.error = function() {
 
 FFI.Library = function(libfile, funcs, options) {
     var dl = new FFI.DynamicLibrary(
-        libfile + FFI.PLATFORM_LIBRARY_EXTENSIONS[process.platform],
+        libfile == null ? null : libfile + FFI.PLATFORM_LIBRARY_EXTENSIONS[process.platform],
         FFI.DynamicLibrary.FLAGS.RTLD_NOW
     );
   
     for (var k in funcs) {
         var fptr = dl.get(k);
+        if (fptr.isNull()) throw new Error("DynamicLibrary returned NULL function pointer.");
         var resultType = funcs[k][0], paramTypes = funcs[k][1];
         this[k] = FFI.Internal.methodFactory(fptr, resultType, paramTypes);
     }

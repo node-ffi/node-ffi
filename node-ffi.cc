@@ -5,7 +5,11 @@
 #include <node_object_wrap.h>
 #include <string.h>
 #include <dlfcn.h>
+#ifdef __APPLE__
 #include <ffi/ffi.h>
+#else
+#include <ffi.h>
+#endif
 #include "node-ffi.h"
 
 #define SZ_BYTE     255
@@ -85,7 +89,7 @@ void Pointer::MovePointer(int bytes)
 
 void Pointer::Alloc(size_t bytes)
 {
-    if (!this->m_allocated) {
+    if (!this->m_allocated && bytes > 0) {
         this->m_ptr = (unsigned char *)malloc(bytes);
         this->m_allocated = bytes;
     }

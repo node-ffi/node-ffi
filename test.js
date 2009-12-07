@@ -54,7 +54,7 @@ assertEquals("Hello World!", ptr.getCString());
 
 //////////////////////
 
-var nullptr = ptr.seek(0 - ptr.address);
+var nullptr = new Pointer(0);
 assertTrue(nullptr.isNull());
 
 // test put + advance calls
@@ -304,6 +304,20 @@ var libc = new FFI.Library("libc", { "atoi": [ "int32", [ "string" ] ] });
 assertInstanceof(libc, FFI.Library);
 assertInstanceof(libc.atoi, Function);
 assertEquals(1234, libc.atoi("1234"));
+
+///////////////////////
+
+var thisfuncs = new FFI.Library(null, {
+    "fopen": [ "pointer", [ "string", "string" ] ],
+    "fclose": [ "int32", [ "pointer" ] ]
+});
+
+assertInstanceof(thisfuncs, FFI.Library);
+
+var fd = thisfuncs.fopen("/etc/passwd", "r");
+assertTrue(!fd.isNull());
+
+assertEquals(0, thisfuncs.fclose(fd));
 
 ///////////////////////
 

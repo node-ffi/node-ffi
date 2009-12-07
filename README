@@ -4,7 +4,11 @@ really only been tested on MacOS X
 EXAMPLE
 -------
 
-var libc = new FFI.Library("libc", {"atoi": [ "int32", [ "string" ] ]});
+var libc = new FFI.Library("libc", { "atoi": [ "int32", [ "string" ] ] });
+libc.atoi("1234"); // 1234
+
+// You can also access just functions in the current process by passing a null
+var libc = new FFI.Library(null, { "atoi": [ "int32", [ "string" ] ] });
 libc.atoi("1234"); // 1234
 
 TYPES
