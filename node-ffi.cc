@@ -5,6 +5,7 @@
 #include <node_object_wrap.h>
 #include <string.h>
 #include <dlfcn.h>
+#include <sys/mman.h>
 #ifdef __APPLE__
 #include <ffi/ffi.h>
 #else
@@ -23,6 +24,7 @@ Pointer::Pointer(unsigned char *ptr)
 Pointer::~Pointer()
 {
     if (this->m_allocated) {
+        // printf("Pointer destructor called on ALLOCATED area\n");
         free(this->m_ptr);
     }
 }
@@ -465,7 +467,7 @@ Handle<Value> Pointer::PutCString(const Arguments& args)
         String::Utf8Value str(args[0]->ToString());
         strcpy((char *)ptr, *str);
         
-        //printf("Pointer::PutCString: (%p) %s\n", ptr, *str);
+        // printf("Pointer::PutCString: (%p) %s\n", ptr, *str);
         
         if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
             self->MovePointer(strlen(*str));
@@ -523,6 +525,7 @@ void FFI::InitializeBindings(Handle<Object> target)
     
     o->Set(String::New("call"),             FunctionTemplate::New(FFICall)->GetFunction());
     o->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
+    // o->Set(String::New("createClosure"),    FunctionTemplate::New(FFICreateClosure)->GetFunction());
    
     o->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
     o->Set(String::New("SIZE_SIZE"),        Integer::New(sizeof(size_t)));
@@ -571,10 +574,10 @@ Handle<Value> FFI::FFICall(const Arguments& args)
         Pointer *res    = ObjectWrap::Unwrap<Pointer>(args[3]->ToObject());
         
         // printf("FFI::FFICall: ffi_call(%p, %p, %p, %p)\n",
-        //         (ffi_cif *)cif->GetPointer(),
-        //         (void (*)(void))fn->GetPointer(),
-        //         (void *)res->GetPointer(),
-        //         (void **)fnargs->GetPointer());
+        //          (ffi_cif *)cif->GetPointer(),
+        //          (void (*)(void))fn->GetPointer(),
+        //          (void *)res->GetPointer(),
+        //          (void **)fnargs->GetPointer());
         
         ffi_call(
             (ffi_cif *)cif->GetPointer(),
@@ -621,6 +624,99 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args)
     }
 }
 
+Persistent<FunctionTemplate> CallbackInfo::callback_template;
+
+CallbackInfo::CallbackInfo(Handle<Function> func, Handle<Object> fptr)
+{
+    m_function = Persistent<Function>::New(func);
+    m_fptr = fptr;
+}
+
+CallbackInfo::~CallbackInfo()
+{
+    munmap(ObjectWrap::Unwrap<Pointer>(m_fptr)->GetPointer(), sizeof(ffi_closure));
+}
+
+void CallbackInfo::Initialize(Handle<Object> target)
+{
+    HandleScope scope;
+    
+    if (callback_template.IsEmpty()) {
+        callback_template = Persistent<FunctionTemplate>::New(MakeTemplate());
+    }
+    
+    Handle<FunctionTemplate> t = callback_template;
+    
+    //NODE_SET_PROTOTYPE_METHOD(t, "methud", Seek);
+    
+    target->Set(String::NewSymbol("CallbackInfo"), t->GetFunction());
+}
+
+Handle<Value> CallbackInfo::New(const Arguments& args)
+{
+    // cif, function / TODO: Check args
+    if (args.Length() == 2) {
+        Pointer         *cif        = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
+        Local<Function> callback    = Local<Function>::Cast(args[1]);;
+        ffi_closure     *closure;
+        
+        // TODO: check for mmap() and mprotect failure        // 
+        if ((closure = (ffi_closure *)mmap(NULL, sizeof(ffi_closure), PROT_READ | PROT_WRITE | PROT_EXEC,
+            MAP_ANON | MAP_PRIVATE, -1, 0)) == (void*)-1)
+        {
+            return ThrowException(String::New("mmap() Returned Error"));
+        }
+        
+        CallbackInfo *self = new CallbackInfo(
+            callback,
+            Pointer::WrapPointer((unsigned char *)closure)
+        );
+        
+        // TODO: Check for failure here
+        ffi_prep_closure(
+            closure,
+            (ffi_cif *)cif->GetPointer(),
+            Invoke,
+            (void *)self
+        );
+        
+        self->Wrap(args.This());
+        return args.This();
+    }
+    else {
+        return ThrowException(String::New("Not enough arguments."));
+    }
+}
+
+Handle<FunctionTemplate> CallbackInfo::MakeTemplate()
+{
+    HandleScope scope;
+    Handle<FunctionTemplate> t = FunctionTemplate::New(New);
+
+    Local<ObjectTemplate> inst = t->InstanceTemplate();
+    inst->SetInternalFieldCount(1);
+    inst->SetAccessor(String::NewSymbol("pointer"), GetPointer);
+    
+    return scope.Close(t);
+}
+
+void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data)
+{
+    printf("CallbackInfo::Invoke not fully implemented\n");
+}
+
+Handle<Value> CallbackInfo::GetPointerObject()
+{
+    return m_fptr;
+}
+
+Handle<Value> CallbackInfo::GetPointer(Local<String> name, const AccessorInfo& info)
+{
+    HandleScope     scope;
+    CallbackInfo    *self = ObjectWrap::Unwrap<CallbackInfo>(info.Holder());
+    return scope.Close(self->GetPointerObject());
+}
+
 ///////////////
 
 extern "C" void init(Handle<Object> target)
@@ -630,4 +726,5 @@ extern "C" void init(Handle<Object> target)
     Pointer::Initialize(target);
     FFI::InitializeBindings(target);
     FFI::InitializeStaticFunctions(target);
+    CallbackInfo::Initialize(target);
 }

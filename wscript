@@ -20,8 +20,8 @@ def configure(conf):
   conf.env.append_value("LIB_DL", "dl")
   
   if conf.env['USE_DEBUG']:
-    conf.env.append_value('CCFLAGS', ['-DDEBUG', '-g', '-O0', '-Wall'])
-    conf.env.append_value('CXXFLAGS', ['-DDEBUG', '-g', '-O0', '-Wall'])
+    conf.env.append_value('CCFLAGS', ['-DDEBUG', '-g', '-ggdb', '-O0', '-Wall'])
+    conf.env.append_value('CXXFLAGS', ['-DDEBUG', '-g', '-ggdb', '-O0', '-Wall'])
 
 def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')

@@ -57,3 +57,24 @@ class FFI : public ObjectWrap {
         static Handle<Value> FFIPrepCif(const Arguments& args);
         static Handle<Value> FFICall(const Arguments& args);
 };
+
+class CallbackInfo : public ObjectWrap {
+    public:
+        CallbackInfo(Handle<Function> func, Handle<Object> fptr);
+        ~CallbackInfo();
+        static void Initialize(Handle<Object> Target);
+        Handle<Value> GetPointerObject();
+        
+    protected:
+        static Handle<Value> New(const Arguments& args);
+        static Handle<Value> GetPointer(Local<String> name, const AccessorInfo& info);
+        static void Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data);
+        
+    private:
+        static Persistent<FunctionTemplate> callback_template;
+        static Handle<FunctionTemplate> MakeTemplate();
+        
+        ffi_closure             *m_closure;
+        Persistent<Function>    m_function;
+        Handle<Object>          m_fptr;
+};

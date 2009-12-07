@@ -319,6 +319,23 @@ assertTrue(!fd.isNull());
 
 assertEquals(0, thisfuncs.fclose(fd));
 
+
+///////////////////////
+// 
+// var closurePtr = FFI.Bindings.createClosure(cifPtr, function(cif, result, args) {
+//     sys.puts("Here");
+// });
+// // 
+// var callMyTestClosure = FFI.Internal.methodFactory(closurePtr, "int32", [ "int32" ]);
+// callMyTestClosure(1);
+
+var clz = new FFI.CallbackInfo(cifPtr, function(cif, result, args) {
+    sys.puts("ClosureCalled");
+});
+
+var callMyTestClosure = FFI.Internal.methodFactory(clz.pointer, "int32", [ "int32" ]);
+callMyTestClosure(1);
+
 ///////////////////////
 
 sys.puts("Heap increased by " + ((process.memoryUsage()["rss"] - rss) / 1024) + " KB");
