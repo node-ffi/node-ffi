@@ -1,7 +1,7 @@
 var FFI = require("./ffi");
 var sys = require("sys");
 
-var SQLite3 = new FFI.Library("/usr/lib/libsqlite3", {
+var SQLite3 = new FFI.Library("libsqlite3", {
     "sqlite3_open": [ "int32", [ "string", "pointer" ] ],
     "sqlite3_close": [ "int32", [ "pointer" ] ],
     "sqlite3_exec": [ "int32", [ "pointer", "string", "pointer", "pointer", "pointer" ] ],
