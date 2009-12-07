@@ -635,6 +635,7 @@ CallbackInfo::CallbackInfo(Handle<Function> func, Handle<Object> fptr)
 CallbackInfo::~CallbackInfo()
 {
     munmap(ObjectWrap::Unwrap<Pointer>(m_fptr)->GetPointer(), sizeof(ffi_closure));
+    m_function.Dispose();
 }
 
 void CallbackInfo::Initialize(Handle<Object> target)
@@ -660,7 +661,6 @@ Handle<Value> CallbackInfo::New(const Arguments& args)
         Local<Function> callback    = Local<Function>::Cast(args[1]);;
         ffi_closure     *closure;
         
-        // TODO: check for mmap() and mprotect failure        // 
         if ((closure = (ffi_closure *)mmap(NULL, sizeof(ffi_closure), PROT_READ | PROT_WRITE | PROT_EXEC,
             MAP_ANON | MAP_PRIVATE, -1, 0)) == (void*)-1)
         {
@@ -681,6 +681,8 @@ Handle<Value> CallbackInfo::New(const Arguments& args)
         );
         
         self->Wrap(args.This());
+        self->m_this = args.This();
+        
         return args.This();
     }
     else {
@@ -702,7 +704,13 @@ Handle<FunctionTemplate> CallbackInfo::MakeTemplate()
 
 void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data)
 {
-    printf("CallbackInfo::Invoke not fully implemented\n");
+    CallbackInfo    *self = (CallbackInfo *)user_data;
+    Handle<Value>   argv[2];
+    
+    argv[0] = Pointer::WrapPointer((unsigned char *)retval);
+    argv[1] = Pointer::WrapPointer((unsigned char *)parameters);
+    
+    self->m_function->Call(self->m_this, 2, argv);
 }
 
 Handle<Value> CallbackInfo::GetPointerObject()

@@ -160,7 +160,6 @@ FFI.Internal.buildValue = function(type, val) {
     else {
         return ptr;
     }
-    
 };
 
 FFI.Internal.extractValue = function(type, ptr) {
@@ -277,6 +276,35 @@ FFI.Library = function(libfile, funcs, options) {
         var resultType = funcs[k][0], paramTypes = funcs[k][1];
         this[k] = FFI.Internal.methodFactory(fptr, resultType, paramTypes);
     }
+};
+
+/////////////////////
+
+FFI.Callback = function(typedata, func) {
+    var retType = typedata[0], types = typedata[1];
+    var cif = FFI.Bindings.prepCif(
+        types.length,
+        FFI.Bindings.FFI_TYPES[retType],
+        FFI.Internal.buildCIFArgTypes(types)
+    );
+    
+    this._info = new FFI.CallbackInfo(cif, function (retval, params) {
+        var pptr = params.seek(0);
+        var args = [];
+        
+        for (var i = 0; i < types.length; i++) {
+            args.push(FFI.Internal.extractValue(types[i], pptr.getPointer(true)));
+        }
+        
+        var methodResult = func.apply(this, args);
+        
+        if (retType != "void")
+            retval["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[retType]](methodResult);      
+    });
+};
+
+FFI.Callback.prototype.getPointer = function() {
+    return this._info.pointer;
 };
 
 // Export Everything

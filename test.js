@@ -319,22 +319,25 @@ assertTrue(!fd.isNull());
 
 assertEquals(0, thisfuncs.fclose(fd));
 
-
 ///////////////////////
-// 
-// var closurePtr = FFI.Bindings.createClosure(cifPtr, function(cif, result, args) {
-//     sys.puts("Here");
-// });
-// // 
-// var callMyTestClosure = FFI.Internal.methodFactory(closurePtr, "int32", [ "int32" ]);
-// callMyTestClosure(1);
 
-var clz = new FFI.CallbackInfo(cifPtr, function(cif, result, args) {
-    sys.puts("ClosureCalled");
+var closureCalled = 0;
+var clz = new FFI.CallbackInfo(cifPtr, function(result, args) {
+    closureCalled++;
 });
 
 var callMyTestClosure = FFI.Internal.methodFactory(clz.pointer, "int32", [ "int32" ]);
 callMyTestClosure(1);
+callMyTestClosure(1);
+assertEquals(2, closureCalled);
+
+///////////////////////
+
+var callback = new FFI.Callback(["int32", ["int32"]], function(inValue) {
+   return Math.abs(inValue); 
+});
+var callMyTestCallback = FFI.Internal.methodFactory(callback.getPointer(), "int32", ["int32"]);
+assertEquals(1234, callMyTestCallback(-1234));
 
 ///////////////////////
 

@@ -77,4 +77,5 @@ class CallbackInfo : public ObjectWrap {
         ffi_closure             *m_closure;
         Persistent<Function>    m_function;
         Handle<Object>          m_fptr;
+        Handle<Object>          m_this;
 };

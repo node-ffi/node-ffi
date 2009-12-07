@@ -15,15 +15,36 @@ sys.puts("Opening test.sqlite3...");
 SQLite3.sqlite3_open("test.sqlite3", db);
 var dbh = db.getPointer(); // we have to extract the pointer as it's an output param
 
-sys.puts("Creating foo table...");
+sys.puts("Creating and/or clearing foo table...");
 
-SQLite3.sqlite3_exec(dbh, "CREATE TABLE foo (bar VARCHAR);", null, null, null)
+SQLite3.sqlite3_exec(dbh, "CREATE TABLE foo (bar VARCHAR);", null, null, null);
+SQLite3.sqlite3_exec(dbh, "DELETE FROM foo;", null, null, null);
 
 sys.puts("Inserting bar 5 times...");
 
 for (var i = 0; i < 5; i++) {
-    SQLite3.sqlite3_exec(dbh, "INSERT INTO foo VALUES('bar');", null, null, null);
+    SQLite3.sqlite3_exec(dbh, "INSERT INTO foo VALUES('baz');", null, null, null);
 }
+
+var rowCount = 0;
+var callback = new FFI.Callback(["int32", ["pointer", "int32", "pointer", "pointer"]], function(tmp, cols, argv, colv) {
+    var obj = {};
+    
+    for (var i = 0; i < cols; i++) {
+        var colName = colv.getPointer().getCString();
+        var colData = argv.getPointer().getCString();
+        obj[colName] = colData;
+    }
+    
+    sys.puts("Row: " + JSON.stringify(obj));
+    rowCount++;
+    
+    return 0;
+});
+
+SQLite3.sqlite3_exec(dbh, "SELECT * FROM foo;", callback.getPointer(), null, null);
+
+sys.puts("Total Rows: " + rowCount);
 
 sys.puts("Changes: " + SQLite3.sqlite3_changes(dbh));
 
