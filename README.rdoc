@@ -15,14 +15,14 @@ what's going on.
 
 == EXAMPLE:
 
-  require("ffi");
+  var FFI = require("ffi");
 
-  var libc = new FFI.Library("libc", { "atoi": [ "int32", [ "string" ] ] });
-  libc.atoi("1234"); // 1234
+  var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ] ] });
+  libm.ceil(1.5); // 2
 
   // You can also access just functions in the current process by passing a null
-  var libc = new FFI.Library(null, { "atoi": [ "int32", [ "string" ] ] });
-  libc.atoi("1234"); // 1234
+  var current = new FFI.Library(null, { "atoi": [ "int32", [ "string" ] ] });
+  current.atoi("1234"); // 1234
 
 == REQUIREMENTS:
 

@@ -284,26 +284,26 @@ assertEquals(1234, atoi("1234"));
 
 //////////////////////
 
-var libc = new FFI.DynamicLibrary("libc.dylib", FFI.DynamicLibrary.FLAGS.RTLD_NOW);
-assertInstanceof(libc, FFI.DynamicLibrary);
+var libm = new FFI.DynamicLibrary("libm" + FFI.PLATFORM_LIBRARY_EXTENSIONS[process.platform], FFI.DynamicLibrary.FLAGS.RTLD_NOW);
+assertInstanceof(libm, FFI.DynamicLibrary);
 
-var atofPtr = libc.get("atof");
-assertInstanceof(atofPtr, FFI.Pointer);
-assertFalse(atofPtr.isNull());
+var ceilPtr = libm.get("ceil");
+assertInstanceof(ceilPtr, FFI.Pointer);
+assertFalse(ceilPtr.isNull());
 
-var atof = FFI.Internal.methodFactory(atofPtr, "double", [ "string" ]);
-assertInstanceof(atof, Function);
+var ceil = FFI.Internal.methodFactory(ceilPtr, "double", [ "double" ]);
+assertInstanceof(ceil, Function);
 
-assertEquals(1.5, atof("1.5"));
+assertEquals(2, ceil(1.5));
 
-libc.close();
+libm.close();
 
 ///////////////////////
 
-var libc = new FFI.Library("libc", { "atoi": [ "int32", [ "string" ] ] });
-assertInstanceof(libc, FFI.Library);
-assertInstanceof(libc.atoi, Function);
-assertEquals(1234, libc.atoi("1234"));
+var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ] ] });
+assertInstanceof(libm, FFI.Library);
+assertInstanceof(libm.ceil, Function);
+assertEquals(2, ceil(1.5));
 
 ///////////////////////
 
