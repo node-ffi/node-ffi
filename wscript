@@ -1,6 +1,7 @@
 import Options
 from os import unlink, symlink, popen
 from os.path import exists 
+from logging import fatal
 
 srcdir = '.'
 blddir = 'build'
@@ -15,6 +16,9 @@ def configure(conf):
   conf.check_tool('node_addon')
 
   conf.env['USE_DEBUG'] = Options.options.debug
+
+  if not conf.check(lib='ffi'):
+    fatal("libffi not found.")
 
   conf.env.append_value("LIB_FFI", "ffi")
   conf.env.append_value("LIB_DL", "dl")

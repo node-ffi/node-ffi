@@ -39,16 +39,16 @@ what's going on.
 
 == TYPES:
 
-byte			Unsigned 8-bit Integer (unsigned char)
-int8      Signed 8-bit Integer (char)
-int16			Signed 16-bit Integer (short)
-uint16		Unsigned 16-bit Integer (unsigned short)
-int32			Signed 32-bit Integer (int)
-uint32		Unsigned 32-bit Integer (unsigned int)
-float			Single Precision Floating Point Number (float)
-double		Double Precision Floating Point Number (double)
-pointer		Pointer Type
-string		Null-Terminated String (char *)
+  byte      Unsigned 8-bit Integer (unsigned char)
+  int8      Signed 8-bit Integer (char)
+  int16			Signed 16-bit Integer (short)
+  uint16		Unsigned 16-bit Integer (unsigned short)
+  int32			Signed 32-bit Integer (int)
+  uint32		Unsigned 32-bit Integer (unsigned int)
+  float			Single Precision Floating Point Number (float)
+  double		Double Precision Floating Point Number (double)
+  pointer		Pointer Type
+  string		Null-Terminated String (char *)
 
 == LICENSE:
 
