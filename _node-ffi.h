@@ -60,7 +60,7 @@ class FFI : public ObjectWrap {
 
 class CallbackInfo : public ObjectWrap {
     public:
-        CallbackInfo(Handle<Function> func, ffi_closure *closure);
+        CallbackInfo(Handle<Function> func, void *closure);
         ~CallbackInfo();
         static void Initialize(Handle<Object> Target);
         Handle<Value> GetPointerObject();
@@ -74,7 +74,7 @@ class CallbackInfo : public ObjectWrap {
         static Persistent<FunctionTemplate> callback_template;
         static Handle<FunctionTemplate> MakeTemplate();
         
-        ffi_closure             *m_closure;
+        void                    *m_closure;
         Persistent<Function>    m_function;
         Handle<Object>          m_this;
 };

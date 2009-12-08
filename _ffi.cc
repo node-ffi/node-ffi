@@ -632,7 +632,7 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args)
 
 Persistent<FunctionTemplate> CallbackInfo::callback_template;
 
-CallbackInfo::CallbackInfo(Handle<Function> func, ffi_closure *closure)
+CallbackInfo::CallbackInfo(Handle<Function> func, void *closure)
 {
     m_function = Persistent<Function>::New(func);
     m_closure = closure;
