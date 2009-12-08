@@ -137,7 +137,6 @@ FFI.Internal.bareMethodFactory = function(ptr, returnType, types) {
     var func = function(argPtrs) {
         var res     = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[returnType]);
         var args    = FFI.Internal.buildCIFArgValues(argPtrs);
-        //var tmp     = atypes; // prevents garbage collection of atypes : TODO: find out a better way to do this
         
         FFI.Bindings.call(cif, ptr, args, res);
         
@@ -301,7 +300,6 @@ FFI.Callback = function(typedata, func) {
     this._info = new FFI.CallbackInfo(cif, function (retval, params) {
         var pptr = params.seek(0);
         var args = [];
-        //var tmp = atypes; // prevent garbage collection : TODO: make this more sane! 
         
         for (var i = 0; i < types.length; i++) {
             args.push(FFI.Internal.extractValue(types[i], pptr.getPointer(true)));
