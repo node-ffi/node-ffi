@@ -1,6 +1,8 @@
 var FFI = require("./_ffi");
 var sys = require("sys");
 
+(function() {
+
 FFI.TYPE_TO_POINTER_METHOD_MAP = {
     "byte":     "Byte",
     "int8":     "Int8",
@@ -17,6 +19,13 @@ FFI.TYPE_TO_POINTER_METHOD_MAP = {
 FFI.PLATFORM_LIBRARY_EXTENSIONS = {
     "linux2":   ".so",
     "darwin":   ".dylib"
+};
+
+FFI.Pointer.prototype.attach = function(friend) {
+    if (friend.__attached == undefined)
+        friend.__attached = [];
+    
+    friend.__attached.push(this);
 };
 
 FFI.StructType = function(fields) {
@@ -84,72 +93,95 @@ FFI.StructType.prototype.allocate = function(data) {
     return ptr;
 };
 
-FFI.Internal = {};
 FFI.NULL_POINTER = new FFI.Pointer(0);
 FFI.NULL_POINTER_PARAM = new FFI.Pointer(FFI.Bindings.POINTER_SIZE);
 FFI.NULL_POINTER_PARAM.putPointer(FFI.NULL_POINTER);
 
-FFI.Internal.isValidParamType = function(typeName) {
+function isValidParamType(typeName) {
     return FFI.Bindings.FFI_TYPES[typeName] != undefined;
 };
 
-FFI.Internal.isValidReturnType = function(typeName) {
+function isValidReturnType(typeName) {
     return FFI.Bindings.FFI_TYPES[typeName] != undefined || typeName == "void";
 };
 
-FFI.Internal.buildCIFArgTypes = function(types) {
-    var ptr = new FFI.Pointer(types.length * FFI.Bindings.FFI_TYPE_SIZE);
-    var cptr = ptr.seek(0);
+FFI.CIF = function(rtype, types) {
+    this._returnType = rtype;
+    this._types = types;
+    
+    if (!isValidReturnType(this._returnType)) throw new Error("Invalid Return Type");
+    
+    this._argtypesptr   = new FFI.Pointer(types.length * FFI.Bindings.FFI_TYPE_SIZE);
+    this._rtypeptr      = FFI.Bindings.FFI_TYPES[this._returnType];
+    
+    var tptr = this._argtypesptr.seek(0);
     
     for (var i = 0; i < types.length; i++) {
-        if (FFI.Internal.isValidParamType(types[i])) {
-            cptr.putPointer(FFI.Bindings.FFI_TYPES[types[i]], true);
+        if (isValidParamType(types[i])) {
+            tptr.putPointer(FFI.Bindings.FFI_TYPES[types[i]], true);
         }
         else {
             throw new Error("Invalid Type: " + types[i]);
         }
     }
-        
-    return ptr;
+    
+    this._cifptr = FFI.Bindings.prepCif(types.length, this._rtypeptr, this._argtypesptr);    
 };
 
-FFI.Internal.buildCIFArgValues = function(vals) {
-    var ptr = new FFI.Pointer(vals.length * FFI.Bindings.POINTER_SIZE);
-    var cptr = ptr.seek(0);
-    ptr._linkedPointers = [];
+FFI.CIF.prototype.getArgTypesPointer = function() { return this._argtypesptr; }
+FFI.CIF.prototype.getReturnTypePointer = function() { return this._rtypeptr; }
+FFI.CIF.prototype.getPointer = function() { return this._cifptr; }
+
+FFI.ForeignFunction = function(ptr, returnType, types) {
+    this._returnType = returnType;
+    this._types = types;
+    this._fptr = ptr;
     
-    for (var i = 0; i < vals.length; i++) {
-        cptr.putPointer(vals[i], true);
-        ptr._linkedPointers.push(vals[i]); // save from garbage collection
+    this._cif = new FFI.CIF(returnType, types);
+    this._initializeProxy();
+};
+
+FFI.ForeignFunction.prototype.allocParams = function(args) {
+    // TODO: unit test this
+    if (args.length > this._types.length) throw new Error("Function arguments exceeded specification.");
+    
+    // allocate area to store list of pointers to param values
+    var ptr = new FFI.Pointer(args.length * FFI.Bindings.POINTER_SIZE);
+    var cptr = ptr.seek(0);
+    
+    for (var i = 0; i < args.length; i++) {
+        var valptr = FFI.allocValue(this._types[i], args[i])
+        valptr.attach(ptr); // link allocated param values to this pointer (prevent GC)
+        cptr.putPointer(valptr, true);
     }
     
     return ptr;
 };
 
-FFI.Internal.bareMethodFactory = function(ptr, returnType, types) {
-    if (!FFI.Internal.isValidReturnType(returnType))
-        throw new Error("Invalid Return Type: " + returnType);
+FFI.ForeignFunction.prototype._initializeProxy = function() {
+    var self        = this;
     
-    var atypes  = FFI.Internal.buildCIFArgTypes(types);
-    var rtype   = FFI.Bindings.FFI_TYPES[returnType];
-    var cif     = FFI.Bindings.prepCif(types.length, rtype, atypes);
-    
-    var func = function(argPtrs) {
-        var res     = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[returnType]);
-        var args    = FFI.Internal.buildCIFArgValues(argPtrs);
+    this._proxy = function() {
+        var resptr  = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[self._returnType]);
+        var args    = self.allocParams(arguments);
         
-        FFI.Bindings.call(cif, ptr, args, res);
+        FFI.Bindings.call(self._cif.getPointer(), self._fptr, args, resptr);
         
-        return res;
+        return self._returnType == "void" ? null : FFI.derefValuePtr(self._returnType, resptr);
     };
-    
-    func._saveFromGC = [ atypes, cif ];
-    
-    return func;
 };
 
-FFI.Internal.buildValue = function(type, val) {
-    if (!FFI.Internal.isValidParamType(type)) throw new Error("Invalid Type: " + type);
+FFI.ForeignFunction.prototype.getFunction = function() {
+    return this._proxy;
+};
+
+FFI.ForeignFunction.build = function(ptr, returnType, types) {
+    var ff = new FFI.ForeignFunction(ptr, returnType, types);
+    return ff.getFunction();
+};
+
+FFI.allocValue = function(type, val) {
+    if (!isValidParamType(type)) throw new Error("Invalid Type: " + type);
     
     if (val == null)
         return FFI.NULL_POINTER_PARAM;
@@ -160,7 +192,7 @@ FFI.Internal.buildValue = function(type, val) {
     if (type == "string") {
         // we have to actually build an "in-between" pointer for strings
         var dptr = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["pointer"]);
-        dptr._linkedPointer = ptr; // save it from garbage collection
+        ptr.attach(dptr); // save it from garbage collection
         dptr.putPointer(ptr);
         return dptr;
     }
@@ -169,8 +201,8 @@ FFI.Internal.buildValue = function(type, val) {
     }
 };
 
-FFI.Internal.extractValue = function(type, ptr) {
-    if (!FFI.Internal.isValidParamType(type)) throw new Error("Invalid Type: " + type);
+FFI.derefValuePtr = function(type, ptr) {
+    if (!isValidParamType(type)) throw new Error("Invalid Type: " + type);
     
     var dptr = ptr;
     
@@ -182,25 +214,6 @@ FFI.Internal.extractValue = function(type, ptr) {
     }
     
     return dptr["get" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]]();
-};
-
-FFI.Internal.methodFactory = function(ptr, returnType, types) {
-    if (!FFI.Internal.isValidReturnType(returnType))
-        throw new Error("Invalid Return Type: " + returnType);
-        
-    var bareMethod = FFI.Internal.bareMethodFactory(ptr, returnType, types);
-    
-    return function() {
-        var args = [];
-        
-        for (var i = 0; i < types.length; i++) {
-            args[i] = FFI.Internal.buildValue(types[i], arguments[i]);
-        }
-        
-        var methodResult = bareMethod(args);
-        
-        return returnType == "void" ? null : FFI.Internal.extractValue(returnType, methodResult);
-    };
 };
 
 // From <dlfcn.h> on Darwin: #define RTLD_DEFAULT    ((void *) -2)
@@ -227,25 +240,25 @@ FFI.DynamicLibrary.FLAGS = {
     "RTLD_GLOBAL":  0x8
 };
 
-FFI.DynamicLibrary.prototype._dlopen = FFI.Internal.methodFactory(
+FFI.DynamicLibrary.prototype._dlopen = FFI.ForeignFunction.build(
     FFI.StaticFunctions.dlopen,
     "pointer",
     [ "string", "int32" ]
 );
 
-FFI.DynamicLibrary.prototype._dlclose = FFI.Internal.methodFactory(
+FFI.DynamicLibrary.prototype._dlclose = FFI.ForeignFunction.build(
     FFI.StaticFunctions.dlclose,
     "int32",
     [ "pointer" ]
 );
 
-FFI.DynamicLibrary.prototype._dlsym = FFI.Internal.methodFactory(
+FFI.DynamicLibrary.prototype._dlsym = FFI.ForeignFunction.build(
     FFI.StaticFunctions.dlsym,
     "pointer",
     [ "pointer", "string" ]
 );
 
-FFI.DynamicLibrary.prototype._dlerror = FFI.Internal.methodFactory (
+FFI.DynamicLibrary.prototype._dlerror = FFI.ForeignFunction.build(
     FFI.StaticFunctions.dlerror,
     "string",
     [ ]
@@ -281,7 +294,7 @@ FFI.Library = function(libfile, funcs, options) {
         var fptr = dl.get(k);
         if (fptr.isNull()) throw new Error("DynamicLibrary returned NULL function pointer.");
         var resultType = funcs[k][0], paramTypes = funcs[k][1];
-        this[k] = FFI.Internal.methodFactory(fptr, resultType, paramTypes);
+        this[k] = FFI.ForeignFunction.build(fptr, resultType, paramTypes);
     }
 };
 
@@ -289,20 +302,13 @@ FFI.Library = function(libfile, funcs, options) {
 
 FFI.Callback = function(typedata, func) {
     var retType = typedata[0], types = typedata[1];
-    var atypes = FFI.Internal.buildCIFArgTypes(types);
-    var cif = FFI.Bindings.prepCif(
-        types.length,
-        FFI.Bindings.FFI_TYPES[retType],
-        atypes
-    );
-    
-    this._saveFromGC = [ atypes, cif ];
-    this._info = new FFI.CallbackInfo(cif, function (retval, params) {
+    this._cif = new FFI.CIF(retType, types);
+    this._info = new FFI.CallbackInfo(this._cif.getPointer(), function (retval, params) {
         var pptr = params.seek(0);
         var args = [];
         
         for (var i = 0; i < types.length; i++) {
-            args.push(FFI.Internal.extractValue(types[i], pptr.getPointer(true)));
+            args.push(FFI.derefValuePtr(types[i], pptr.getPointer(true)));
         }
         
         var methodResult = func.apply(this, args);
@@ -319,3 +325,5 @@ FFI.Callback.prototype.getPointer = function() {
 
 // Export Everything
 for (var k in FFI) { exports[k] = FFI[k]; }
+
+}());

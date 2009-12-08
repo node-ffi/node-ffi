@@ -14,6 +14,9 @@ assertTrue(ptr.address > 0);
 var ptr2 = ptr.seek(32);
 assertEquals(ptr.address + 32, ptr2.address);
 
+ptr.attach(ptr2);
+assertEquals([ptr], ptr2.__attached);
+
 ptr.putByte(128);
 assertEquals(128, ptr.getByte());
 
@@ -216,70 +219,33 @@ assertInstanceof(FFI.Bindings.FFI_TYPES["int8"], FFI.Pointer);
 
 //////////////////////
 
-var cifatInitial = FFI.Internal.buildCIFArgTypes(["int8", "double"]);
-assertInstanceof(cifatInitial, FFI.Pointer);
+var tcif = new FFI.CIF("int32", ["int32"]);
+assertInstanceof(tcif.getArgTypesPointer(), FFI.Pointer);
+var cifat = tcif.getArgTypesPointer().seek(0);
+assertEquals(FFI.Bindings.FFI_TYPES["int32"].address, cifat.getPointer(true).address);
 
-var cifat = cifatInitial.seek(0);
-assertEquals(FFI.Bindings.FFI_TYPES["int8"].address,   cifat.getPointer(true).address);
-assertEquals(FFI.Bindings.FFI_TYPES["double"].address, cifat.getPointer(true).address);
+////////////////////////
 
-//////////////////////
-
-var cifArgTypeProto = [ "int32" ];
-var cifArgTypes = FFI.Internal.buildCIFArgTypes(cifArgTypeProto);
-
-assertInstanceof(cifArgTypes, FFI.Pointer);
-
-var cifPtr = FFI.Bindings.prepCif(
-    cifArgTypeProto.length,
-    FFI.Bindings.FFI_TYPES["int32"],
-    cifArgTypes
-);
-
-assertInstanceof(cifPtr, FFI.Pointer);
-
-var cifArgInteger = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["int32"]);
-cifArgInteger.putInt32(-1234);
-
-var cifArgValues = FFI.Internal.buildCIFArgValues([cifArgInteger]);
-assertInstanceof(cifArgValues, FFI.Pointer);
-
-var resPtr = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["int32"]);
-
-FFI.Bindings.call(
-    cifPtr,
-    FFI.StaticFunctions.abs,
-    cifArgValues,
-    resPtr
-);
-
-assertEquals(1234, resPtr.getInt32());
+var ff = new FFI.ForeignFunction(FFI.StaticFunctions.abs, "int32", [ "int32" ]);
+var absFunc = ff.getFunction();
+assertInstanceof(absFunc, Function);
+assertEquals(1234, absFunc(-1234));
 
 //////////////////////
-
-var bareAbs = FFI.Internal.bareMethodFactory(FFI.StaticFunctions.abs, "int32", [ "int32" ]);
-assertInstanceof(bareAbs, Function);
-
-var bareAbsTestArg = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["int32"]);
-bareAbsTestArg.putInt32(-1234);
-
-assertEquals(1234, bareAbs([bareAbsTestArg]).getInt32());
-
-//////////////////////
-
-var builtValuePtr = FFI.Internal.buildValue("int32", 1234);
+ 
+var builtValuePtr = FFI.allocValue("int32", 1234);
 assertEquals(1234, builtValuePtr.getInt32());
-assertEquals(1234, FFI.Internal.extractValue("int32", builtValuePtr));
+assertEquals(1234, FFI.derefValuePtr("int32", builtValuePtr));
 
-var builtStringPtr = FFI.Internal.buildValue("string", "Hello World!");
-assertEquals("Hello World!", FFI.Internal.extractValue("string", builtStringPtr));
+var builtStringPtr = FFI.allocValue("string", "Hello World!");
+assertEquals("Hello World!", FFI.derefValuePtr("string", builtStringPtr));
 
 //////////////////////
 
-var abs = FFI.Internal.methodFactory(FFI.StaticFunctions.abs, "int32", [ "int32" ]);
+var abs = FFI.ForeignFunction.build(FFI.StaticFunctions.abs, "int32", [ "int32" ]);
 assertEquals(1234, abs(-1234));
 
-var atoi = FFI.Internal.methodFactory(FFI.StaticFunctions.atoi, "int32", [ "string" ]);
+var atoi = FFI.ForeignFunction.build(FFI.StaticFunctions.atoi, "int32", [ "string" ]);
 assertEquals(1234, atoi("1234"));
 
 //////////////////////
@@ -291,11 +257,11 @@ var ceilPtr = libm.get("ceil");
 assertInstanceof(ceilPtr, FFI.Pointer);
 assertFalse(ceilPtr.isNull());
 
-var ceil = FFI.Internal.methodFactory(ceilPtr, "double", [ "double" ]);
+var ceil = FFI.ForeignFunction.build(ceilPtr, "double", [ "double" ]);
 assertInstanceof(ceil, Function);
-
+ 
 assertEquals(2, ceil(1.5));
-
+ 
 libm.close();
 
 ///////////////////////
@@ -303,7 +269,7 @@ libm.close();
 var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ] ] });
 assertInstanceof(libm, FFI.Library);
 assertInstanceof(libm.ceil, Function);
-assertEquals(2, ceil(1.5));
+assertEquals(2, libm.ceil(1.5));
 
 ///////////////////////
 
@@ -320,12 +286,14 @@ assertTrue(!fd.isNull());
 assertEquals(0, thisfuncs.fclose(fd));
 
 ///////////////////////
+
 var closureCalled = 0;
-var clz = new FFI.CallbackInfo(cifPtr, function(result, args) {
+var cifPtr = new FFI.CIF("int32", [ "int32" ]);
+var clz = new FFI.CallbackInfo(cifPtr.getPointer(), function(result, args) {
     closureCalled++;
 });
 
-var callMyTestClosure = FFI.Internal.methodFactory(clz.pointer, "int32", [ "int32" ]);
+var callMyTestClosure = FFI.ForeignFunction.build(clz.pointer, "int32", [ "int32" ]);
 callMyTestClosure(1);
 callMyTestClosure(1);
 assertEquals(2, closureCalled);
@@ -335,7 +303,8 @@ assertEquals(2, closureCalled);
 var callback = new FFI.Callback(["int32", ["int32"]], function(inValue) {
    return Math.abs(inValue);
 });
-var callMyTestCallback = FFI.Internal.methodFactory(callback.getPointer(), "int32", ["int32"]);
+
+var callMyTestCallback = FFI.ForeignFunction.build(callback.getPointer(), "int32", ["int32"]);
 
 // force a garbage collection for --gc_interval=10
 var gcTestObj = {};
