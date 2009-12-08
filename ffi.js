@@ -109,16 +109,18 @@ FFI.Internal.buildCIFArgTypes = function(types) {
             throw new Error("Invalid Type: " + types[i]);
         }
     }
-    
+        
     return ptr;
 };
 
 FFI.Internal.buildCIFArgValues = function(vals) {
     var ptr = new FFI.Pointer(vals.length * FFI.Bindings.POINTER_SIZE);
     var cptr = ptr.seek(0);
+    ptr._linkedPointers = [];
     
     for (var i = 0; i < vals.length; i++) {
         cptr.putPointer(vals[i], true);
+        ptr._linkedPointers.push(vals[i]); // save from garbage collection
     }
     
     return ptr;
@@ -132,14 +134,19 @@ FFI.Internal.bareMethodFactory = function(ptr, returnType, types) {
     var rtype   = FFI.Bindings.FFI_TYPES[returnType];
     var cif     = FFI.Bindings.prepCif(types.length, rtype, atypes);
     
-    return function(argPtrs) {
+    var func = function(argPtrs) {
         var res     = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[returnType]);
         var args    = FFI.Internal.buildCIFArgValues(argPtrs);
+        //var tmp     = atypes; // prevents garbage collection of atypes : TODO: find out a better way to do this
         
         FFI.Bindings.call(cif, ptr, args, res);
         
         return res;
     };
+    
+    func._saveFromGC = [ atypes, cif ];
+    
+    return func;
 };
 
 FFI.Internal.buildValue = function(type, val) {
@@ -154,6 +161,7 @@ FFI.Internal.buildValue = function(type, val) {
     if (type == "string") {
         // we have to actually build an "in-between" pointer for strings
         var dptr = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP["pointer"]);
+        dptr._linkedPointer = ptr; // save it from garbage collection
         dptr.putPointer(ptr);
         return dptr;
     }
@@ -282,15 +290,18 @@ FFI.Library = function(libfile, funcs, options) {
 
 FFI.Callback = function(typedata, func) {
     var retType = typedata[0], types = typedata[1];
+    var atypes = FFI.Internal.buildCIFArgTypes(types);
     var cif = FFI.Bindings.prepCif(
         types.length,
         FFI.Bindings.FFI_TYPES[retType],
-        FFI.Internal.buildCIFArgTypes(types)
+        atypes
     );
     
+    this._saveFromGC = [ atypes, cif ];
     this._info = new FFI.CallbackInfo(cif, function (retval, params) {
         var pptr = params.seek(0);
         var args = [];
+        //var tmp = atypes; // prevent garbage collection : TODO: make this more sane! 
         
         for (var i = 0; i < types.length; i++) {
             args.push(FFI.Internal.extractValue(types[i], pptr.getPointer(true)));
@@ -301,10 +312,11 @@ FFI.Callback = function(typedata, func) {
         if (retType != "void")
             retval["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[retType]](methodResult);      
     });
+    this._pointer = this._info.pointer;
 };
 
 FFI.Callback.prototype.getPointer = function() {
-    return this._info.pointer;
+    return this._pointer;
 };
 
 // Export Everything

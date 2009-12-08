@@ -60,7 +60,7 @@ class FFI : public ObjectWrap {
 
 class CallbackInfo : public ObjectWrap {
     public:
-        CallbackInfo(Handle<Function> func, Handle<Object> fptr);
+        CallbackInfo(Handle<Function> func, ffi_closure *closure);
         ~CallbackInfo();
         static void Initialize(Handle<Object> Target);
         Handle<Value> GetPointerObject();
@@ -76,6 +76,5 @@ class CallbackInfo : public ObjectWrap {
         
         ffi_closure             *m_closure;
         Persistent<Function>    m_function;
-        Handle<Object>          m_fptr;
         Handle<Object>          m_this;
 };

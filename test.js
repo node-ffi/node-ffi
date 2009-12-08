@@ -320,7 +320,6 @@ assertTrue(!fd.isNull());
 assertEquals(0, thisfuncs.fclose(fd));
 
 ///////////////////////
-
 var closureCalled = 0;
 var clz = new FFI.CallbackInfo(cifPtr, function(result, args) {
     closureCalled++;
@@ -334,9 +333,16 @@ assertEquals(2, closureCalled);
 ///////////////////////
 
 var callback = new FFI.Callback(["int32", ["int32"]], function(inValue) {
-   return Math.abs(inValue); 
+   return Math.abs(inValue);
 });
 var callMyTestCallback = FFI.Internal.methodFactory(callback.getPointer(), "int32", ["int32"]);
+
+// force a garbage collection for --gc_interval=10
+var gcTestObj = {};
+for (var i = 0; i < 25; i++) {
+    gcTestObj[i] = {i: gcTestObj, s: ""};
+}
+
 assertEquals(1234, callMyTestCallback(-1234));
 
 ///////////////////////

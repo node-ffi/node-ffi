@@ -24,7 +24,7 @@ Pointer::Pointer(unsigned char *ptr)
 Pointer::~Pointer()
 {
     if (this->m_allocated) {
-        // printf("Pointer destructor called on ALLOCATED area\n");
+        //printf("Pointer destructor called on ALLOCATED area\n");
         free(this->m_ptr);
     }
 }
@@ -93,7 +93,13 @@ void Pointer::Alloc(size_t bytes)
 {
     if (!this->m_allocated && bytes > 0) {
         this->m_ptr = (unsigned char *)malloc(bytes);
-        this->m_allocated = bytes;
+        
+        if (this->m_ptr != NULL) {
+            this->m_allocated = bytes;
+        }
+        else {
+            throw "malloc(): Could not allocate Memory";
+        }
     }
 }
 
@@ -574,11 +580,11 @@ Handle<Value> FFI::FFICall(const Arguments& args)
         Pointer *res    = ObjectWrap::Unwrap<Pointer>(args[3]->ToObject());
         
         // printf("FFI::FFICall: ffi_call(%p, %p, %p, %p)\n",
-        //          (ffi_cif *)cif->GetPointer(),
-        //          (void (*)(void))fn->GetPointer(),
-        //          (void *)res->GetPointer(),
-        //          (void **)fnargs->GetPointer());
-        
+        //           (ffi_cif *)cif->GetPointer(),
+        //           (void (*)(void))fn->GetPointer(),
+        //           (void *)res->GetPointer(),
+        //           (void **)fnargs->GetPointer());
+        // 
         ffi_call(
             (ffi_cif *)cif->GetPointer(),
             (void (*)(void))fn->GetPointer(),
@@ -626,15 +632,15 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args)
 
 Persistent<FunctionTemplate> CallbackInfo::callback_template;
 
-CallbackInfo::CallbackInfo(Handle<Function> func, Handle<Object> fptr)
+CallbackInfo::CallbackInfo(Handle<Function> func, ffi_closure *closure)
 {
     m_function = Persistent<Function>::New(func);
-    m_fptr = fptr;
+    m_closure = closure;
 }
 
 CallbackInfo::~CallbackInfo()
 {
-    munmap(ObjectWrap::Unwrap<Pointer>(m_fptr)->GetPointer(), sizeof(ffi_closure));
+    munmap(m_closure, sizeof(ffi_closure));
     m_function.Dispose();
 }
 
@@ -669,7 +675,7 @@ Handle<Value> CallbackInfo::New(const Arguments& args)
         
         CallbackInfo *self = new CallbackInfo(
             callback,
-            Pointer::WrapPointer((unsigned char *)closure)
+            closure
         );
         
         // TODO: Check for failure here
@@ -713,16 +719,11 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
     self->m_function->Call(self->m_this, 2, argv);
 }
 
-Handle<Value> CallbackInfo::GetPointerObject()
-{
-    return m_fptr;
-}
-
 Handle<Value> CallbackInfo::GetPointer(Local<String> name, const AccessorInfo& info)
 {
     HandleScope     scope;
     CallbackInfo    *self = ObjectWrap::Unwrap<CallbackInfo>(info.Holder());
-    return scope.Close(self->GetPointerObject());
+    return scope.Close(Pointer::WrapPointer((unsigned char *)self->m_closure));
 }
 
 ///////////////
