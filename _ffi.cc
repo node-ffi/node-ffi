@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <node.h>
-#include <node_object_wrap.h>
 #include <string.h>
 #include <dlfcn.h>
 #include <sys/mman.h>
@@ -13,6 +11,8 @@
 #endif
 #include <node/eio.h>
 #include <node/node_events.h>
+#include <node_object_wrap.h>
+#include <node.h>
 #include <pthread.h>
 #include <queue>
 #include "_node-ffi.h"
@@ -535,7 +535,6 @@ void FFI::InitializeBindings(Handle<Object> target)
     
     o->Set(String::New("call"),             FunctionTemplate::New(FFICall)->GetFunction());
     o->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
-    // o->Set(String::New("createClosure"),    FunctionTemplate::New(FFICreateClosure)->GetFunction());
    
     o->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
     o->Set(String::New("SIZE_SIZE"),        Integer::New(sizeof(size_t)));
@@ -584,9 +583,20 @@ int FFI::FinishAsyncFFICall(eio_req *req)
 {
     AsyncCallParams *p = (AsyncCallParams *)req->data;
     Local<Value> argv[0];
-    p->promise->EmitSuccess(0, argv);
+    
+    // call the promise's emitSuccess method
+    Local<Function> emitSuccess = Local<Function>::Cast(p->promise->Get(String::NewSymbol("emitSuccess")));
+    emitSuccess->Call(p->promise, 0, argv);
+    
+    // unref the event loop (ref'd in FFICall)
     ev_unref(EV_DEFAULT_UC);
+    
+    // dispose of our persistent handle to the Promise object
+    p->promise.Dispose();
+    
+    // free up our memory (allocated in FFICall)
     delete p;
+    
     return 0;
 }
 
@@ -619,13 +629,18 @@ Handle<Value> FFI::FFICall(const Arguments& args)
             p->res = (void *)res->GetPointer();
             p->args = (void **)fnargs->GetPointer();
             
-            Local<Object> phandle = Promise::constructor_template->GetFunction()->NewInstance();
-            p->promise = ObjectWrap::Unwrap<Promise>(phandle);
+            // get the process.Promise constructor
+            Local<Object> global = Context::GetCurrent()->Global();
+            Local<Object> process = global->Get(String::NewSymbol("process"))->ToObject();
+            Local<Function> promiseConstructor = Local<Function>::Cast(process->Get(String::NewSymbol("Promise")));
+            
+            // construct a new process.Promise object
+            p->promise = Persistent<Object>::New(promiseConstructor->NewInstance());
             
             ev_ref(EV_DEFAULT_UC);
             eio_custom(FFI::AsyncFFICall, EIO_PRI_DEFAULT, FFI::FinishAsyncFFICall, p);
             
-            return scope.Close(phandle);
+            return scope.Close(p->promise);
         }
         else {
             ffi_call(
