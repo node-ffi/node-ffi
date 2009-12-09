@@ -585,6 +585,7 @@ int FFI::FinishAsyncFFICall(eio_req *req)
     AsyncCallParams *p = (AsyncCallParams *)req->data;
     Local<Value> argv[0];
     p->promise->EmitSuccess(0, argv);
+    ev_unref(EV_DEFAULT_UC);
     delete p;
     return 0;
 }
@@ -621,6 +622,7 @@ Handle<Value> FFI::FFICall(const Arguments& args)
             Local<Object> phandle = Promise::constructor_template->GetFunction()->NewInstance();
             p->promise = ObjectWrap::Unwrap<Promise>(phandle);
             
+            ev_ref(EV_DEFAULT_UC);
             eio_custom(FFI::AsyncFFICall, EIO_PRI_DEFAULT, FFI::FinishAsyncFFICall, p);
             
             return scope.Close(phandle);
@@ -759,7 +761,7 @@ void CallbackInfo::Initialize(Handle<Object> target)
     
     target->Set(String::NewSymbol("CallbackInfo"), t->GetFunction());
     
-    // record the main thread for later use
+    // initialize our threaded invokation stuff
     g_mainthread = pthread_self();
     ev_async_init(EV_DEFAULT_UC_ &g_async, CallbackInfo::WatcherCallback);
     pthread_mutex_init(&g_queue_mutex, NULL);

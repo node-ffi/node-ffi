@@ -44,7 +44,7 @@ var callback = new FFI.Callback(["int32", ["pointer", "int32", "pointer", "point
     rowCount++;
     
     return 0;
-}, {"async": true});
+});
 
 var fin = false;
 
