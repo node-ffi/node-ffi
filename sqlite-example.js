@@ -1,11 +1,15 @@
-var FFI = require("ffi");
+var FFI = require("./ffi");
 var sys = require("sys");
 
 var SQLite3 = new FFI.Library("libsqlite3", {
     "sqlite3_open": [ "int32", [ "string", "pointer" ] ],
     "sqlite3_close": [ "int32", [ "pointer" ] ],
+    "sqlite3_changes": [ "int32", [ "pointer" ]],
     "sqlite3_exec": [ "int32", [ "pointer", "string", "pointer", "pointer", "pointer" ] ],
-    "sqlite3_changes": [ "int32", [ "pointer" ]]
+});
+
+var SQLite3Async = new FFI.Library("libsqlite3", {
+    "sqlite3_exec": [ "int32", [ "pointer", "string", "pointer", "pointer", "pointer" ], {"async": true} ]
 });
 
 // create a storage area for the db pointer SQLite3 gives us
@@ -40,14 +44,16 @@ var callback = new FFI.Callback(["int32", ["pointer", "int32", "pointer", "point
     rowCount++;
     
     return 0;
+}, {"async": true});
+
+var fin = false;
+
+SQLite3Async.sqlite3_exec(dbh, "SELECT * FROM foo;", callback.getPointer(), null, null).addCallback(function(ret) {
+    sys.puts("Total Rows: " + rowCount);
+    sys.puts("Changes: " + SQLite3.sqlite3_changes(dbh));
+    sys.puts("Closing...");
+    fin = true;
+    SQLite3.sqlite3_close(dbh);
 });
 
-SQLite3.sqlite3_exec(dbh, "SELECT * FROM foo;", callback.getPointer(), null, null);
-
-sys.puts("Total Rows: " + rowCount);
-
-sys.puts("Changes: " + SQLite3.sqlite3_changes(dbh));
-
-sys.puts("Closing...");
-
-SQLite3.sqlite3_close(dbh);
+setTimeout(2000, function() { });

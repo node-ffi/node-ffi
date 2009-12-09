@@ -132,10 +132,11 @@ FFI.CIF.prototype.getArgTypesPointer = function() { return this._argtypesptr; }
 FFI.CIF.prototype.getReturnTypePointer = function() { return this._rtypeptr; }
 FFI.CIF.prototype.getPointer = function() { return this._cifptr; }
 
-FFI.ForeignFunction = function(ptr, returnType, types) {
+FFI.ForeignFunction = function(ptr, returnType, types, async) {
     this._returnType = returnType;
     this._types = types;
     this._fptr = ptr;
+    this._async = async;
     
     this._cif = new FFI.CIF(returnType, types);
     this._initializeProxy();
@@ -164,8 +165,19 @@ FFI.ForeignFunction.prototype._initializeProxy = function() {
     this._proxy = function() {
         var resptr  = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[self._returnType]);
         var args    = self.allocParams(arguments);
+        var async   = self._async;
         
-        FFI.Bindings.call(self._cif.getPointer(), self._fptr, args, resptr);
+        var r = FFI.Bindings.call(self._cif.getPointer(), self._fptr, args, resptr, async);
+        
+        if (async) {
+            var promise = new process.Promise();
+            
+            r.addCallback(function() {
+                promise.emitSuccess(FFI.derefValuePtr(self._returnType, resptr));
+            });
+            
+            return promise;
+        }
         
         return self._returnType == "void" ? null : FFI.derefValuePtr(self._returnType, resptr);
     };
@@ -175,8 +187,8 @@ FFI.ForeignFunction.prototype.getFunction = function() {
     return this._proxy;
 };
 
-FFI.ForeignFunction.build = function(ptr, returnType, types) {
-    var ff = new FFI.ForeignFunction(ptr, returnType, types);
+FFI.ForeignFunction.build = function(ptr, returnType, types, async) {
+    var ff = new FFI.ForeignFunction(ptr, returnType, types, async);
     return ff.getFunction();
 };
 
@@ -293,15 +305,16 @@ FFI.Library = function(libfile, funcs, options) {
     for (var k in funcs) {
         var fptr = dl.get(k);
         if (fptr.isNull()) throw new Error("DynamicLibrary returned NULL function pointer.");
-        var resultType = funcs[k][0], paramTypes = funcs[k][1];
-        this[k] = FFI.ForeignFunction.build(fptr, resultType, paramTypes);
+        var resultType = funcs[k][0], paramTypes = funcs[k][1], fopts = funcs[k][2];
+        this[k] = FFI.ForeignFunction.build(fptr, resultType, paramTypes, fopts ? fopts.async : undefined);
     }
 };
 
 /////////////////////
 
-FFI.Callback = function(typedata, func) {
+FFI.Callback = function(typedata, func, options) {
     var retType = typedata[0], types = typedata[1];
+    this._options = options;
     this._cif = new FFI.CIF(retType, types);
     this._info = new FFI.CallbackInfo(this._cif.getPointer(), function (retval, params) {
         var pptr = params.seek(0);
@@ -315,7 +328,7 @@ FFI.Callback = function(typedata, func) {
         
         if (retType != "void")
             retval["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[retType]](methodResult);      
-    });
+    }, (options && options.async));
     this._pointer = this._info.pointer;
 };
 

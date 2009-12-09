@@ -11,6 +11,10 @@
 #else
 #include <ffi.h>
 #endif
+#include <node/eio.h>
+#include <node/node_events.h>
+#include <pthread.h>
+#include <queue>
 #include "_node-ffi.h"
 
 #define SZ_BYTE     255
@@ -569,15 +573,35 @@ void FFI::InitializeBindings(Handle<Object> target)
     target->Set(String::NewSymbol("Bindings"), o);
 }
 
+int FFI::AsyncFFICall(eio_req *req)
+{
+    AsyncCallParams *p = (AsyncCallParams *)req->data;
+    ffi_call(p->cif, p->ptr, p->res, p->args);
+    return 0;
+}
+
+int FFI::FinishAsyncFFICall(eio_req *req)
+{
+    AsyncCallParams *p = (AsyncCallParams *)req->data;
+    Local<Value> argv[0];
+    p->promise->EmitSuccess(0, argv);
+    delete p;
+    return 0;
+}
+
 Handle<Value> FFI::FFICall(const Arguments& args)
 {
     HandleScope scope;
     
-    if (args.Length() == 4) {
+    if (args.Length() >= 4) {
         Pointer *cif    = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
         Pointer *fn     = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
         Pointer *fnargs = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
         Pointer *res    = ObjectWrap::Unwrap<Pointer>(args[3]->ToObject());
+        bool async      = false;
+        
+        if (args.Length() == 5 && args[4]->IsBoolean() && args[4]->BooleanValue())
+            async = true;
         
         // printf("FFI::FFICall: ffi_call(%p, %p, %p, %p)\n",
         //           (ffi_cif *)cif->GetPointer(),
@@ -585,12 +609,30 @@ Handle<Value> FFI::FFICall(const Arguments& args)
         //           (void *)res->GetPointer(),
         //           (void **)fnargs->GetPointer());
         // 
-        ffi_call(
-            (ffi_cif *)cif->GetPointer(),
-            (void (*)(void))fn->GetPointer(),
-            (void *)res->GetPointer(),
-            (void **)fnargs->GetPointer()
-        );
+        if (async) {
+            AsyncCallParams *p = new AsyncCallParams();
+            
+            // cuter way of doing this?
+            p->cif = (ffi_cif *)cif->GetPointer();
+            p->ptr = (void (*)(void))fn->GetPointer();
+            p->res = (void *)res->GetPointer();
+            p->args = (void **)fnargs->GetPointer();
+            
+            Local<Object> phandle = Promise::constructor_template->GetFunction()->NewInstance();
+            p->promise = ObjectWrap::Unwrap<Promise>(phandle);
+            
+            eio_custom(FFI::AsyncFFICall, EIO_PRI_DEFAULT, FFI::FinishAsyncFFICall, p);
+            
+            return scope.Close(phandle);
+        }
+        else {
+            ffi_call(
+                (ffi_cif *)cif->GetPointer(),
+                (void (*)(void))fn->GetPointer(),
+                (void *)res->GetPointer(),
+                (void **)fnargs->GetPointer()
+            );
+        }
     }
     else {
         return ThrowException(String::New("Not Enough Parameters"));
@@ -632,16 +674,68 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args)
 
 Persistent<FunctionTemplate> CallbackInfo::callback_template;
 
-CallbackInfo::CallbackInfo(Handle<Function> func, void *closure)
+CallbackInfo::CallbackInfo(Handle<Function> func, void *closure, bool async)
 {
     m_function = Persistent<Function>::New(func);
     m_closure = closure;
+    m_threaded = false;
+    
+    if (async) {
+        m_threaded = true;
+        ev_async_init(EV_DEFAULT_UC_ &m_async, CallbackInfo::WatcherCallback);
+        m_async.data = this;
+        pthread_mutex_init(&m_lock, NULL);
+        pthread_mutex_init(&m_condlock, NULL);
+        pthread_cond_init(&m_cond, NULL);
+        
+        ev_async_start(EV_DEFAULT_UC_ &m_async);
+        ev_unref(EV_DEFAULT_UC); // allow the event loop to exit while this is running
+    }
 }
 
 CallbackInfo::~CallbackInfo()
 {
     munmap(m_closure, sizeof(ffi_closure));
     m_function.Dispose();
+    
+    if (m_threaded) {
+        // what about the m_queue?
+        ev_async_stop(EV_DEFAULT_UC_ &m_async);
+        pthread_mutex_destroy(&m_lock);
+        pthread_mutex_destroy(&m_condlock);
+        pthread_cond_destroy(&m_cond);
+    }
+}
+
+void CallbackInfo::DispatchToV8(CallbackInfo *self, void *retval, void **parameters)
+{
+    Handle<Value> argv[2];
+    argv[0] = Pointer::WrapPointer((unsigned char *)retval);
+    argv[1] = Pointer::WrapPointer((unsigned char *)parameters);
+    self->m_function->Call(self->m_this, 2, argv);
+}
+
+void CallbackInfo::WatcherCallback(EV_P_ ev_async *w, int revents)
+{
+    CallbackInfo *self  = (CallbackInfo *)w->data;
+    void **ptr;
+    
+    pthread_mutex_lock(&self->m_lock);
+    
+    while (!self->m_queue.empty()) {
+        ptr = self->m_queue.front();
+        self->m_queue.pop();
+        
+        // dispatch to V8, then signal the caller when we get data back
+        pthread_mutex_lock(&self->m_condlock);
+        DispatchToV8(self, ptr[0], (void **)ptr[1]);
+        pthread_cond_signal(&self->m_cond);
+        pthread_mutex_unlock(&self->m_condlock);
+        
+        delete ptr;
+    }
+    
+    pthread_mutex_unlock(&self->m_lock);
 }
 
 void CallbackInfo::Initialize(Handle<Object> target)
@@ -662,9 +756,9 @@ void CallbackInfo::Initialize(Handle<Object> target)
 Handle<Value> CallbackInfo::New(const Arguments& args)
 {
     // cif, function / TODO: Check args
-    if (args.Length() == 2) {
+    if (args.Length() >= 2) {
         Pointer         *cif        = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
-        Local<Function> callback    = Local<Function>::Cast(args[1]);;
+        Local<Function> callback    = Local<Function>::Cast(args[1]);
         ffi_closure     *closure;
         
         if ((closure = (ffi_closure *)mmap(NULL, sizeof(ffi_closure), PROT_READ | PROT_WRITE | PROT_EXEC,
@@ -675,7 +769,8 @@ Handle<Value> CallbackInfo::New(const Arguments& args)
         
         CallbackInfo *self = new CallbackInfo(
             callback,
-            closure
+            closure,
+            (args.Length() == 3 && args[2]->IsBoolean() && args[2]->BooleanValue())
         );
         
         // TODO: Check for failure here
@@ -711,12 +806,29 @@ Handle<FunctionTemplate> CallbackInfo::MakeTemplate()
 void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data)
 {
     CallbackInfo    *self = (CallbackInfo *)user_data;
-    Handle<Value>   argv[2];
     
-    argv[0] = Pointer::WrapPointer((unsigned char *)retval);
-    argv[1] = Pointer::WrapPointer((unsigned char *)parameters);
-    
-    self->m_function->Call(self->m_this, 2, argv);
+    if (self->m_threaded) {
+        // create a temporary storage area for our invokation parameters
+        void **vals = new void *[2];
+        vals[0] = retval;
+        vals[1] = (void *)parameters;
+ 
+        // push it to the queue -- threadsafe
+        pthread_mutex_lock(&self->m_lock);   
+        self->m_queue.push(vals);
+        pthread_mutex_unlock(&self->m_lock);
+ 
+        // wait for signal from calling thread
+        pthread_mutex_lock(&self->m_condlock);
+        
+        // send a message to our main thread to wake up the WatchCallback loop
+        ev_async_send(EV_DEFAULT_UC_ &self->m_async);
+        pthread_cond_wait(&self->m_cond, &self->m_condlock);
+        pthread_mutex_unlock(&self->m_condlock);
+    }
+    else {
+        DispatchToV8(self, retval, parameters);
+    }
 }
 
 Handle<Value> CallbackInfo::GetPointer(Local<String> name, const AccessorInfo& info)

@@ -48,24 +48,37 @@ class Pointer : public ObjectWrap {
         unsigned int m_allocated;
 };
 
+class AsyncCallParams {
+public:
+    ffi_cif *cif;
+    void (*ptr)(void);
+    void *res;
+    void **args;
+    Promise *promise;
+};
+
 class FFI : public ObjectWrap {
     public:
         static void InitializeStaticFunctions(Handle<Object> Target);
         static void InitializeBindings(Handle<Object> Target);
     
     protected:
+        static int AsyncFFICall(eio_req *req);
+        static int FinishAsyncFFICall(eio_req *req);
         static Handle<Value> FFIPrepCif(const Arguments& args);
         static Handle<Value> FFICall(const Arguments& args);
 };
 
 class CallbackInfo : public ObjectWrap {
     public:
-        CallbackInfo(Handle<Function> func, void *closure);
+        CallbackInfo(Handle<Function> func, void *closure, bool async);
         ~CallbackInfo();
         static void Initialize(Handle<Object> Target);
         Handle<Value> GetPointerObject();
+        static void WatcherCallback(EV_P_ ev_async *w, int revents);
         
     protected:
+        static void DispatchToV8(CallbackInfo *self, void *retval, void **parameters);
         static Handle<Value> New(const Arguments& args);
         static Handle<Value> GetPointer(Local<String> name, const AccessorInfo& info);
         static void Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data);
@@ -77,4 +90,10 @@ class CallbackInfo : public ObjectWrap {
         void                    *m_closure;
         Persistent<Function>    m_function;
         Handle<Object>          m_this;
+        ev_async                m_async;
+        std::queue<void **>     m_queue;
+        pthread_mutex_t         m_lock;
+        pthread_cond_t          m_cond;
+        pthread_mutex_t         m_condlock;
+        bool                    m_threaded;
 };
