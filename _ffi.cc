@@ -616,8 +616,6 @@ int FFI::FinishAsyncFFICall(eio_req *req)
 
 Handle<Value> FFI::FFICall(const Arguments& args)
 {
-    HandleScope scope;
-    
     if (args.Length() >= 4) {
         Pointer *cif    = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
         Pointer *fn     = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
@@ -635,6 +633,7 @@ Handle<Value> FFI::FFICall(const Arguments& args)
         //           (void **)fnargs->GetPointer());
         // 
         if (async) {
+            HandleScope scope;
             AsyncCallParams *p = new AsyncCallParams();
             
             // cuter way of doing this?
