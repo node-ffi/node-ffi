@@ -197,7 +197,7 @@ FFI.allocValue = function(type, val) {
     
     if (val == null)
         return FFI.NULL_POINTER_PARAM;
-    
+        
     var ptr = new FFI.Pointer(type == "string" ? val.length + 1 : FFI.Bindings.TYPE_SIZE_MAP[type]);
     ptr["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]](val);
     
@@ -221,7 +221,7 @@ FFI.derefValuePtr = function(type, ptr) {
     if (type == "string") {
         dptr = ptr.getPointer();
         if (dptr.isNull()) {
-            throw new Error("Attempted to dereference null string/pointer");
+            return null;
         }
     }
     
