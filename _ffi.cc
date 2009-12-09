@@ -41,8 +41,9 @@ Handle<FunctionTemplate> Pointer::MakeTemplate()
     Handle<FunctionTemplate> t = FunctionTemplate::New(New);
 
     Local<ObjectTemplate> inst = t->InstanceTemplate();
-    inst->SetInternalFieldCount(1);
+    inst->SetInternalFieldCount(2);
     inst->SetAccessor(String::NewSymbol("address"), GetAddress);
+    inst->SetAccessor(String::NewSymbol("allocated"), GetAllocated);
     
     return scope.Close(t);
 }
@@ -143,10 +144,23 @@ Handle<Value> Pointer::GetAddress(Local<String> name, const AccessorInfo& info)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(info.Holder());
     Handle<Value>   ret;
     
+    // TODO: make this access the private var directly
     ret = Number::New((size_t)self->GetPointer());
     
     return scope.Close(ret);
 }
+
+Handle<Value> Pointer::GetAllocated(Local<String> name, const AccessorInfo& info)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(info.Holder());
+    Handle<Value>   ret;
+    
+    ret = Integer::New(self->m_allocated);
+    
+    return scope.Close(ret);
+}
+
 
 Handle<Value> Pointer::Seek(const Arguments& args)
 {

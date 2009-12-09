@@ -51,6 +51,7 @@ nptr.putDouble(1234.5678);
 ptr.putPointer(nptr);
 assertEquals(nptr.address, ptr.getPointer().address);
 assertEquals(1234.5678, ptr.getPointer().getDouble());
+assertEquals(32, nptr.allocated);
 
 ptr.putCString("Hello World!");
 assertEquals("Hello World!", ptr.getCString());
