@@ -312,9 +312,8 @@ FFI.Library = function(libfile, funcs, options) {
 
 /////////////////////
 
-FFI.Callback = function(typedata, func, options) {
+FFI.Callback = function(typedata, func) {
     var retType = typedata[0], types = typedata[1];
-    this._options = options;
     this._cif = new FFI.CIF(retType, types);
     this._info = new FFI.CallbackInfo(this._cif.getPointer(), function (retval, params) {
         var pptr = params.seek(0);
@@ -328,7 +327,7 @@ FFI.Callback = function(typedata, func, options) {
         
         if (retType != "void")
             retval["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[retType]](methodResult);      
-    }, (options && options.async));
+    });
     this._pointer = this._info.pointer;
 };
 

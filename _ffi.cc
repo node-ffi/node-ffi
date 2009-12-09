@@ -672,39 +672,54 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args)
     }
 }
 
-Persistent<FunctionTemplate> CallbackInfo::callback_template;
+ThreadedCallbackInvokation::ThreadedCallbackInvokation(CallbackInfo *cbinfo, void *retval, void **parameters)
+{
+    m_cbinfo = cbinfo;
+    m_retval = retval;
+    m_parameters = parameters;
+    
+    pthread_mutex_init(&m_mutex, NULL);
+    pthread_cond_init(&m_cond, NULL);
+    ev_ref(EV_DEFAULT_UC_); // hold the event loop open while this is executing
+}
 
-CallbackInfo::CallbackInfo(Handle<Function> func, void *closure, bool async)
+ThreadedCallbackInvokation::~ThreadedCallbackInvokation()
+{
+    ev_unref(EV_DEFAULT_UC_);
+    pthread_cond_destroy(&m_cond);
+    pthread_mutex_destroy(&m_mutex);
+}
+
+void ThreadedCallbackInvokation::SignalDoneExecuting()
+{
+    pthread_mutex_lock(&m_mutex);
+    pthread_cond_signal(&m_cond);
+    pthread_mutex_unlock(&m_mutex);
+}
+
+void ThreadedCallbackInvokation::WaitForExecution()
+{
+    pthread_mutex_lock(&m_mutex);
+    pthread_cond_wait(&m_cond, &m_mutex);
+    pthread_mutex_unlock(&m_mutex);
+}
+
+Persistent<FunctionTemplate> CallbackInfo::callback_template;
+pthread_t CallbackInfo::g_mainthread;
+pthread_mutex_t CallbackInfo::g_queue_mutex;
+std::queue<ThreadedCallbackInvokation *> CallbackInfo::g_queue;
+ev_async CallbackInfo::g_async;
+
+CallbackInfo::CallbackInfo(Handle<Function> func, void *closure)
 {
     m_function = Persistent<Function>::New(func);
     m_closure = closure;
-    m_threaded = false;
-    
-    if (async) {
-        m_threaded = true;
-        ev_async_init(EV_DEFAULT_UC_ &m_async, CallbackInfo::WatcherCallback);
-        m_async.data = this;
-        pthread_mutex_init(&m_lock, NULL);
-        pthread_mutex_init(&m_condlock, NULL);
-        pthread_cond_init(&m_cond, NULL);
-        
-        ev_async_start(EV_DEFAULT_UC_ &m_async);
-        ev_unref(EV_DEFAULT_UC); // allow the event loop to exit while this is running
-    }
 }
 
 CallbackInfo::~CallbackInfo()
 {
     munmap(m_closure, sizeof(ffi_closure));
-    m_function.Dispose();
-    
-    if (m_threaded) {
-        // what about the m_queue?
-        ev_async_stop(EV_DEFAULT_UC_ &m_async);
-        pthread_mutex_destroy(&m_lock);
-        pthread_mutex_destroy(&m_condlock);
-        pthread_cond_destroy(&m_cond);
-    }
+    m_function.Dispose();    
 }
 
 void CallbackInfo::DispatchToV8(CallbackInfo *self, void *retval, void **parameters)
@@ -716,26 +731,18 @@ void CallbackInfo::DispatchToV8(CallbackInfo *self, void *retval, void **paramet
 }
 
 void CallbackInfo::WatcherCallback(EV_P_ ev_async *w, int revents)
-{
-    CallbackInfo *self  = (CallbackInfo *)w->data;
-    void **ptr;
+{    
+    pthread_mutex_lock(&g_queue_mutex);
     
-    pthread_mutex_lock(&self->m_lock);
-    
-    while (!self->m_queue.empty()) {
-        ptr = self->m_queue.front();
-        self->m_queue.pop();
+    while (!g_queue.empty()) {
+        ThreadedCallbackInvokation *inv = g_queue.front();
+        g_queue.pop();
         
-        // dispatch to V8, then signal the caller when we get data back
-        pthread_mutex_lock(&self->m_condlock);
-        DispatchToV8(self, ptr[0], (void **)ptr[1]);
-        pthread_cond_signal(&self->m_cond);
-        pthread_mutex_unlock(&self->m_condlock);
-        
-        delete ptr;
+        DispatchToV8(inv->m_cbinfo, inv->m_retval, inv->m_parameters);
+        inv->SignalDoneExecuting();
     }
     
-    pthread_mutex_unlock(&self->m_lock);
+    pthread_mutex_unlock(&g_queue_mutex);
 }
 
 void CallbackInfo::Initialize(Handle<Object> target)
@@ -751,6 +758,13 @@ void CallbackInfo::Initialize(Handle<Object> target)
     //NODE_SET_PROTOTYPE_METHOD(t, "methud", Seek);
     
     target->Set(String::NewSymbol("CallbackInfo"), t->GetFunction());
+    
+    // record the main thread for later use
+    g_mainthread = pthread_self();
+    ev_async_init(EV_DEFAULT_UC_ &g_async, CallbackInfo::WatcherCallback);
+    pthread_mutex_init(&g_queue_mutex, NULL);
+    ev_async_start(EV_DEFAULT_UC_ &g_async);
+    ev_unref(EV_DEFAULT_UC); // allow the event loop to exit while this is running
 }
 
 Handle<Value> CallbackInfo::New(const Arguments& args)
@@ -769,8 +783,7 @@ Handle<Value> CallbackInfo::New(const Arguments& args)
         
         CallbackInfo *self = new CallbackInfo(
             callback,
-            closure,
-            (args.Length() == 3 && args[2]->IsBoolean() && args[2]->BooleanValue())
+            closure
         );
         
         // TODO: Check for failure here
@@ -807,24 +820,23 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
 {
     CallbackInfo    *self = (CallbackInfo *)user_data;
     
-    if (self->m_threaded) {
+    // are we executing from another thread?
+    if (!pthread_equal(pthread_self(), g_mainthread)) {
         // create a temporary storage area for our invokation parameters
-        void **vals = new void *[2];
-        vals[0] = retval;
-        vals[1] = (void *)parameters;
- 
-        // push it to the queue -- threadsafe
-        pthread_mutex_lock(&self->m_lock);   
-        self->m_queue.push(vals);
-        pthread_mutex_unlock(&self->m_lock);
- 
-        // wait for signal from calling thread
-        pthread_mutex_lock(&self->m_condlock);
+        ThreadedCallbackInvokation *inv = new ThreadedCallbackInvokation(self, retval, parameters);
         
+        // push it to the queue -- threadsafe
+        pthread_mutex_lock(&g_queue_mutex);   
+        g_queue.push(inv);
+        pthread_mutex_unlock(&g_queue_mutex);
+ 
         // send a message to our main thread to wake up the WatchCallback loop
-        ev_async_send(EV_DEFAULT_UC_ &self->m_async);
-        pthread_cond_wait(&self->m_cond, &self->m_condlock);
-        pthread_mutex_unlock(&self->m_condlock);
+        ev_async_send(EV_DEFAULT_UC_ &g_async);
+        
+        // wait for signal from calling thread
+        inv->WaitForExecution();
+        
+        delete inv;
     }
     else {
         DispatchToV8(self, retval, parameters);

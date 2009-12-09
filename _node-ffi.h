@@ -69,9 +69,11 @@ class FFI : public ObjectWrap {
         static Handle<Value> FFICall(const Arguments& args);
 };
 
+class ThreadedCallbackInvokation;
+
 class CallbackInfo : public ObjectWrap {
     public:
-        CallbackInfo(Handle<Function> func, void *closure, bool async);
+        CallbackInfo(Handle<Function> func, void *closure);
         ~CallbackInfo();
         static void Initialize(Handle<Object> Target);
         Handle<Value> GetPointerObject();
@@ -82,18 +84,34 @@ class CallbackInfo : public ObjectWrap {
         static Handle<Value> New(const Arguments& args);
         static Handle<Value> GetPointer(Local<String> name, const AccessorInfo& info);
         static void Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data);
-        
+
     private:
         static Persistent<FunctionTemplate> callback_template;
         static Handle<FunctionTemplate> MakeTemplate();
+
+        static pthread_t        g_mainthread;
+        static pthread_mutex_t  g_queue_mutex;
+        static std::queue<ThreadedCallbackInvokation *> g_queue;
+        static ev_async         g_async;
         
         void                    *m_closure;
         Persistent<Function>    m_function;
         Handle<Object>          m_this;
-        ev_async                m_async;
-        std::queue<void **>     m_queue;
-        pthread_mutex_t         m_lock;
-        pthread_cond_t          m_cond;
-        pthread_mutex_t         m_condlock;
-        bool                    m_threaded;
+};
+
+class ThreadedCallbackInvokation {
+    public:
+        ThreadedCallbackInvokation(CallbackInfo *cbinfo, void *retval, void **parameters);
+        ~ThreadedCallbackInvokation();
+        
+        void SignalDoneExecuting();
+        void WaitForExecution();
+
+        void *m_retval;
+        void **m_parameters;
+        CallbackInfo *m_cbinfo;
+        
+    private:
+        pthread_cond_t m_cond;
+        pthread_mutex_t m_mutex;
 };

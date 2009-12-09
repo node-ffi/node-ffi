@@ -305,7 +305,7 @@ var cifPtr = new FFI.CIF("int32", [ "int32" ]);
 var clz = new FFI.CallbackInfo(cifPtr.getPointer(), function(result, args) {
     asyncClosureCalled++;
     result.putInt32(1234);
-}, true);
+});
 
 var callMyTestClosure = FFI.ForeignFunction.build(clz.pointer, "int32", [ "int32" ], true);
 callMyTestClosure(1).addCallback(function(res) {
