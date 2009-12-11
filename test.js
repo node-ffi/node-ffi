@@ -39,6 +39,12 @@ assertEquals(1024 * 1024, ptr.getInt32());
 ptr.putUInt32(1024 * 1024);
 assertEquals(1024 * 1024, ptr.getUInt32());
 
+ptr.putInt64(0 - (1024 * 1024 * 1024 * 1024));
+assertEquals(0 - (1024 * 1024 * 1024 * 1024), ptr.getInt64());
+
+ptr.putUInt64(1024 * 1024 * 1024 * 1024);
+assertEquals(1024 * 1024 * 1024 * 1024, ptr.getUInt64());
+
 // TODO: values outside of "float" precision create unpredictable results
 ptr.putFloat(1.5);
 assertEquals(1.5, ptr.getFloat());
@@ -94,6 +100,16 @@ assertTrue(advptr.address > ptr.address);
 
 advptr = ptr.seek(0);
 assertTrue(advptr.address == ptr.address);
+advptr.putInt64(1, true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.putUInt64(1, true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
 advptr.putFloat(1, true);
 assertTrue(advptr.address > ptr.address);
 
@@ -142,6 +158,16 @@ assertTrue(advptr.address > ptr.address);
 advptr = ptr.seek(0);
 assertTrue(advptr.address == ptr.address);
 advptr.getUInt32(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getInt64(true);
+assertTrue(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assertTrue(advptr.address == ptr.address);
+advptr.getUInt64(true);
 assertTrue(advptr.address > ptr.address);
 
 advptr = ptr.seek(0);

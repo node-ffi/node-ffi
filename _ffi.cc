@@ -71,6 +71,10 @@ void Pointer::Initialize(Handle<Object> target)
     NODE_SET_PROTOTYPE_METHOD(t, "getInt32", GetInt32);
     NODE_SET_PROTOTYPE_METHOD(t, "putUInt32", PutUInt32);
     NODE_SET_PROTOTYPE_METHOD(t, "getUInt32", GetUInt32);
+    NODE_SET_PROTOTYPE_METHOD(t, "putInt64", PutInt64);
+    NODE_SET_PROTOTYPE_METHOD(t, "getInt64", GetInt64);
+    NODE_SET_PROTOTYPE_METHOD(t, "putUInt64", PutUInt64);
+    NODE_SET_PROTOTYPE_METHOD(t, "getUInt64", GetUInt64);
     NODE_SET_PROTOTYPE_METHOD(t, "putFloat", PutFloat);
     NODE_SET_PROTOTYPE_METHOD(t, "getFloat", GetFloat);
     NODE_SET_PROTOTYPE_METHOD(t, "putDouble", PutDouble);
@@ -377,7 +381,71 @@ Handle<Value> Pointer::GetUInt32(const Arguments& args)
         self->MovePointer(sizeof(unsigned int));
     }
 
-    return scope.Close(Integer::New(val));
+    return scope.Close(Integer::NewFromUnsigned(val));
+}
+
+Handle<Value> Pointer::PutInt64(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
+        int64_t val = args[0]->IntegerValue();
+        memcpy(ptr, &val, sizeof(int64_t));
+    }
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(int64_t));
+    }
+    
+    return Undefined();
+}
+
+Handle<Value> Pointer::GetInt64(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+    int64_t         val = *((int64_t *)ptr);
+
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(int64_t));
+    }
+    
+    // TODO: A way for V8 to take this int64_t as what it should be?
+    return scope.Close(Number::New(val));
+}
+
+Handle<Value> Pointer::PutUInt64(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
+        uint64_t val = args[0]->IntegerValue();
+        memcpy(ptr, &val, sizeof(uint64_t));
+    }
+    if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+        self->MovePointer(sizeof(uint64_t));
+    }
+    
+    return Undefined();
+}
+
+Handle<Value> Pointer::GetUInt64(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+    uint64_t        val = *((uint64_t *)ptr);
+
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(uint64_t));
+    }
+
+    // TODO: A way for V8 to take this int64_t as what it should be?
+    return scope.Close(Number::New(val));
 }
 
 Handle<Value> Pointer::PutFloat(const Arguments& args)
@@ -561,6 +629,8 @@ void FFI::InitializeBindings(Handle<Object> target)
     smap->Set(String::New("uint16"),    Integer::New(sizeof(unsigned short)));    
     smap->Set(String::New("int32"),     Integer::New(sizeof(int)));
     smap->Set(String::New("uint32"),    Integer::New(sizeof(unsigned int)));
+    smap->Set(String::New("int32"),     Integer::New(sizeof(int64_t)));
+    smap->Set(String::New("uint32"),    Integer::New(sizeof(uint64_t)));
     smap->Set(String::New("float"),     Integer::New(sizeof(float)));
     smap->Set(String::New("double"),    Integer::New(sizeof(double)));
     smap->Set(String::New("pointer"),   Integer::New(sizeof(unsigned char *)));
@@ -574,8 +644,8 @@ void FFI::InitializeBindings(Handle<Object> target)
     ftmap->Set(String::New("int16"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint16));
     ftmap->Set(String::New("uint32"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint32));
     ftmap->Set(String::New("int32"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint32));
-    //ftmap->Set(String::New("uint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
-    //ftmap->Set(String::New("sint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
+    ftmap->Set(String::New("uint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
+    ftmap->Set(String::New("sint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
     ftmap->Set(String::New("float"),    Pointer::WrapPointer((unsigned char *)&ffi_type_float));
     ftmap->Set(String::New("double"),   Pointer::WrapPointer((unsigned char *)&ffi_type_double));
     ftmap->Set(String::New("pointer"),  Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
