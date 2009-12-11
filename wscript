@@ -23,6 +23,14 @@ def configure(conf):
   conf.env.append_value("LIB_FFI", "ffi")
   conf.env.append_value("LIB_DL", "dl")
   
+  # the off_t size difference between the way node is compiled
+  # and this will cause the eio_req to be different and crash
+  # the node-ffi stuff
+  conf.env.append_value('CCFLAGS',  '-D_LARGEFILE_SOURCE')
+  conf.env.append_value('CXXFLAGS', '-D_LARGEFILE_SOURCE')
+  conf.env.append_value('CCFLAGS',  '-D_FILE_OFFSET_BITS=64')
+  conf.env.append_value('CXXFLAGS', '-D_FILE_OFFSET_BITS=64')
+  
   if conf.env['USE_DEBUG']:
     conf.env.append_value('CCFLAGS', ['-DDEBUG', '-g', '-ggdb', '-O0', '-Wall'])
     conf.env.append_value('CXXFLAGS', ['-DDEBUG', '-g', '-ggdb', '-O0', '-Wall'])
