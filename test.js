@@ -1,5 +1,5 @@
 var assert = require("assert"),
-    FFI   = require("./ffi"),
+    FFI   = require("./node-ffi"),
     sys   = require("sys"),
     rss   = process.memoryUsage()["rss"];
 

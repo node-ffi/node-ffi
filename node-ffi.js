@@ -4,7 +4,7 @@ var events  = require("events");
 
 (function() {
 
-FFI.VERSION = "0.1.1";
+FFI.VERSION = "0.1.2";
 
 FFI.TYPE_TO_POINTER_METHOD_MAP = {
     "byte":     "Byte",
