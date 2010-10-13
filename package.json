@@ -1,0 +1,22 @@
+{
+    "name":         "node-ffi",
+    "version":      "0.1.1",
+    "author":       "Rick Branson",
+    "description":  "A foreign function interface (FFI) for Node.js",
+    "homepage":     "http://github.com/rbranson/node-ffi",
+    "engines":      { "node": ">=0.2.0" },
+    "main":         "ffi.js",
+    "scripts": {
+        "preinstall":   "node-waf configure build",
+        "preuninstall": "node-waf clean",
+        "test":         "node test.js"
+    },
+    "repository": {
+        "type":         "git",
+        "url":          "http://github.com/rbranson/node-ffi.git"
+    },
+    "bugs": {
+        "mail":         "",
+        "web":          "http://github.com/rbranson/node-ffi/issues"
+    }
+}
