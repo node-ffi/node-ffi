@@ -29,6 +29,10 @@ class Pointer : public ObjectWrap {
         static Handle<Value> GetInt32(const Arguments& args);
         static Handle<Value> PutUInt32(const Arguments& args);
         static Handle<Value> GetUInt32(const Arguments& args);
+        static Handle<Value> PutInt64(const Arguments& args);
+        static Handle<Value> GetInt64(const Arguments& args);
+        static Handle<Value> PutUInt64(const Arguments& args);
+        static Handle<Value> GetUInt64(const Arguments& args);
         static Handle<Value> PutFloat(const Arguments& args);
         static Handle<Value> GetFloat(const Arguments& args);
         static Handle<Value> PutDouble(const Arguments& args);
@@ -40,6 +44,7 @@ class Pointer : public ObjectWrap {
         static Handle<Value> IsNull(const Arguments& args);
         
         static Handle<Value> GetAddress(Local<String> name, const AccessorInfo& info);
+        static Handle<Value> GetAllocated(Local<String> name, const AccessorInfo& info);
         
     private:
         static Persistent<FunctionTemplate> pointer_template;

@@ -38,6 +38,12 @@ assert.equal(1024 * 1024, ptr.getInt32());
 ptr.putUInt32(1024 * 1024);
 assert.equal(1024 * 1024, ptr.getUInt32());
 
+ptr.putInt64(0 - (1024 * 1024 * 1024 * 1024));
+assert.equal(0 - (1024 * 1024 * 1024 * 1024), ptr.getInt64());
+
+ptr.putUInt64(1024 * 1024 * 1024 * 1024);
+assert.equal(1024 * 1024 * 1024 * 1024, ptr.getUInt64());
+
 // TODO: values outside of "float" precision create unpredictable results
 ptr.putFloat(1.5);
 assert.equal(1.5, ptr.getFloat());
@@ -48,8 +54,10 @@ assert.equal(1000.005, ptr.getDouble());
 var nptr = new Pointer(32);
 nptr.putDouble(1234.5678);
 ptr.putPointer(nptr);
+
 assert.equal(nptr.address, ptr.getPointer().address);
 assert.equal(1234.5678, ptr.getPointer().getDouble());
+assert.equal(32, nptr.allocated);
 
 ptr.putCString("Hello World!");
 assert.equal("Hello World!", ptr.getCString());
@@ -88,6 +96,16 @@ assert.ok(advptr.address > ptr.address);
 advptr = ptr.seek(0);
 assert.ok(advptr.address == ptr.address);
 advptr.putUInt32(1, true);
+assert.ok(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assert.ok(advptr.address == ptr.address);
+advptr.putInt64(1, true);
+assert.ok(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assert.ok(advptr.address == ptr.address);
+advptr.putUInt64(1, true);
 assert.ok(advptr.address > ptr.address);
 
 advptr = ptr.seek(0);
@@ -140,6 +158,16 @@ assert.ok(advptr.address > ptr.address);
 advptr = ptr.seek(0);
 assert.ok(advptr.address == ptr.address);
 advptr.getUInt32(true);
+assert.ok(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assert.ok(advptr.address == ptr.address);
+advptr.getInt64(true);
+assert.ok(advptr.address > ptr.address);
+
+advptr = ptr.seek(0);
+assert.ok(advptr.address == ptr.address);
+advptr.getUInt64(true);
 assert.ok(advptr.address > ptr.address);
 
 advptr = ptr.seek(0);

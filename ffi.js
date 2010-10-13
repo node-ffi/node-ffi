@@ -22,6 +22,17 @@ FFI.PLATFORM_LIBRARY_EXTENSIONS = {
     "darwin":   ".dylib"
 };
 
+// create fast dispatch tables for type calls
+var FFI_POINTER_PUT_DISPATCH_TABLE = {};
+var FFI_POINTER_GET_DISPATCH_TABLE = {};
+
+for (var type in FFI.TYPE_TO_POINTER_METHOD_MAP) {
+    FFI_POINTER_PUT_DISPATCH_TABLE[type] = 
+        FFI.Pointer.prototype["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]];
+    FFI_POINTER_GET_DISPATCH_TABLE[type] = 
+        FFI.Pointer.prototype["get" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]];
+}
+
 FFI.Pointer.prototype.attach = function(friend) {
     if (friend.__attached == undefined)
         friend.__attached = [];
@@ -139,52 +150,85 @@ FFI.ForeignFunction = function(ptr, returnType, types, async) {
     this._fptr          = ptr;
     this._async         = async;
     
-    this._cif = new FFI.CIF(returnType, types);
-    
-    this._initializeProxy();
-};
+    // allocate storage areas
+    this._resultPtr     = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[this._returnType]);    
+    this._paramPtrs     = [];
+    this._strParamPtrs  = {};
 
-FFI.ForeignFunction.prototype.allocParams = function(args) {
-    // TODO: unit test this
-    if (args.length > this._types.length) throw new Error("Function arguments exceeded specification.");
+    this._arglistPtr    = new FFI.Pointer(types.length * FFI.Bindings.POINTER_SIZE);
     
-    // allocate area to store list of pointers to param values
-    var alen    = args.length;
-    var ptr     = new FFI.Pointer(alen * FFI.Bindings.POINTER_SIZE);
-    var cptr    = ptr.seek(0);
+    var cptr = this._arglistPtr.seek(0);
     
-    for (var i = 0; i < alen; i++) {
-        var valptr = FFI.allocValue(this._types[i], args[i])
-        valptr.attach(ptr); // link allocated param values to this pointer (prevent GC)
-        cptr.putPointer(valptr, true);
+    // allocate a storage area for each argument, then write the pointer to the argument list
+    for (var i = 0, len = types.length; i < len; i++) {
+        var pptr = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[types[i]]);
+        cptr.putPointer(pptr, true);
+        this._paramPtrs.push(pptr);
+        
+        // if it's a string, we have to allocate a secondary buffer
+        if (types[i] == "string") {
+            this._strParamPtrs[i] = new FFI.Pointer(1024);
+            pptr.putPointer(this._strParamPtrs[i]);
+        }
     }
     
-    return ptr;
+    this._cif = new FFI.CIF(returnType, types);
+    this._initializeProxy();
 };
 
 FFI.ForeignFunction.prototype._initializeProxy = function() {
     var self        = this;
+    var cifptr      = this._cif.getPointer();
     
     this._proxy = function() {
-        var resptr  = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[self._returnType]);
-        var args    = self.allocParams(arguments);
         var async   = self._async;
         var ptr     = self._cif.getPointer();
         
-        var r = FFI.Bindings.call(ptr, self._fptr, args, resptr, async);
+        if (arguments.length != self._types.length)
+            throw new Error("Function arguments did not meet specification.");
+        
+        // write arguments to storage areas
+        for (var i = 0, len = arguments.length; i < len; i++) {
+            var t = self._types[i];
+            var v = arguments[i];
+            
+            if (v == null) {
+                self._paramPtrs[i].putPointer(FFI.NULL_POINTER);
+            }
+            else {
+                // if it's a string, we have to write it to our secondary buffers    
+                if (t == "string") {
+                    // if our incoming string is larger than our allocation area, increase
+                    // the size of our allocation area
+                    if ((v.length + 1) > self._strParamPtrs[i].allocated) {
+                        var newptr = new FFI.Pointer(v.length + 1);
+                        self._strParamPtrs[i] = newptr;
+                        self._paramPtrs[i].putPointer(newptr);
+                    }
+            
+                    self._strParamPtrs[i].putCString(v);
+                    self._paramPtrs[i].putPointer(self._strParamPtrs[i]);    
+                }
+                else {
+                    FFI_POINTER_PUT_DISPATCH_TABLE[t].apply(self._paramPtrs[i], [v]);
+                }
+            }
+        }
+        
+        var r = FFI.Bindings.call(cifptr, self._fptr, self._arglistPtr, self._resultPtr, async);
         
         if (async) {
             var emitter = new events.EventEmitter();
             
             r.on("success", function() {
-                emitter.emit("success", FFI.derefValuePtr(self._returnType, resptr));
+                emitter.emit("success", FFI.derefValuePtr(self._returnType, self._resultPtr));
             });
             
             return emitter;
         }
         
-        return self._returnType == "void" ? null : FFI.derefValuePtr(self._returnType, resptr);
-    };    
+        return self._returnType == "void" ? null : FFI.derefValuePtr(self._returnType, self._resultPtr);
+    };
 };
 
 FFI.ForeignFunction.prototype.getFunction = function() {
@@ -196,6 +240,7 @@ FFI.ForeignFunction.build = function(ptr, returnType, types, async) {
     return ff.getFunction();
 };
 
+// TODO: deprecated?
 FFI.allocValue = function(type, val) {
     if (!isValidParamType(type)) throw new Error("Invalid Type: " + type);
     
@@ -229,7 +274,7 @@ FFI.derefValuePtr = function(type, ptr) {
         }
     }
     
-    return dptr["get" + FFI.TYPE_TO_POINTER_METHOD_MAP[type]]();
+    return FFI_POINTER_GET_DISPATCH_TABLE[type].apply(dptr);
 };
 
 // From <dlfcn.h> on Darwin: #define RTLD_DEFAULT    ((void *) -2)
