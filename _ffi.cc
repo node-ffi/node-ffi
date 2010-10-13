@@ -560,8 +560,8 @@ void FFI::InitializeBindings(Handle<Object> target)
     ftmap->Set(String::New("int16"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint16));
     ftmap->Set(String::New("uint32"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint32));
     ftmap->Set(String::New("int32"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint32));
-    //ftmap->Set(String::New("uint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
-    //ftmap->Set(String::New("sint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
+    ftmap->Set(String::New("uint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
+    ftmap->Set(String::New("sint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
     ftmap->Set(String::New("float"),    Pointer::WrapPointer((unsigned char *)&ffi_type_float));
     ftmap->Set(String::New("double"),   Pointer::WrapPointer((unsigned char *)&ffi_type_double));
     ftmap->Set(String::New("pointer"),  Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
@@ -573,7 +573,7 @@ void FFI::InitializeBindings(Handle<Object> target)
 }
 
 int FFI::AsyncFFICall(eio_req *req)
-{
+{        
     AsyncCallParams *p = (AsyncCallParams *)req->data;
     ffi_call(p->cif, p->ptr, p->res, p->args);
     return 0;
@@ -584,15 +584,15 @@ int FFI::FinishAsyncFFICall(eio_req *req)
     AsyncCallParams *p = (AsyncCallParams *)req->data;
     Local<Value> argv[0];
     
-    // call the promise's emitSuccess method
-    Local<Function> emitSuccess = Local<Function>::Cast(p->promise->Get(String::NewSymbol("emitSuccess")));
-    emitSuccess->Call(p->promise, 0, argv);
+    // emit a success event
+    Local<Function> emit = Local<Function>::Cast(p->emitter->Get(String::NewSymbol("emit")));
+    emit->Call(p->emitter, 0, argv);
     
     // unref the event loop (ref'd in FFICall)
     ev_unref(EV_DEFAULT_UC);
     
-    // dispose of our persistent handle to the Promise object
-    p->promise.Dispose();
+    // dispose of our persistent handle to the EventEmitter object
+    p->emitter.Dispose();
     
     // free up our memory (allocated in FFICall)
     delete p;
@@ -619,8 +619,8 @@ Handle<Value> FFI::FFICall(const Arguments& args)
         //           (void (*)(void))fn->GetPointer(),
         //           (void *)res->GetPointer(),
         //           (void **)fnargs->GetPointer());
-        // 
-        if (async) {
+         
+        if (async) {            
             AsyncCallParams *p = new AsyncCallParams();
             
             // cuter way of doing this?
@@ -629,18 +629,19 @@ Handle<Value> FFI::FFICall(const Arguments& args)
             p->res = (void *)res->GetPointer();
             p->args = (void **)fnargs->GetPointer();
             
-            // get the process.Promise constructor
+            // get the events.EventEmitter constructor
+            
             Local<Object> global = Context::GetCurrent()->Global();
-            Local<Object> process = global->Get(String::NewSymbol("process"))->ToObject();
-            Local<Function> promiseConstructor = Local<Function>::Cast(process->Get(String::NewSymbol("Promise")));
+            Local<Object> events = global->Get(String::NewSymbol("process"))->ToObject();
+            Local<Function> emitterConstructor = Local<Function>::Cast(events->Get(String::NewSymbol("EventEmitter")));
             
             // construct a new process.Promise object
-            p->promise = Persistent<Object>::New(promiseConstructor->NewInstance());
+            p->emitter = Persistent<Object>::New(emitterConstructor->NewInstance());
             
             ev_ref(EV_DEFAULT_UC);
             eio_custom(FFI::AsyncFFICall, EIO_PRI_DEFAULT, FFI::FinishAsyncFFICall, p);
             
-            return scope.Close(p->promise);
+            return scope.Close(p->emitter);
         }
         else {
             ffi_call(

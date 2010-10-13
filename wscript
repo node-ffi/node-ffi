@@ -32,8 +32,6 @@ def build(bld):
   obj.target = '_ffi'
   obj.source = '_ffi.cc'
   obj.uselib = 'FFI DL'
-  obj.install_path = "${PREFIX}/lib/node/libraries/"  
-  bld.install_files('${PREFIX}/lib/node/libraries/', 'ffi.js')
 
 def shutdown():
   if Options.commands['clean']:

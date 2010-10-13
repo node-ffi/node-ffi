@@ -1,5 +1,6 @@
-var FFI = require("./_ffi");
-var sys = require("sys");
+var FFI     = require("./_ffi");
+var sys     = require("sys");
+var events  = require("events");
 
 (function() {
 
@@ -29,9 +30,9 @@ FFI.Pointer.prototype.attach = function(friend) {
 };
 
 FFI.StructType = function(fields) {
-    this._struct = {};
-    this._members = [];
-    this._size = 0;
+    this._struct    = {};
+    this._members   = [];
+    this._size      = 0;
     this._alignment = 0;
     
     if (fields) {
@@ -44,12 +45,12 @@ FFI.StructType = function(fields) {
 // WARNING: This call is going to be unsafe if called after the constructor
 FFI.StructType.prototype.addField = function(type, name) {
     // TODO: check to see if name already exists
-    var sz = FFI.Bindings.TYPE_SIZE_MAP[type];
-    var offset = this._size;
+    var sz      = FFI.Bindings.TYPE_SIZE_MAP[type],
+        offset  = this._size;
     
-    this._size += sz;
-    this._alignment = Math.max(this._alignment, sz);
-    this._size += Math.abs(this._alignment - sz);
+    this._size      += sz;
+    this._alignment  = Math.max(this._alignment, sz);
+    this._size      += Math.abs(this._alignment - sz);
     
     this._struct[name] = { "name": name, "type": type, "size": sz, "offset": offset };
     this._members.push(name);
@@ -68,7 +69,7 @@ FFI.StructType.prototype.writeField = function(ptr, name, val) {
 };
 
 FFI.StructType.prototype.serialize = function(ptr, data) {
-    for (var i = 0; i < this._members.length; i++) {
+    for (var i = 0, len = this._members.length; i < len; i++) {
         var name = this._members[i];
         this.writeField(ptr, name, data[name]);
     }
@@ -77,7 +78,7 @@ FFI.StructType.prototype.serialize = function(ptr, data) {
 FFI.StructType.prototype.deserialize = function(ptr) {
     var data = {};
     
-    for (var i = 0; i < this._members.length; i++) {
+    for (var i = 0, len = this._members.length; i < len; i++) {
         var name = this._members[i];
         data[name] = this.readField(ptr, name);
     }
@@ -93,8 +94,8 @@ FFI.StructType.prototype.allocate = function(data) {
     return ptr;
 };
 
-FFI.NULL_POINTER = new FFI.Pointer(0);
-FFI.NULL_POINTER_PARAM = new FFI.Pointer(FFI.Bindings.POINTER_SIZE);
+FFI.NULL_POINTER        = new FFI.Pointer(0);
+FFI.NULL_POINTER_PARAM  = new FFI.Pointer(FFI.Bindings.POINTER_SIZE);
 FFI.NULL_POINTER_PARAM.putPointer(FFI.NULL_POINTER);
 
 function isValidParamType(typeName) {
@@ -106,8 +107,8 @@ function isValidReturnType(typeName) {
 };
 
 FFI.CIF = function(rtype, types) {
-    this._returnType = rtype;
-    this._types = types;
+    this._returnType    = rtype;
+    this._types         = types;
     
     if (!isValidReturnType(this._returnType)) throw new Error("Invalid Return Type");
     
@@ -116,7 +117,7 @@ FFI.CIF = function(rtype, types) {
     
     var tptr = this._argtypesptr.seek(0);
     
-    for (var i = 0; i < types.length; i++) {
+    for (var i = 0, len = types.length; i < len; i++) {
         if (isValidParamType(types[i])) {
             tptr.putPointer(FFI.Bindings.FFI_TYPES[types[i]], true);
         }
@@ -128,17 +129,18 @@ FFI.CIF = function(rtype, types) {
     this._cifptr = FFI.Bindings.prepCif(types.length, this._rtypeptr, this._argtypesptr);    
 };
 
-FFI.CIF.prototype.getArgTypesPointer = function() { return this._argtypesptr; }
-FFI.CIF.prototype.getReturnTypePointer = function() { return this._rtypeptr; }
-FFI.CIF.prototype.getPointer = function() { return this._cifptr; }
+FFI.CIF.prototype.getArgTypesPointer    = function() { return this._argtypesptr; }
+FFI.CIF.prototype.getReturnTypePointer  = function() { return this._rtypeptr; }
+FFI.CIF.prototype.getPointer            = function() { return this._cifptr; }
 
 FFI.ForeignFunction = function(ptr, returnType, types, async) {
-    this._returnType = returnType;
-    this._types = types;
-    this._fptr = ptr;
-    this._async = async;
+    this._returnType    = returnType;
+    this._types         = types;
+    this._fptr          = ptr;
+    this._async         = async;
     
     this._cif = new FFI.CIF(returnType, types);
+    
     this._initializeProxy();
 };
 
@@ -147,10 +149,11 @@ FFI.ForeignFunction.prototype.allocParams = function(args) {
     if (args.length > this._types.length) throw new Error("Function arguments exceeded specification.");
     
     // allocate area to store list of pointers to param values
-    var ptr = new FFI.Pointer(args.length * FFI.Bindings.POINTER_SIZE);
-    var cptr = ptr.seek(0);
+    var alen    = args.length;
+    var ptr     = new FFI.Pointer(alen * FFI.Bindings.POINTER_SIZE);
+    var cptr    = ptr.seek(0);
     
-    for (var i = 0; i < args.length; i++) {
+    for (var i = 0; i < alen; i++) {
         var valptr = FFI.allocValue(this._types[i], args[i])
         valptr.attach(ptr); // link allocated param values to this pointer (prevent GC)
         cptr.putPointer(valptr, true);
@@ -166,21 +169,22 @@ FFI.ForeignFunction.prototype._initializeProxy = function() {
         var resptr  = new FFI.Pointer(FFI.Bindings.TYPE_SIZE_MAP[self._returnType]);
         var args    = self.allocParams(arguments);
         var async   = self._async;
+        var ptr     = self._cif.getPointer();
         
-        var r = FFI.Bindings.call(self._cif.getPointer(), self._fptr, args, resptr, async);
+        var r = FFI.Bindings.call(ptr, self._fptr, args, resptr, async);
         
         if (async) {
-            var promise = new process.Promise();
+            var emitter = new events.EventEmitter();
             
-            r.addCallback(function() {
-                promise.emitSuccess(FFI.derefValuePtr(self._returnType, resptr));
+            r.on("success", function() {
+                emitter.emit("success", FFI.derefValuePtr(self._returnType, resptr));
             });
             
-            return promise;
+            return emitter;
         }
         
         return self._returnType == "void" ? null : FFI.derefValuePtr(self._returnType, resptr);
-    };
+    };    
 };
 
 FFI.ForeignFunction.prototype.getFunction = function() {
@@ -233,8 +237,8 @@ FFI.DARWIN_RTLD_DEFAULT = FFI.NULL_POINTER.seek(-2);
 
 FFI.DynamicLibrary = function(path, mode) {
     if (path == null && process.platform == "darwin") {
-        this._handle = FFI.DARWIN_RTLD_DEFAULT;
-        this.close = function() { }; // neuter close
+        this._handle    = FFI.DARWIN_RTLD_DEFAULT;
+        this.close      = function() { }; // neuter close
     }
     else {
         this._handle = this._dlopen(path, mode);
@@ -304,8 +308,13 @@ FFI.Library = function(libfile, funcs, options) {
   
     for (var k in funcs) {
         var fptr = dl.get(k);
+        
         if (fptr.isNull()) throw new Error("DynamicLibrary returned NULL function pointer.");
-        var resultType = funcs[k][0], paramTypes = funcs[k][1], fopts = funcs[k][2];
+        
+        var resultType  = funcs[k][0],
+            paramTypes  = funcs[k][1],
+            fopts       = funcs[k][2];
+        
         this[k] = FFI.ForeignFunction.build(fptr, resultType, paramTypes, fopts ? fopts.async : undefined);
     }
 };
@@ -313,13 +322,15 @@ FFI.Library = function(libfile, funcs, options) {
 /////////////////////
 
 FFI.Callback = function(typedata, func) {
-    var retType = typedata[0], types = typedata[1];
-    this._cif = new FFI.CIF(retType, types);
-    this._info = new FFI.CallbackInfo(this._cif.getPointer(), function (retval, params) {
+    var retType = typedata[0],
+        types   = typedata[1];
+
+    this._cif   = new FFI.CIF(retType, types);
+    this._info  = new FFI.CallbackInfo(this._cif.getPointer(), function (retval, params) {
         var pptr = params.seek(0);
         var args = [];
         
-        for (var i = 0; i < types.length; i++) {
+        for (var i = 0, len = types.length; i < len; i++) {
             args.push(FFI.derefValuePtr(types[i], pptr.getPointer(true)));
         }
         
@@ -328,6 +339,7 @@ FFI.Callback = function(typedata, func) {
         if (retType != "void")
             retval["put" + FFI.TYPE_TO_POINTER_METHOD_MAP[retType]](methodResult);      
     });
+    
     this._pointer = this._info.pointer;
 };
 

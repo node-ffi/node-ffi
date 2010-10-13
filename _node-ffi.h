@@ -54,7 +54,7 @@ public:
     void (*ptr)(void);
     void *res;
     void **args;
-    Persistent<Object> promise;
+    Persistent<Object> emitter;
 };
 
 class FFI : public ObjectWrap {
