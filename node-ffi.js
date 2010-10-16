@@ -21,7 +21,8 @@ FFI.TYPE_TO_POINTER_METHOD_MAP = {
 
 FFI.PLATFORM_LIBRARY_EXTENSIONS = {
     "linux2":   ".so",
-    "darwin":   ".dylib"
+    "darwin":   ".dylib",
+    "sunos":    ".so",
 };
 
 // create fast dispatch tables for type calls
