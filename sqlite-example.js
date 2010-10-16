@@ -1,4 +1,4 @@
-var FFI = require("./ffi");
+var FFI = require("./node-ffi");
 var sys = require("sys");
 
 var SQLite3 = new FFI.Library("libsqlite3", {
@@ -48,7 +48,7 @@ var callback = new FFI.Callback(["int32", ["pointer", "int32", "pointer", "point
 
 var fin = false;
 
-SQLite3Async.sqlite3_exec(dbh, "SELECT * FROM foo;", callback.getPointer(), null, null).addCallback(function(ret) {
+SQLite3Async.sqlite3_exec(dbh, "SELECT * FROM foo;", callback.getPointer(), null, null).on("success", function(ret) {
     sys.puts("Total Rows: " + rowCount);
     sys.puts("Changes: " + SQLite3.sqlite3_changes(dbh));
     sys.puts("Closing...");
