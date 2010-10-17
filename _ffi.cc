@@ -653,14 +653,8 @@ void FFI::InitializeBindings(Handle<Object> target)
     ftmap->Set(String::New("string"),   Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
     ftmap->Set(String::New("size_t"),   Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
     
-    Local<Object> emap = Object::New();
-    
-    ftmap->Set(String::New("EPERM"),    Integer::New(EPERM));
-    ftmap->Set(String::New("EPERM"),    Integer::New(EPERM));
-    
     o->Set(String::New("FFI_TYPES"), ftmap);
     o->Set(String::New("TYPE_SIZE_MAP"), smap);
-    o->Set(String::New("ERRORS"), emap);
     
     target->Set(String::NewSymbol("Bindings"), o);
 }

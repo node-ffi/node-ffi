@@ -359,7 +359,7 @@ assert.ok(libm.ceil instanceof Function);
 
 libm.ceil(1.5).on("success", function(res) { 
     libmCeilAsyncCallExecuted = true;
-    assert.equal(1, res);
+    assert.equal(2, res);
 });
 
 var sleeplib = new FFI.Library(null, { "sleep": [ "uint32", [ "uint32" ], {"async": true } ] });
