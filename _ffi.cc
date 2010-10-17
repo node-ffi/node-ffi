@@ -129,7 +129,7 @@ Handle<Value> Pointer::New(const Arguments& args)
 {
     HandleScope     scope;
     Pointer         *self = new Pointer(NULL);
-    
+            
     if (args.Length() == 1 && args[0]->IsNumber()) {
         unsigned int sz = args[0]->Uint32Value();
         self->Alloc(sz);
@@ -645,7 +645,7 @@ void FFI::InitializeBindings(Handle<Object> target)
     ftmap->Set(String::New("uint32"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint32));
     ftmap->Set(String::New("int32"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint32));
     ftmap->Set(String::New("uint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
-    ftmap->Set(String::New("sint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
+    ftmap->Set(String::New("int64"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
     ftmap->Set(String::New("float"),    Pointer::WrapPointer((unsigned char *)&ffi_type_float));
     ftmap->Set(String::New("double"),   Pointer::WrapPointer((unsigned char *)&ffi_type_double));
     ftmap->Set(String::New("pointer"),  Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
@@ -934,7 +934,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
  
         // send a message to our main thread to wake up the WatchCallback loop
         ev_async_send(EV_DEFAULT_UC_ &g_async);
-        
+            
         // wait for signal from calling thread
         inv->WaitForExecution();
         

@@ -323,24 +323,9 @@ var clz = new FFI.CallbackInfo(cifPtr.getPointer(), function(result, args) {
 
 var callMyTestClosure = FFI.ForeignFunction.build(clz.pointer, "int32", [ "int32" ]);
 callMyTestClosure(1);
+assert.equal(1, closureCalled);
 callMyTestClosure(1);
 assert.equal(2, closureCalled);
-
-///////////////////////
-
-var asyncClosureCalled = 0;
-var cifPtr = new FFI.CIF("int32", [ "int32" ]);
-var clz = new FFI.CallbackInfo(cifPtr.getPointer(), function(result, args) {
-    asyncClosureCalled++;
-    result.putInt32(1234);
-});
-
-
-var callMyTestClosure = FFI.ForeignFunction.build(clz.pointer, "int32", [ "int32" ], true);
-
-callMyTestClosure(1).on("success", function(res) {
-   assert.equal(1234, res);
-});
 
 ///////////////////////
 
@@ -360,26 +345,30 @@ assert.equal(1234, callMyTestCallback(-1234));
 
 ///////////////////////
 
+var asyncAbsCallExecuted = false;
 var asyncAbs = FFI.ForeignFunction.build(FFI.StaticFunctions.abs, "int32", [ "int32" ], true);
 asyncAbs(-1234).on("success", function (res) {
+    asyncAbsCallExecuted = true;
     assert.equal(1234, res);
 });
 
+var libmCeilAsyncCallExecuted = false;
 var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ], {"async": true } ] });
 assert.ok(libm instanceof FFI.Library);
 assert.ok(libm.ceil instanceof Function);
-libm.ceil(1.5).on("success", function(res) { assert.equal(2, res); });
-
-var sleeplib = new FFI.Library(null, { "sleep": [ "uint32", [ "uint32" ], {"async": true } ] });
-sleeplib.sleep(1);
+libm.ceil(1.5).on("success", function(res) {
+    libmCeilAsyncCallExecuted = true;
+    assert.equal(2, res);
+});
 
 ///////////////////////
 ///////////////////////
 
 // allow the event loop to complete
 setTimeout(function() {
-    assert.equal(1, asyncClosureCalled);
+    assert.ok(asyncAbsCallExecuted);
+    assert.ok(libmCeilAsyncCallExecuted);
     sys.puts("Tests pass!");
-}, 2000);
+}, 250);
 
 sys.puts("Heap increased by " + ((process.memoryUsage()["rss"] - rss) / 1024) + " KB");
