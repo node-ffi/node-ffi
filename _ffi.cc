@@ -629,12 +629,13 @@ void FFI::InitializeBindings(Handle<Object> target)
     smap->Set(String::New("uint16"),    Integer::New(sizeof(unsigned short)));    
     smap->Set(String::New("int32"),     Integer::New(sizeof(int)));
     smap->Set(String::New("uint32"),    Integer::New(sizeof(unsigned int)));
-    smap->Set(String::New("int32"),     Integer::New(sizeof(int64_t)));
-    smap->Set(String::New("uint32"),    Integer::New(sizeof(uint64_t)));
+    smap->Set(String::New("int64"),     Integer::New(sizeof(int64_t)));
+    smap->Set(String::New("uint64"),    Integer::New(sizeof(uint64_t)));
     smap->Set(String::New("float"),     Integer::New(sizeof(float)));
     smap->Set(String::New("double"),    Integer::New(sizeof(double)));
     smap->Set(String::New("pointer"),   Integer::New(sizeof(unsigned char *)));
     smap->Set(String::New("string"),    Integer::New(sizeof(char *)));
+    smap->Set(String::New("size_t"),    Integer::New(sizeof(size_t)));
     
     Local<Object> ftmap = Object::New();
     ftmap->Set(String::New("void"),     Pointer::WrapPointer((unsigned char *)&ffi_type_void));
@@ -645,14 +646,22 @@ void FFI::InitializeBindings(Handle<Object> target)
     ftmap->Set(String::New("uint32"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint32));
     ftmap->Set(String::New("int32"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint32));
     ftmap->Set(String::New("uint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
-    ftmap->Set(String::New("sint64"),   Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
+    ftmap->Set(String::New("int64"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
     ftmap->Set(String::New("float"),    Pointer::WrapPointer((unsigned char *)&ffi_type_float));
     ftmap->Set(String::New("double"),   Pointer::WrapPointer((unsigned char *)&ffi_type_double));
     ftmap->Set(String::New("pointer"),  Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
     ftmap->Set(String::New("string"),   Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
+    ftmap->Set(String::New("size_t"),   Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
+    
+    Local<Object> emap = Object::New();
+    
+    ftmap->Set(String::New("EPERM"),    Integer::New(EPERM));
+    ftmap->Set(String::New("EPERM"),    Integer::New(EPERM));
     
     o->Set(String::New("FFI_TYPES"), ftmap);
     o->Set(String::New("TYPE_SIZE_MAP"), smap);
+    o->Set(String::New("ERRORS"), emap);
+    
     target->Set(String::NewSymbol("Bindings"), o);
 }
 

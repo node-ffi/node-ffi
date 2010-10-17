@@ -12,7 +12,9 @@ FFI.TYPE_TO_POINTER_METHOD_MAP = {
     "int16":    "Int16",
     "uint16":   "UInt16",      
     "int32":    "Int32",
-    "uint32":   "UInt32", 
+    "uint32":   "UInt32",
+    "int64":    "Int64",
+    "uin64":    "UInt64",  
     "float":    "Float",
     "double":   "Double",
     "string":   "CString", 
@@ -392,6 +394,26 @@ FFI.Callback = function(typedata, func) {
 
 FFI.Callback.prototype.getPointer = function() {
     return this._pointer;
+};
+
+if (process.platform == "darwin") {
+    FFI.darwinErrorMethod = FFI.ForeignFunction.build(
+        new FFI.DynamicLibrary().get("__error"),
+        "pointer",
+        []
+    );
+}
+else {
+    FFI.errnoGlobal = new FFI.DynamicLibrary().get("errno");
+}
+
+FFI.errno = function() {
+    if (process.platform == "darwin") {
+        return FFI.derefValuePtr("int32", FFI.darwinErrorMethod());
+    }
+    else {
+        return FFI.errnoGlobal.getInt32();
+    }
 };
 
 // Export Everything

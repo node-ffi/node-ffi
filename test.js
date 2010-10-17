@@ -360,24 +360,36 @@ assert.equal(1234, callMyTestCallback(-1234));
 
 ///////////////////////
 
+var asyncAbsCallExecuted = false;
 var asyncAbs = FFI.ForeignFunction.build(FFI.StaticFunctions.abs, "int32", [ "int32" ], true);
 asyncAbs(-1234).on("success", function (res) {
+    asyncAbsCallExecuted = true;
     assert.equal(1234, res);
 });
 
+var libmCeilAsyncCallExecuted = false;
 var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ], {"async": true } ] });
 assert.ok(libm instanceof FFI.Library);
 assert.ok(libm.ceil instanceof Function);
-libm.ceil(1.5).on("success", function(res) { assert.equal(2, res); });
+libm.ceil(1.5).on("success", function(res) { 
+    libmCeilAsyncCallExecuted = true;
+    assert.equal(1, res);
+});
 
 var sleeplib = new FFI.Library(null, { "sleep": [ "uint32", [ "uint32" ], {"async": true } ] });
-sleeplib.sleep(1);
+//sleeplib.sleep(1);
+
+///////////////////////
+
+assert.equal(2, FFI.errno());
 
 ///////////////////////
 ///////////////////////
 
 // allow the event loop to complete
 setTimeout(function() {
+    assert.ok(asyncAbsCallExecuted);
+    assert.ok(libmCeilAsyncCallExecuted);
     assert.equal(1, asyncClosureCalled);
     sys.puts("Tests pass!");
 }, 2000);
