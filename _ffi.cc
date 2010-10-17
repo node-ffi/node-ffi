@@ -129,7 +129,7 @@ Handle<Value> Pointer::New(const Arguments& args)
 {
     HandleScope     scope;
     Pointer         *self = new Pointer(NULL);
-    
+            
     if (args.Length() == 1 && args[0]->IsNumber()) {
         unsigned int sz = args[0]->Uint32Value();
         self->Alloc(sz);
@@ -675,11 +675,13 @@ int FFI::AsyncFFICall(eio_req *req)
 int FFI::FinishAsyncFFICall(eio_req *req)
 {
     AsyncCallParams *p = (AsyncCallParams *)req->data;
-    Local<Value> argv[0];
+    Local<Value> argv[1];
     
+    argv[0] = Local<Value>::New(String::New("success"));
+
     // emit a success event
     Local<Function> emit = Local<Function>::Cast(p->emitter->Get(String::NewSymbol("emit")));
-    emit->Call(p->emitter, 0, argv);
+    emit->Call(p->emitter, 1, argv);
     
     // unref the event loop (ref'd in FFICall)
     ev_unref(EV_DEFAULT_UC);
@@ -941,7 +943,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
  
         // send a message to our main thread to wake up the WatchCallback loop
         ev_async_send(EV_DEFAULT_UC_ &g_async);
-        
+            
         // wait for signal from calling thread
         inv->WaitForExecution();
         

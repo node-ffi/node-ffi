@@ -14,7 +14,7 @@ FFI.TYPE_TO_POINTER_METHOD_MAP = {
     "int32":    "Int32",
     "uint32":   "UInt32",
     "int64":    "Int64",
-    "uin64":    "UInt64",  
+    "uint64":   "UInt64",  
     "float":    "Float",
     "double":   "Double",
     "string":   "CString", 
@@ -23,7 +23,8 @@ FFI.TYPE_TO_POINTER_METHOD_MAP = {
 
 FFI.PLATFORM_LIBRARY_EXTENSIONS = {
     "linux2":   ".so",
-    "darwin":   ".dylib"
+    "darwin":   ".dylib",
+    "sunos":    ".so",
 };
 
 // create fast dispatch tables for type calls

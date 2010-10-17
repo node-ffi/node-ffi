@@ -18,8 +18,10 @@ def configure(conf):
   conf.env['USE_DEBUG'] = Options.options.debug
 
   if not conf.check(lib='ffi'):
-    fatal("libffi not found.")
+    if not conf.check(lib="ffi", libpath=['/usr/local/lib', '/opt/local/lib'], uselib_store="FFI"):
+      fatal("libffi not found.")
 
+  conf.env.append_value("CPPPATH_FFI", "/opt/local/include")
   conf.env.append_value("LIB_FFI", "ffi")
   conf.env.append_value("LIB_DL", "dl")
   
