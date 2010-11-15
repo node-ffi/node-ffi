@@ -23,7 +23,7 @@ WARNING: node-ffi assumes you know what you're doing. You can pretty easily crea
 # REQUIREMENTS
 
 * Linux, OS X, or Solaris.
-* You will need node.js 0.2.0+
+* You will need node.js 0.2.3+
 
 # NPM INSTALL
   
