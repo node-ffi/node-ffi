@@ -4,6 +4,8 @@
 #include <string.h>
 #include <dlfcn.h>
 #include <limits.h>
+#define __STDC_LIMIT_MACROS true
+#include <stdint.h>
 #include <sys/mman.h>
 #ifdef __APPLE__
 #include <ffi/ffi.h>
@@ -16,8 +18,6 @@
 #include <node.h>
 #include <pthread.h>
 #include <queue>
-
-#define MAX_BYTE_VALUE        255
 
 using namespace v8;
 using namespace node;
