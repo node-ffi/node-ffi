@@ -39,13 +39,13 @@ def configure(conf):
 
 def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
-  obj.target = '_ffi'
-  obj.source = '_ffi.cc'
+  obj.target = 'ffi_bindings'
+  obj.source = './src/ffi.cc ./src/callback_info.cc ./src/pointer.cc ./src/threaded_callback_invokation.cc'
   obj.uselib = 'FFI DL'
 
 def shutdown():
   if Options.commands['clean']:
-    if exists('_ffi.node'): unlink('_ffi.node')
+    if exists('ffi_bindings.node'): unlink('ffi_bindings.node')
   elif Options.commands['build']:
-    if exists('build/default/_ffi.node') and not exists('_ffi.node'):
-      symlink('build/default/_ffi.node', '_ffi.node')
+    if exists('build/default/ffi_bindings.node') and not exists('ffi_bindings.node'):
+      symlink('build/default/ffi_bindings.node', 'ffi_bindings.node')
