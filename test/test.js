@@ -1,7 +1,7 @@
 var util = require("util");
 
 var assert  = require("assert"),
-    FFI     = require("node-ffi"),
+    FFI     = require("../lib/ffi"),
     rss     = process.memoryUsage()["rss"];
 
 var Pointer = FFI.Pointer;
