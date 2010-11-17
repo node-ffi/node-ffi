@@ -103,6 +103,9 @@ assert.equal(16, ptr.getLongLong());
 ptr.putULongLong(17);
 assert.equal(17, ptr.getULongLong());
 
+ptr.putSizeT(18);
+assert.equal(18, ptr.getSizeT());
+
 //////////////////////
 
 var nullptr = new Pointer(0);
