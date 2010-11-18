@@ -1,7 +1,7 @@
 var FFI = require("../../lib/ffi");
 
-var libfactorial = new FFI.Library("libfactorial", {
-    "factorial": [ "long", [ "uint64" ] ]
+var libfactorial = new FFI.Library("./libfactorial", {
+    "factorial": [ "uint64", [ "int" ] ]
 });
 
 if (process.argv.length < 3) {
