@@ -220,6 +220,9 @@ assert.ok(ptr.getULongLong() != 8 && ptr.getULongLong() > 0);
 ptr.putULongLong(17);
 assert.equal(17, ptr.getULongLong());
 
+ptr.putSizeT(18);
+assert.equal(18, ptr.getSizeT());
+
 //////////////////////
 
 var nullptr = new Pointer(0);
