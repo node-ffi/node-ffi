@@ -220,6 +220,12 @@ assert.ok(ptr.getULongLong() != 8 && ptr.getULongLong() > 0);
 ptr.putULongLong(17);
 assert.equal(17, ptr.getULongLong());
 
+///////////////////////////////
+
+assert.throws(function() {
+   ptr.putSizeT(-1); 
+});
+
 ptr.putSizeT(18);
 assert.equal(18, ptr.getSizeT());
 

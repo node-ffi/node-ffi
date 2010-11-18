@@ -65,7 +65,7 @@ In addition to the basic types, there are type aliases for common C types.
     ulong		unsigned long
     longlong	long long
     ulonglong	unsigned long long
-    size_t      unsigned int (size is platform-dependent)
+    size_t      platform-dependent, usually pointer size
 
 # V8 and 64-bit Types
 
