@@ -174,8 +174,8 @@ Handle<Value> Pointer::PutUInt8(const Arguments& args)
         int64_t val = args[0]->IntegerValue();
         
         if (val >= UINT8_MIN && val <= UINT8_MAX) {
-          uint8_t cvt = (uint8_t)val;
-          memcpy(ptr, &cvt, sizeof(uint8_t));
+            uint8_t cvt = (uint8_t)val;
+            memcpy(ptr, &cvt, sizeof(uint8_t));
         }
         else {
             return THROW_ERROR_EXCEPTION("Value out of Range.");
@@ -251,8 +251,8 @@ Handle<Value> Pointer::PutInt16(const Arguments& args)
         int64_t val = args[0]->IntegerValue();
         
         if (val >= INT16_MIN && val <= INT16_MAX) {
-          int16_t cvt = (int16_t)val;
-          memcpy(ptr, &cvt, sizeof(int16_t));
+            int16_t cvt = (int16_t)val;
+            memcpy(ptr, &cvt, sizeof(int16_t));
         }
         else {
           return THROW_ERROR_EXCEPTION("Value out of Range.");
@@ -290,8 +290,8 @@ Handle<Value> Pointer::PutUInt16(const Arguments& args)
         int64_t val = args[0]->IntegerValue();
         
         if (val >= UINT16_MIN && val <= UINT16_MAX) {
-          uint16_t cvt = (uint16_t)val;
-          memcpy(ptr, &cvt, sizeof(uint16_t));
+            uint16_t cvt = (uint16_t)val;
+            memcpy(ptr, &cvt, sizeof(uint16_t));
         }
         else {
           return THROW_ERROR_EXCEPTION("Value out of Range.");
@@ -328,7 +328,7 @@ Handle<Value> Pointer::PutInt32(const Arguments& args)
         int64_t val = args[0]->IntegerValue();
         
         if (val >= INT32_MIN && val <= INT32_MAX) { // XXX: Will this ever be false?
-          memcpy(ptr, &val, sizeof(int32_t));
+            memcpy(ptr, &val, sizeof(int32_t));
         }
         else {
           return THROW_ERROR_EXCEPTION("Value out of Range.");
@@ -365,7 +365,7 @@ Handle<Value> Pointer::PutUInt32(const Arguments& args)
         int64_t val = args[0]->IntegerValue();
         
         if (val >= UINT32_MIN && val <= UINT32_MAX) { // XXX: Will this ever be false?
-          memcpy(ptr, &val, sizeof(uint32_t));
+            memcpy(ptr, &val, sizeof(uint32_t));
         }
         else {
           return THROW_ERROR_EXCEPTION("Value out of Range.");
@@ -398,14 +398,27 @@ Handle<Value> Pointer::PutInt64(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
 
-    if (args.Length() >= 1 && args[0]->IsNumber()) {
-        int64_t val = args[0]->IntegerValue();
-        
-        if (val >= INT64_MIN && val <= INT64_MAX) {
-          memcpy(ptr, &val, sizeof(int64_t));
-        }
-        else {
-          return THROW_ERROR_EXCEPTION("Value out of Range.");
+    // Have to do this because strtoll doesn't set errno to 0 on success :(
+    errno = 0;
+    
+    if (args.Length() >= 1) {
+        if (args[0]->IsNumber() || args[0]->IsString()) {
+            int64_t val;
+            
+            if (args[0]->IsNumber()) {
+                val = args[0]->IntegerValue();
+            }
+            else { // assumed args[0]->IsString() from condition above
+                String::Utf8Value str(args[0]->ToString());
+                val = STR_TO_INT64(*str);                
+            }
+            
+            if (errno != ERANGE && (val >= INT64_MIN && val <= INT64_MAX)) {
+                memcpy(ptr, &val, sizeof(int64_t));
+            }
+            else {
+                return THROW_ERROR_EXCEPTION("Value out of Range.");
+            }
         }
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
@@ -421,13 +434,16 @@ Handle<Value> Pointer::GetInt64(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
     int64_t         val = *((int64_t *)ptr);
-
+    char            buf[INTEGER_CONVERSION_BUFFER_SIZE];
+    
+    bzero(buf, INTEGER_CONVERSION_BUFFER_SIZE);
+    snprintf(buf, INTEGER_CONVERSION_BUFFER_SIZE, "%lld", val);
+    
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(int64_t));
     }
     
-    // TODO: A way for V8 to take this int64_t as what it should be?
-    return scope.Close(Number::New(val));
+    return scope.Close(String::New(buf));
 }
 
 Handle<Value> Pointer::PutUInt64(const Arguments& args)
@@ -436,14 +452,23 @@ Handle<Value> Pointer::PutUInt64(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
 
-    if (args.Length() >= 1 && args[0]->IsNumber()) {
-        int64_t val = args[0]->IntegerValue(); // JavaScript can't theoretically support UINT64
-        
-        if (val >= UINT64_MIN && val <= INT64_MAX) {
-          memcpy(ptr, &val, sizeof(int64_t));
-        }
-        else {
-          return THROW_ERROR_EXCEPTION("Value out of Range.");
+    // Have to do this because strtoull doesn't set errno to 0 on success :(
+    errno = 0;
+    
+    if (args.Length() >= 1) {
+        if (args[0]->IsNumber() || args[0]->IsString()) {
+            uint64_t val;
+            
+            // Convert everything to a string because it's easier this way
+            String::Utf8Value str(args[0]->ToString());
+            val = STR_TO_UINT64(*str);
+            
+            if ((*str)[0] != '-' && errno != ERANGE && (val >= UINT64_MIN && val <= UINT64_MAX)) {
+                memcpy(ptr, &val, sizeof(uint64_t));
+            }
+            else {
+                return THROW_ERROR_EXCEPTION("Value out of Range.");
+            }
         }
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
@@ -459,13 +484,16 @@ Handle<Value> Pointer::GetUInt64(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
     uint64_t        val = *((uint64_t *)ptr);
-
+    char            buf[INTEGER_CONVERSION_BUFFER_SIZE];
+    
+    bzero(buf, INTEGER_CONVERSION_BUFFER_SIZE);
+    snprintf(buf, INTEGER_CONVERSION_BUFFER_SIZE, "%llu", val);
+    
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(uint64_t));
     }
-
-    // TODO: A way for V8 to take this int64_t as what it should be?
-    return scope.Close(Number::New(val));
+    
+    return scope.Close(String::New(buf));
 }
 
 Handle<Value> Pointer::PutFloat(const Arguments& args)

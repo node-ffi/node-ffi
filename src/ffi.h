@@ -4,6 +4,7 @@
 #include <string.h>
 #include <dlfcn.h>
 #include <limits.h>
+#include <errno.h>
 #define __STDC_LIMIT_MACROS true
 #include <stdint.h>
 #include <sys/mman.h>
@@ -19,12 +20,17 @@
 #include <pthread.h>
 #include <queue>
 
+#define INTEGER_CONVERSION_BUFFER_SIZE  64
+
 #define UINT8_MIN     0
 #define UINT16_MIN    0
 #define UINT32_MIN    0
 #define UINT64_MIN    0
 
 #define THROW_ERROR_EXCEPTION(x) ThrowException(Exception::Error(String::New(x)))
+
+#define STR_TO_INT64(x)     strtoll(x, NULL, 0)
+#define STR_TO_UINT64(x)    strtoull(x, NULL, 0)
 
 using namespace v8;
 using namespace node;

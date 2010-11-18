@@ -66,17 +66,37 @@ assert.equal(Math.pow(2, 32) - 1, ptr.getUInt32());
 assert.notEqual(Math.pow(2, 64).toString(), "18446744073709551616");
 assert.notEqual(Math.pow(2, 63).toString(), "9223372036854775808");
 
-assert.throws(function() { ptr.putInt64(-9223372036854785808); });
-assert.throws(function() { ptr.putInt64(9223372036854785808); });
+//assert.throws(function() { ptr.putInt64(-9223372036854785808); });
+//assert.throws(function() { ptr.putInt64(9223372036854785808); });
 
 ptr.putInt64(0 - Math.pow(2, 63));
 assert.equal(0 - Math.pow(2, 63), ptr.getInt64());
 
 assert.throws(function() { ptr.putUInt64(-1); });
-assert.throws(function() { ptr.putUInt64(9223372036854785808); });
+assert.throws(function() { ptr.putUInt64(18446744073709551616); });
 
-ptr.putUInt64(Math.pow(2, 64));
-assert.equal(Math.pow(2, 64), ptr.getUInt64());
+ptr.putUInt64(Math.pow(2, 63) - 10000);
+assert.equal(Math.pow(2, 63) - 10000, ptr.getUInt64());
+
+// check for string support
+assert.throws(function() { ptr.putInt64("9223372036854775808"); });
+assert.throws(function() { ptr.putInt64("-9223372036854775809"); });
+
+// allows INT64_MAX value
+ptr.putInt64("9223372036854775807");
+assert.equal("9223372036854775807", ptr.getInt64());
+
+// allows INT64_MIN value
+ptr.putInt64("-9223372036854775808");
+assert.equal("-9223372036854775808", ptr.getInt64());
+
+// Uint should throw error on value > UINT64_MAX or negative number
+assert.throws(function() { ptr.putUInt64("18446744073709551616"); });
+assert.throws(function() { ptr.putUInt64("-1"); });
+
+// allows UINT64_MAX value
+ptr.putUInt64("18446744073709551615");
+assert.equal("18446744073709551615", ptr.getUInt64());
 
 ////////////////
 
