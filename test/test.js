@@ -539,10 +539,6 @@ libm.ceil(1.5).on("success", function(res) {
 
 ///////////////////////
 
-assert.equal(2, FFI.errno());
-
-///////////////////////
-
 // allow the event loop to complete
 setTimeout(function() {
     assert.ok(asyncAbsCallExecuted);
@@ -589,6 +585,12 @@ setTimeout(function() {
     assert.equal(300, ps.childB.a);
     assert.equal(400, ps.childB.b);
 })();
+
+///////////////////////
+
+var strtoulLib = new FFI.Library(null, { "strtoul": [ "ulong", [ "string", "pointer", "int"] ] });
+strtoulLib.strtoul("1234567890123456789012345678901234567890", null, 0);
+assert.equal(34, FFI.errno()); // errno == ERANGE because value was outside of strtoul's range.
 
 ///////////////////////
 
