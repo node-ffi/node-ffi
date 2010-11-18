@@ -20,33 +20,65 @@ assert.equal(ptr.address, ptr2.__attached[0].address);
 
 ////////////////
 
-ptr.putUInt8(128);
-assert.equal(128, ptr.getUInt8());
+assert.throws(function() { ptr.putInt8(Math.pow(2, 7) + 1); });
+assert.throws(function() { ptr.putInt8(0 - Math.pow(2, 7) - 1); });
 
-assert.throws(function() { ptr.putUInt8(1024); });
+ptr.putInt8(0 - Math.pow(2, 7));
+assert.equal(0 - Math.pow(2, 7), ptr.getInt8());
 
-ptr.putInt8(-10);
-assert.equal(-10, ptr.getInt8());
+assert.throws(function() { ptr.putUInt8(-1); });
+assert.throws(function() { ptr.putUInt8(Math.pow(2, 8)); });
 
-assert.throws(function() { ptr.putInt8(-150); });
+ptr.putUInt8(Math.pow(2, 8) - 1);
+assert.equal(Math.pow(2, 8) - 1, ptr.getUInt8());
 
-ptr.putInt16(-1024);
-assert.equal(-1024, ptr.getInt16());
+////////////////
 
-ptr.putUInt16(1024);
-assert.equal(1024, ptr.getUInt16());
+assert.throws(function() { ptr.putInt16(Math.pow(2, 15) + 1); });
+assert.throws(function() { ptr.putInt16(0 - Math.pow(2, 15) - 1); });
 
-ptr.putInt32(1024 * 1024);
-assert.equal(1024 * 1024, ptr.getInt32());
+ptr.putInt16(0 - Math.pow(2, 15));
+assert.equal(0 - Math.pow(2, 15), ptr.getInt16());
 
-ptr.putUInt32(1024 * 1024);
-assert.equal(1024 * 1024, ptr.getUInt32());
+assert.throws(function() { ptr.putUInt16(-1); });
+assert.throws(function() { ptr.putUInt16(Math.pow(2, 16)); });
 
-ptr.putInt64(0 - (1024 * 1024 * 1024 * 1024));
-assert.equal(0 - (1024 * 1024 * 1024 * 1024), ptr.getInt64());
+ptr.putUInt16(Math.pow(2, 16) - 1);
+assert.equal(Math.pow(2, 16) - 1, ptr.getUInt16());
 
-ptr.putUInt64(1024 * 1024 * 1024 * 1024);
-assert.equal(1024 * 1024 * 1024 * 1024, ptr.getUInt64());
+////////////////
+
+assert.throws(function() { ptr.putInt32(Math.pow(2, 31) + 1); });
+assert.throws(function() { ptr.putInt32(0 - Math.pow(2, 31) - 1); });
+
+ptr.putInt32(0 - Math.pow(2, 31));
+assert.equal(0 - Math.pow(2, 31), ptr.getInt32());
+
+assert.throws(function() { ptr.putUInt32(-1); });
+assert.throws(function() { ptr.putUInt32(Math.pow(2, 32)); });
+
+ptr.putUInt32(Math.pow(2, 32) - 1);
+assert.equal(Math.pow(2, 32) - 1, ptr.getUInt32());
+
+////////////////
+
+// This checks for int64 behavior remaining the same (V8 using floats for these numbers)
+assert.notEqual(Math.pow(2, 64).toString(), "18446744073709551616");
+assert.notEqual(Math.pow(2, 63).toString(), "9223372036854775808");
+
+assert.throws(function() { ptr.putInt64(-9223372036854785808); });
+assert.throws(function() { ptr.putInt64(9223372036854785808); });
+
+ptr.putInt64(0 - Math.pow(2, 63));
+assert.equal(0 - Math.pow(2, 63), ptr.getInt64());
+
+assert.throws(function() { ptr.putUInt64(-1); });
+assert.throws(function() { ptr.putUInt64(9223372036854785808); });
+
+ptr.putUInt64(Math.pow(2, 64));
+assert.equal(Math.pow(2, 64), ptr.getUInt64());
+
+////////////////
 
 // TODO: values outside of "float" precision create unpredictable results
 ptr.putFloat(1.5);
@@ -68,37 +100,102 @@ assert.equal("Hello World!", ptr.getCString());
 
 ////////////////////////
 
-// Light exercise the "non-specific" getters/putters
+// Exercise the "non-specific" getters/putters
 
 ptr.putByte(6);
 assert.equal(6, ptr.getByte());
 
+///////////////////////////////
+
+ptr.putChar(-6);
+assert.equal(-6, ptr.getChar());
+
 ptr.putChar(6);
 assert.equal(6, ptr.getChar());
+
+///////////////////////////////
+
+assert.throws(function() {
+    ptr.putUChar(-8);
+});
+ptr.putChar(-8);
+assert.ok(ptr.getUChar() != 8 && ptr.getUChar() > 0);
 
 ptr.putUChar(8);
 assert.equal(8, ptr.getUChar());
 
+///////////////////////////////
+
 ptr.putShort(9);
 assert.equal(9, ptr.getShort());
+
+ptr.putShort(-9);
+assert.equal(-9, ptr.getShort());
+
+///////////////////////////////
+
+assert.throws(function() {
+    ptr.putUShort(-8);
+});
+ptr.putShort(-8);
+assert.ok(ptr.getUShort() != 8 && ptr.getUShort() > 0);
 
 ptr.putUShort(11);
 assert.equal(11, ptr.getUShort());
 
+///////////////////////////////
+
 ptr.putInt(12);
 assert.equal(12, ptr.getInt());
+
+ptr.putInt(-12);
+assert.equal(-12, ptr.getInt());
+
+///////////////////////////////
+
+assert.throws(function() {
+    ptr.putUInt(-8);
+});
+ptr.putInt(-8);
+assert.ok(ptr.getUInt() != 8 && ptr.getUInt() > 0);
 
 ptr.putUInt(13);
 assert.equal(13, ptr.getUInt());
 
+///////////////////////////////
+
 ptr.putLong(14);
 assert.equal(14, ptr.getLong());
+
+ptr.putLong(-14);
+assert.equal(-14, ptr.getLong());
+
+///////////////////////////////
+
+assert.throws(function() {
+    ptr.putULong(-8);
+});
+ptr.putLong(-8);
+assert.ok(ptr.getULong() != 8 && ptr.getULong() > 0);
 
 ptr.putULong(15);
 assert.equal(15, ptr.getULong());
 
+///////////////////////////////
+
 ptr.putLongLong(16);
 assert.equal(16, ptr.getLongLong());
+
+ptr.putLongLong(-16);
+assert.equal(-16, ptr.getLongLong());
+
+///////////////////////////////
+
+assert.throws(function() {
+    ptr.putULongLong(-8);
+});
+ptr.putLongLong(-8);
+assert.ok(ptr.getULongLong() != 8 && ptr.getULongLong() > 0);
 
 ptr.putULongLong(17);
 assert.equal(17, ptr.getULongLong());

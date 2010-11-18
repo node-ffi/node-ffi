@@ -158,7 +158,7 @@ Handle<Value> Pointer::Seek(const Arguments& args)
         ret = WrapPointer(static_cast<unsigned char *>(self->GetPointer()) + offset);      
     }
     else {
-        return ThrowException(String::New("Must specify an offset"));
+        return THROW_ERROR_EXCEPTION("Must specify an offset");
     }
     
     return scope.Close(ret);
@@ -171,14 +171,14 @@ Handle<Value> Pointer::PutUInt8(const Arguments& args)
     unsigned char   *ptr = self->GetPointer();
 
     if (args.Length() >= 1 && args[0]->IsNumber()) {
-        unsigned int val = args[0]->Uint32Value();
+        int64_t val = args[0]->IntegerValue();
         
-        if (val <= UINT8_MAX) {
-            unsigned char conv = val;
-            *ptr = conv;
+        if (val >= UINT8_MIN && val <= UINT8_MAX) {
+          uint8_t cvt = (uint8_t)val;
+          memcpy(ptr, &cvt, sizeof(uint8_t));
         }
         else {
-            return ThrowException(String::New("Byte out of Range."));
+            return THROW_ERROR_EXCEPTION("Value out of Range.");
         }
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
@@ -208,14 +208,14 @@ Handle<Value> Pointer::PutInt8(const Arguments& args)
     unsigned char   *ptr = self->GetPointer();
 
     if (args.Length() >= 1 && args[0]->IsNumber()) {
-        int val = args[0]->Int32Value();
+        int64_t val = args[0]->IntegerValue();
         
-        if (val >= (0 - INT8_MAX) && val <= INT8_MAX) {
-            int8_t conv = val;
-            *ptr = conv;
+        if (val >= INT8_MIN && val <= INT8_MAX) {
+            int8_t cvt = (int8_t)val;
+            memcpy(ptr, &cvt, sizeof(int8_t));
         }
         else {
-            return ThrowException(String::New("Value out of Range."));
+            return THROW_ERROR_EXCEPTION("Value out of Range.");
         }
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
@@ -229,13 +229,14 @@ Handle<Value> Pointer::GetInt8(const Arguments& args)
 {
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
-    unsigned char   *ptr = self->GetPointer();
+    unsigned char   *ptr  = self->GetPointer();
+    int8_t          val   = *((int8_t *)ptr);
 
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(int8_t));
     }
 
-    return scope.Close(Integer::New(*(int8_t *)ptr));
+    return scope.Close(Integer::New(val));
 }
 
 
@@ -247,8 +248,15 @@ Handle<Value> Pointer::PutInt16(const Arguments& args)
 
     // TODO: Exception handling here for out of range values
     if (args.Length() >= 1 && args[0]->IsNumber()) {
-        int16_t val = args[0]->Int32Value();
-        memcpy(ptr, &val, sizeof(int16_t));
+        int64_t val = args[0]->IntegerValue();
+        
+        if (val >= INT16_MIN && val <= INT16_MAX) {
+          int16_t cvt = (int16_t)val;
+          memcpy(ptr, &cvt, sizeof(int16_t));
+        }
+        else {
+          return THROW_ERROR_EXCEPTION("Value out of Range.");
+        }
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(int16_t));
@@ -279,8 +287,15 @@ Handle<Value> Pointer::PutUInt16(const Arguments& args)
 
     // TODO: Exception handling here for out of range values
     if (args.Length() >= 1 && args[0]->IsNumber()) {
-        uint16_t val = (uint16_t)args[0]->Uint32Value();
-        memcpy(ptr, &val, sizeof(uint16_t));
+        int64_t val = args[0]->IntegerValue();
+        
+        if (val >= UINT16_MIN && val <= UINT16_MAX) {
+          uint16_t cvt = (uint16_t)val;
+          memcpy(ptr, &cvt, sizeof(uint16_t));
+        }
+        else {
+          return THROW_ERROR_EXCEPTION("Value out of Range.");
+        }
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(uint16_t));
@@ -310,8 +325,14 @@ Handle<Value> Pointer::PutInt32(const Arguments& args)
     unsigned char   *ptr = self->GetPointer();
 
     if (args.Length() >= 1 && args[0]->IsNumber()) {
-        int32_t val = args[0]->Int32Value();
-        memcpy(ptr, &val, sizeof(int32_t));
+        int64_t val = args[0]->IntegerValue();
+        
+        if (val >= INT32_MIN && val <= INT32_MAX) { // XXX: Will this ever be false?
+          memcpy(ptr, &val, sizeof(int32_t));
+        }
+        else {
+          return THROW_ERROR_EXCEPTION("Value out of Range.");
+        }
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(int32_t));
@@ -341,8 +362,14 @@ Handle<Value> Pointer::PutUInt32(const Arguments& args)
     unsigned char   *ptr = self->GetPointer();
 
     if (args.Length() >= 1 && args[0]->IsNumber()) {
-        uint32_t val = args[0]->Uint32Value();
-        memcpy(ptr, &val, sizeof(uint32_t));
+        int64_t val = args[0]->IntegerValue();
+        
+        if (val >= UINT32_MIN && val <= UINT32_MAX) { // XXX: Will this ever be false?
+          memcpy(ptr, &val, sizeof(uint32_t));
+        }
+        else {
+          return THROW_ERROR_EXCEPTION("Value out of Range.");
+        }
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(uint32_t));
@@ -373,7 +400,13 @@ Handle<Value> Pointer::PutInt64(const Arguments& args)
 
     if (args.Length() >= 1 && args[0]->IsNumber()) {
         int64_t val = args[0]->IntegerValue();
-        memcpy(ptr, &val, sizeof(int64_t));
+        
+        if (val >= INT64_MIN && val <= INT64_MAX) {
+          memcpy(ptr, &val, sizeof(int64_t));
+        }
+        else {
+          return THROW_ERROR_EXCEPTION("Value out of Range.");
+        }
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(int64_t));
@@ -404,8 +437,14 @@ Handle<Value> Pointer::PutUInt64(const Arguments& args)
     unsigned char   *ptr = self->GetPointer();
 
     if (args.Length() >= 1 && args[0]->IsNumber()) {
-        uint64_t val = args[0]->IntegerValue();
-        memcpy(ptr, &val, sizeof(uint64_t));
+        int64_t val = args[0]->IntegerValue(); // JavaScript can't theoretically support UINT64
+        
+        if (val >= UINT64_MIN && val <= INT64_MAX) {
+          memcpy(ptr, &val, sizeof(int64_t));
+        }
+        else {
+          return THROW_ERROR_EXCEPTION("Value out of Range.");
+        }
     }
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(uint64_t));
@@ -452,13 +491,12 @@ Handle<Value> Pointer::GetFloat(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
     float           val = *((float *)ptr);
-    double          valRet = val;
     
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(float));
     }
     
-    return scope.Close(Number::New(valRet));
+    return scope.Close(Number::New((double)val));
 }
 
 Handle<Value> Pointer::PutDouble(const Arguments& args)
@@ -516,10 +554,7 @@ Handle<Value> Pointer::GetPointerMethod(const Arguments& args)
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
-    unsigned char   *val;
-    unsigned char   **dptr = (unsigned char **)ptr;
-    
-    val = *((unsigned char **)ptr);
+    unsigned char   *val = *((unsigned char **)ptr);
     
     //printf("Pointer::GetPointerMethod: got %p from %p\n", val, ptr);
     

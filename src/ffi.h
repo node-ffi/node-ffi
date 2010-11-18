@@ -19,6 +19,13 @@
 #include <pthread.h>
 #include <queue>
 
+#define UINT8_MIN     0
+#define UINT16_MIN    0
+#define UINT32_MIN    0
+#define UINT64_MIN    0
+
+#define THROW_ERROR_EXCEPTION(x) ThrowException(Exception::Error(String::New(x)))
+
 using namespace v8;
 using namespace node;
 

@@ -27,7 +27,7 @@ void FFI::InitializeBindings(Handle<Object> target)
     target->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
    
     target->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
-    target->Set(String::New("SIZE_SIZE"),        Integer::New(sizeof(size_t)));
+    target->Set(String::New("SIZE_SIZE"),        Integer::New(sizeof(size_t))); // DEPRECATED
     target->Set(String::New("FFI_TYPE_SIZE"),    Integer::New(sizeof(ffi_type)));
     
     Local<Object> smap = Object::New();
@@ -179,7 +179,7 @@ Handle<Value> FFI::FFICall(const Arguments& args)
         }
     }
     else {
-        return ThrowException(String::New("Not Enough Parameters"));
+        return THROW_ERROR_EXCEPTION("Not Enough Parameters");
     }
     
     return Undefined();
@@ -206,13 +206,13 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args)
             (ffi_type **)atypes->GetPointer()))) {
                 
             delete cif;
-            return ThrowException(String::New("ffi_prep_cif() returned error."));
+            return THROW_ERROR_EXCEPTION("ffi_prep_cif() returned error.");
         }
         
         return scope.Close(Pointer::WrapInstance(cif));
     }
     else {
-        return ThrowException(String::New("Not Enough Arguments"));
+        return THROW_ERROR_EXCEPTION("Not Enough Arguments");
     }
 }
 
