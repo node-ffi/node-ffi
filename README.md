@@ -26,6 +26,7 @@ WARNING: node-ffi assumes you know what you're doing. You can pretty easily crea
 
 * Linux, OS X, or Solaris.
 * You will need node.js 0.2.3+
+* libffi installed -- with development headers (comes with OS X and most Linux distros)
 
 # NPM INSTALL
   
@@ -72,6 +73,10 @@ In addition to the basic types, there are type aliases for common C types.
 # V8 and 64-bit Types
 
 Internally, V8 stores integers that will fit into a 32-bit space in a 32-bit integer, and those that fall outside of this get put into double-precision floating point numbers. This is problematic because FP numbers are imprecise. To get around this, the methods in node-ffi that deal with 64-bit integers return strings and can accept strings as parameters. 
+
+# Call Overhead
+
+There is non-trivial overhead associated with FFI calls. Comparing a hard-coded binding version of `strtoul()` to an FFI version of `strtoul()` shows that the native hard-coded binding is 5x faster. So don't just use the C version of a function just because it's faster. There's a significant cost in FFI calls, so make them worth it.
 
 # LICENSE
 
