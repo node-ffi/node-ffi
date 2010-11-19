@@ -56,9 +56,6 @@ Handle<Value> ForeignCaller::New(const Arguments& args)
         return THROW_ERROR_EXCEPTION("Not enough arguments");
     }
     
-    // TODO: Figure out how to throw an exception here for zero args but not
-    // break WrapPointer's NewInstance() call.
-    
     self->Wrap(args.This());
     return args.This();
 }
