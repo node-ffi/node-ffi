@@ -565,8 +565,13 @@ Handle<Value> Pointer::PutPointerMethod(const Arguments& args)
     unsigned char   *ptr = self->GetPointer();
 
     if (args.Length() >= 1) {
-        Pointer *obj = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
-        *((unsigned char **)ptr) = obj->GetPointer();
+        if (args[0]->IsNull()) {
+            *((unsigned char **)ptr) = NULL;
+        }
+        else {
+            Pointer *obj = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
+            *((unsigned char **)ptr) = obj->GetPointer();            
+        }
         //printf("Pointer::PutPointerMethod: writing pointer %p at %p\n", *((unsigned char **)ptr), ptr);
 
         if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
@@ -600,13 +605,10 @@ Handle<Value> Pointer::PutCString(const Arguments& args)
     unsigned char   *ptr = self->GetPointer();
 
     if (args.Length() >= 1 && args[0]->IsString()) {
-        String::Utf8Value str(args[0]->ToString());
-        strcpy((char *)ptr, *str);
-        
-        // printf("Pointer::PutCString: (%p) %s\n", ptr, *str);
+        args[0]->ToString()->WriteUtf8((char *)ptr);
         
         if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
-            self->MovePointer(strlen(*str));
+            self->MovePointer(args[0]->ToString()->Utf8Length());
         }
     }
     

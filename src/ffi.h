@@ -100,12 +100,34 @@ class FFI : public ObjectWrap {
     public:
         static void InitializeStaticFunctions(Handle<Object> Target);
         static void InitializeBindings(Handle<Object> Target);
-    
+
     protected:
+        static Handle<Value> FFIPrepCif(const Arguments& args);
+        static Handle<Value> Strtoul(const Arguments& args);
+};
+
+class ForeignCaller : public ObjectWrap {
+    public:
+        ForeignCaller();
+        ~ForeignCaller();
+        static void Initialize(Handle<Object> Target);
+        
+    protected:
+        static Handle<Value> New(const Arguments& args);
+        static Handle<Value> Exec(const Arguments& args);
         static int AsyncFFICall(eio_req *req);
         static int FinishAsyncFFICall(eio_req *req);
-        static Handle<Value> FFIPrepCif(const Arguments& args);
-        static Handle<Value> FFICall(const Arguments& args);
+        
+        ffi_cif *m_cif;
+        void (*m_fn)(void);
+        void *m_res;
+        void **m_fnargs;
+        
+        bool m_async;
+                
+    private:
+        static Persistent<FunctionTemplate> foreign_caller_template;
+        static Handle<FunctionTemplate> MakeTemplate();
 };
 
 class ThreadedCallbackInvokation;

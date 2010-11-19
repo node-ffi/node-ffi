@@ -23,9 +23,8 @@ void FFI::InitializeBindings(Handle<Object> target)
 {
     Local<Object> o = Object::New();
     
-    target->Set(String::New("call"),             FunctionTemplate::New(FFICall)->GetFunction());
     target->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
-   
+    target->Set(String::New("strtoul"),          FunctionTemplate::New(Strtoul)->GetFunction());
     target->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
     target->Set(String::New("SIZE_SIZE"),        Integer::New(sizeof(size_t))); // DEPRECATED
     target->Set(String::New("FFI_TYPE_SIZE"),    Integer::New(sizeof(ffi_type)));
@@ -98,91 +97,16 @@ void FFI::InitializeBindings(Handle<Object> target)
     target->Set(String::New("TYPE_SIZE_MAP"), smap);    
 }
 
-int FFI::AsyncFFICall(eio_req *req)
-{        
-    AsyncCallParams *p = (AsyncCallParams *)req->data;
-    ffi_call(p->cif, p->ptr, p->res, p->args);
-    return 0;
-}
-
-int FFI::FinishAsyncFFICall(eio_req *req)
+Handle<Value> FFI::Strtoul(const Arguments &args)
 {
-    AsyncCallParams *p = (AsyncCallParams *)req->data;
-    Local<Value> argv[1];
+    HandleScope scope;
+    Pointer *middle = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
+    char buf[128];
+    args[0]->ToString()->WriteUtf8(buf);
     
-    argv[0] = Local<Value>::New(String::New("success"));
-
-    // emit a success event
-    Local<Function> emit = Local<Function>::Cast(p->emitter->Get(String::NewSymbol("emit")));
-    emit->Call(p->emitter, 1, argv);
+    unsigned long val = strtoul(buf, (char **)middle->GetPointer(), args[2]->Int32Value());
     
-    // unref the event loop (ref'd in FFICall)
-    ev_unref(EV_DEFAULT_UC);
-    
-    // dispose of our persistent handle to the EventEmitter object
-    p->emitter.Dispose();
-    
-    // free up our memory (allocated in FFICall)
-    delete p;
-    
-    return 0;
-}
-
-Handle<Value> FFI::FFICall(const Arguments& args)
-{
-    if (args.Length() >= 4) {
-        Pointer *cif    = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
-        Pointer *fn     = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
-        Pointer *fnargs = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
-        Pointer *res    = ObjectWrap::Unwrap<Pointer>(args[3]->ToObject());
-        bool async      = false;
-        
-        if (args.Length() == 5 && args[4]->IsBoolean() && args[4]->BooleanValue())
-            async = true;
-        
-        // printf("FFI::FFICall: ffi_call(%p, %p, %p, %p)\n",
-        //           (ffi_cif *)cif->GetPointer(),
-        //           (void (*)(void))fn->GetPointer(),
-        //           (void *)res->GetPointer(),
-        //           (void **)fnargs->GetPointer());
-        if (async) {
-            HandleScope scope;
-            AsyncCallParams *p = new AsyncCallParams();
-            
-            // cuter way of doing this?
-            p->cif = (ffi_cif *)cif->GetPointer();
-            p->ptr = (void (*)(void))fn->GetPointer();
-            p->res = (void *)res->GetPointer();
-            p->args = (void **)fnargs->GetPointer();
-            
-            // get the events.EventEmitter constructor
-            
-            Local<Object> global = Context::GetCurrent()->Global();
-            Local<Object> events = global->Get(String::NewSymbol("process"))->ToObject();
-            Local<Function> emitterConstructor = Local<Function>::Cast(events->Get(String::NewSymbol("EventEmitter")));
-            
-            // construct a new process.Promise object
-            p->emitter = Persistent<Object>::New(emitterConstructor->NewInstance());
-            
-            ev_ref(EV_DEFAULT_UC);
-            eio_custom(FFI::AsyncFFICall, EIO_PRI_DEFAULT, FFI::FinishAsyncFFICall, p);
-            
-            return scope.Close(p->emitter);
-        }
-        else {
-            ffi_call(
-                (ffi_cif *)cif->GetPointer(),
-                (void (*)(void))fn->GetPointer(),
-                (void *)res->GetPointer(),
-                (void **)fnargs->GetPointer()
-            );
-        }
-    }
-    else {
-        return THROW_ERROR_EXCEPTION("Not Enough Parameters");
-    }
-    
-    return Undefined();
+    return scope.Close(Integer::NewFromUnsigned(val));
 }
 
 Handle<Value> FFI::FFIPrepCif(const Arguments& args)
@@ -226,4 +150,5 @@ extern "C" void init(Handle<Object> target)
     FFI::InitializeBindings(target);
     FFI::InitializeStaticFunctions(target);
     CallbackInfo::Initialize(target);
+    ForeignCaller::Initialize(target);
 }
