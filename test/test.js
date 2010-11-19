@@ -624,10 +624,16 @@ strcpyLib.strcpy(bufPtr, ZEROS_2K);
 assert.equal(ZEROS_2K, bufPtr.getCString());
 
 // Test string argument NULL handling
-var safestrlenLib = new FFI.Library(null, { "safestrlen": [ "int", [ "string" ] ] });
-assert.equal(4, safestrlenLib.safestrlen("1234"));
-assert.equal(-1, safestrlenLib.safestrlen(null));
-assert.equal(4, safestrlenLib.safestrlen("1234"));
+var memcpyLib   = new FFI.Library(null, { "memcpy": [ "int", [ "pointer", "string", "size_t" ] ] });
+var bufPtr      = new Pointer(128);
+
+memcpyLib.memcpy(bufPtr, "1234", 5);
+assert.equal("1234", bufPtr.getCString());
+
+memcpyLib.memcpy(bufPtr, null, 0);
+
+memcpyLib.memcpy(bufPtr, "4321", 5);
+assert.equal("4321", bufPtr.getCString());
 
 ///////////////////////
 
