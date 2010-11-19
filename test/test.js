@@ -623,6 +623,12 @@ assert.equal(ZEROS_128, bufPtr.getCString());
 strcpyLib.strcpy(bufPtr, ZEROS_2K);
 assert.equal(ZEROS_2K, bufPtr.getCString());
 
+// Test string argument NULL handling
+var safestrlenLib = new FFI.Library(null, { "safestrlen": [ "int", [ "string" ] ] });
+assert.equal(4, safestrlenLib.safestrlen("1234"));
+assert.equal(-1, safestrlenLib.safestrlen(null));
+assert.equal(4, safestrlenLib.safestrlen("1234"));
+
 ///////////////////////
 
 util.log("Heap increased by " + ((process.memoryUsage()["rss"] - rss) / 1024) + " KB");

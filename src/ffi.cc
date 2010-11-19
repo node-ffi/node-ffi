@@ -152,3 +152,13 @@ extern "C" void init(Handle<Object> target)
     CallbackInfo::Initialize(target);
     ForeignCaller::Initialize(target);
 }
+
+// Used for testing
+extern "C" int safestrlen(char *ptr) {
+    if (ptr == NULL) {
+        return -1;
+    }
+    else {
+        return strlen(ptr);
+    }
+}
