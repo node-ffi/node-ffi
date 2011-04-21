@@ -56,7 +56,7 @@ void CallbackInfo::Initialize(Handle<Object> target)
     
     // initialize our threaded invokation stuff
     g_mainthread = pthread_self();
-    ev_async_init(EV_DEFAULT_UC_ &g_async, CallbackInfo::WatcherCallback);
+    ev_async_init(&g_async, CallbackInfo::WatcherCallback);
     pthread_mutex_init(&g_queue_mutex, NULL);
     ev_async_start(EV_DEFAULT_UC_ &g_async);
     ev_unref(EV_DEFAULT_UC); // allow the event loop to exit while this is running

@@ -8,12 +8,12 @@ ThreadedCallbackInvokation::ThreadedCallbackInvokation(CallbackInfo *cbinfo, voi
     
     pthread_mutex_init(&m_mutex, NULL);
     pthread_cond_init(&m_cond, NULL);
-    ev_ref(EV_DEFAULT_UC_); // hold the event loop open while this is executing
+    ev_ref(EV_DEFAULT_UC); // hold the event loop open while this is executing
 }
 
 ThreadedCallbackInvokation::~ThreadedCallbackInvokation()
 {
-    ev_unref(EV_DEFAULT_UC_);
+    ev_unref(EV_DEFAULT_UC);
     pthread_cond_destroy(&m_cond);
     pthread_mutex_destroy(&m_mutex);
 }
