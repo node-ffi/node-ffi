@@ -25,7 +25,7 @@ WARNING: node-ffi assumes you know what you're doing. You can pretty easily crea
 # REQUIREMENTS
 
 * Linux, OS X, or Solaris.
-* You will need node.js 0.2.3+
+* The current version is tested to run on node.js 0.4 (specifically, 0.4.7)
 * libffi installed -- with development headers (comes with OS X and most Linux distros)
 
 # NPM INSTALL
