@@ -5,9 +5,7 @@
     "description":  "A foreign function interface (FFI) for Node.js",
     "homepage":     "http://github.com/rbranson/node-ffi",
     "engines":      { "node": ">=0.2.0" },
-    "modules":      {
-        "index":    "./lib/ffi"
-    },
+    "main":         "./lib/ffi",
     "scripts": {
         "preinstall":   "node-waf configure build",
         "preuninstall": "node-waf clean",
