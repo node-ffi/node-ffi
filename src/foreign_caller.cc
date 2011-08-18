@@ -89,12 +89,20 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args)
         return scope.Close(p->emitter);
     }
     else {
+#if __OBJC__ || __OBJC2__
+      @try {
+#endif
         ffi_call(
             self->m_cif,
             self->m_fn,
             self->m_res,
             self->m_fnargs
         );
+#if __OBJC__ || __OBJC2__
+      } @catch (id ex) {
+        return ThrowException(Pointer::WrapPointer((unsigned char *)ex));
+      }
+#endif
     }
     
     return Undefined();
