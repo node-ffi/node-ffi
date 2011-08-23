@@ -24,7 +24,9 @@ def configure(conf):
   conf.env.append_value("CPPPATH_FFI", "/opt/local/include")
   conf.env.append_value("LIB_FFI", "ffi")
   conf.env.append_value("LIB_DL", "dl")
-  
+
+  conf.check_cfg(package='libffi', args='--cflags', uselib_store="FFI", mandatory=False)
+
   # the off_t size difference between the way node is compiled
   # and this will cause the eio_req to be different and crash
   # the node-ffi stuff

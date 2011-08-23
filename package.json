@@ -1,6 +1,6 @@
 {
     "name":         "node-ffi",
-    "version":      "0.2.1",
+    "version":      "0.2.2",
     "author":       "Rick Branson",
     "description":  "A foreign function interface (FFI) for Node.js",
     "homepage":     "http://github.com/rbranson/node-ffi",
