@@ -142,13 +142,15 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args)
 
 ///////////////
 
-extern "C" void init(Handle<Object> target)
-{
+extern "C" {
+  static void init(Handle<Object> target) {
     HandleScope scope;
-    
+
     Pointer::Initialize(target);
     FFI::InitializeBindings(target);
     FFI::InitializeStaticFunctions(target);
     CallbackInfo::Initialize(target);
     ForeignCaller::Initialize(target);
+  }
+  NODE_MODULE(ffi_bindings, init);
 }
