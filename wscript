@@ -1,3 +1,4 @@
+import sys
 import Options
 from os import unlink, symlink, popen
 from os.path import exists 
@@ -34,7 +35,14 @@ def configure(conf):
   conf.env.append_value('CXXFLAGS', '-D_LARGEFILE_SOURCE')
   conf.env.append_value('CCFLAGS',  '-D_FILE_OFFSET_BITS=64')
   conf.env.append_value('CXXFLAGS', '-D_FILE_OFFSET_BITS=64')
-  
+
+  # test for darwin, for ObjC @try/@catch support
+  # there are ports of ObjC for linux, etc. but I'm not sure
+  # the best way to detect for that
+  if sys.platform.startswith("darwin"):
+    conf.env.append_value('CCFLAGS',  '-ObjC++')
+    conf.env.append_value('CXXFLAGS', '-ObjC++')
+
   if conf.env['USE_DEBUG']:
     conf.env.append_value('CCFLAGS', ['-DDEBUG', '-g', '-ggdb', '-O0', '-Wall'])
     conf.env.append_value('CXXFLAGS', ['-DDEBUG', '-g', '-ggdb', '-O0', '-Wall'])
