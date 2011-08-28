@@ -1,0 +1,3 @@
+.lock-wscript
+build
+ffi_bindings.node
