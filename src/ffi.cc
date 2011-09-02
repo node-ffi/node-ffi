@@ -23,6 +23,9 @@ void FFI::InitializeBindings(Handle<Object> target)
 {
     Local<Object> o = Object::New();
     
+#if __OBJC__ || __OBJC2__
+    target->Set(String::New("hasObjC"),          v8::True());
+#endif
     target->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
     target->Set(String::New("strtoul"),          FunctionTemplate::New(Strtoul)->GetFunction());
     target->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
