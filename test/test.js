@@ -638,7 +638,7 @@ assert.equal("4321", bufPtr.getCString());
 ///////////////////////
 
 // Test Objective-C @try/@catch support when available (Darwin, GNUstep)
-if (FFI.Bindings.hasObjC) {
+if (FFI.Bindings.HAS_OBJC) {
   var objcLib = new FFI.Library('libobjc', {
       'objc_msgSend': [ 'pointer', [ 'pointer', 'pointer' ] ]
     , 'objc_getClass': [ 'pointer', [ 'string' ] ]
