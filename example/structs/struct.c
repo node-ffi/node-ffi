@@ -3,11 +3,15 @@
 struct test {
   int a;
   double b;
-  char *c;
+  const char *c;
 };
 
+void inspect () {
+  printf("sizeof(struct test): %lu\n", sizeof(struct test));
+}
 
 double test_struct_arg_by_value (struct test by_value) {
+  printf("Input a: %d\n", by_value.a);
   printf("Input c: %s\n", by_value.c);
   return by_value.a + (double)by_value.b;
 }
