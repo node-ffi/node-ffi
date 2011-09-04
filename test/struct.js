@@ -57,7 +57,7 @@ var test8 = ffi.Struct([
     ['int32','a']
   , ['short','b']
   , ['char', 'c']
-  , ['char', 'c']
+  , ['char', 'd']
 ])
 inspect(test8, 8, [0,4,6,7])
 
@@ -65,7 +65,8 @@ var test9 = ffi.Struct([
     ['int32','a']
   , ['short','b']
   , ['char', 'c']
-  , ['char', 'c']
+  , ['char', 'd']
+  , ['char', 'e']
 ])
 inspect(test9, 12, [0,4,6,7,8])
 
@@ -74,6 +75,14 @@ var test10 = ffi.Struct([
   , ['char','b']
 ])
 inspect(test10, 24, [0,16])
+
+var ffi_type = ffi.Struct([
+    ['size_t','size']
+  , ['ushort','alignment']
+  , ['ushort','type']
+  , ['pointer','elements']
+])
+inspect(ffi_type, 24, [0,8,10,16])
 
 
 function inspect (s, expectedSize, expectedOffsets) {
