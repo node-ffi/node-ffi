@@ -1,3 +1,5 @@
 .lock-wscript
+*.dylib
+*.so
 build
 ffi_bindings.node
