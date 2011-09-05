@@ -90,11 +90,15 @@ function inspect (s, expectedSize, expectedOffsets) {
     , props = info.struct
     , types = []
   Object.keys(props).forEach(function (p) {
-    types.push(props[p].type)
+    var t = props[p].type
+    if (typeof t == 'function') t = 'Struct'
+    types.push(t)
   })
   console.log('sizeof(%s): %d', types.join(', '), ffi.sizeOf(s))
   Object.keys(props).forEach(function (p) {
-    console.log('  %s: %d', props[p].type, props[p].offset)
+    var t = props[p].type
+    if (typeof t == 'function') t = 'Struct'
+    console.log('  %s: %d', t, props[p].offset)
   })
   console.log()
   // do assert tests
