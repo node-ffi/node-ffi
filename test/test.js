@@ -637,4 +637,21 @@ assert.equal("4321", bufPtr.getCString());
 
 ///////////////////////
 
+// Test Objective-C @try/@catch support when available (Darwin, GNUstep)
+if (FFI.Bindings.HAS_OBJC) {
+  var objcLib = new FFI.Library('libobjc', {
+      'objc_msgSend': [ 'pointer', [ 'pointer', 'pointer' ] ]
+    , 'objc_getClass': [ 'pointer', [ 'string' ] ]
+    , 'sel_registerName': [ 'pointer', [ 'string' ] ]
+  });
+  var pool     = objcLib.objc_msgSend(objcLib.objc_getClass('NSAutoreleasePool'), objcLib.sel_registerName('new'))
+  var NSObject = objcLib.objc_getClass('NSObject');
+  var badSel   = objcLib.sel_registerName('badSelector');
+  assert.throws(function () {
+    objcLib.objc_msgSend(NSObject, badSel);
+  });
+}
+
+///////////////////////
+
 util.log("Heap increased by " + ((process.memoryUsage()["rss"] - rss) / 1024) + " KB");
