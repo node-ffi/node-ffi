@@ -572,10 +572,10 @@ setTimeout(function() {
         ["long", "tv_usec"]
     ]);
     
-    var lib = new FFI.Library(null, { "gettimeofday": [ "int", [ timeval, "pointer"] ] });
+    var lib = new FFI.Library(null, { "gettimeofday": [ "int", [ "pointer", "pointer"] ] });
     
     var tv = new timeval();
-    lib.gettimeofday(tv, null);
+    lib.gettimeofday(tv.ref(), null);
     
     assert.equal(tv.tv_sec, Math.floor(Date.now() / 1000));
 })();
