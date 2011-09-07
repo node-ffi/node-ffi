@@ -1,8 +1,8 @@
 var ffi = require('../')
   , assert = require('assert')
 
-// These expected alignments and offsets are from a compiled C program run on
-// 64-bit Mac OS X darwin
+// TODO: build struct examples statically as part of the build and expose
+// via the bindings interface.
 
 var test1 = ffi.Struct([
     ['int32', 'a']
@@ -82,8 +82,15 @@ var ffi_type = ffi.Struct([
   , ['ushort','type']
   , ['pointer','elements']
 ])
-inspect(ffi_type, 24, [0,8,10,16])
-
+if (ffi.Bindings.POINTER_SIZE == 4) {
+  inspect(ffi_type, 12, [0,4,6,8])
+}
+else if (ffi.Bindings.POINTER_SIZE == 8) {
+  inspect(ffi_type, 24, [0,8,10,16])
+}
+else {
+  console.log("Bad platform pointer size: %d bytes", PSZ);
+}
 
 function inspect (s, expectedSize, expectedOffsets) {
   var info = s.__structInfo__
@@ -107,3 +114,5 @@ function inspect (s, expectedSize, expectedOffsets) {
     assert.equal(expectedOffsets[i], props[p].offset)
   })
 }
+
+console.log("All tests passed!");

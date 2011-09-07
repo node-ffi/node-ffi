@@ -647,6 +647,7 @@ if (FFI.Bindings.HAS_OBJC) {
   var pool     = objcLib.objc_msgSend(objcLib.objc_getClass('NSAutoreleasePool'), objcLib.sel_registerName('new'))
   var NSObject = objcLib.objc_getClass('NSObject');
   var badSel   = objcLib.sel_registerName('badSelector');
+  util.log("=== 'NSObject badSelector' Exception log on next line is OK ===");
   assert.throws(function () {
     objcLib.objc_msgSend(NSObject, badSel);
   });
