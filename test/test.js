@@ -361,6 +361,17 @@ advptr.getCString(true);
 assert.ok(advptr.address > ptr.address);
 
 //////////////////////
+// https://github.com/rbranson/node-ffi/issues/27
+
+var basePtr = new FFI.Pointer(128);
+var ptr = basePtr.seek(0);
+
+ptr.putCString('one', true);
+ptr.putCString('two', true);
+assert.equal(basePtr.getCString(true), 'one');
+assert.equal(basePtr.getCString(true), 'two');
+
+//////////////////////
 
 assert.ok(FFI.Bindings.StaticFunctions instanceof Object);
 assert.ok(FFI.Bindings.StaticFunctions.dlopen instanceof Pointer);
