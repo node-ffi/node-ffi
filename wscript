@@ -6,7 +6,7 @@ from logging import fatal
 
 srcdir = '.'
 blddir = 'build'
-VERSION = '0.0.1'
+VERSION = '0.3.0'
 
 def set_options(opt):
   opt.tool_options('compiler_cxx')
@@ -52,10 +52,3 @@ def build(bld):
   obj.target = 'ffi_bindings'
   obj.source = './src/ffi.cc ./src/callback_info.cc ./src/pointer.cc ./src/threaded_callback_invokation.cc ./src/foreign_caller.cc'
   obj.uselib = 'FFI DL'
-
-def shutdown():
-  if Options.commands['clean']:
-    if exists('ffi_bindings.node'): unlink('ffi_bindings.node')
-  elif Options.commands['build']:
-    if exists('build/default/ffi_bindings.node') and not exists('ffi_bindings.node'):
-      symlink('build/default/ffi_bindings.node', 'ffi_bindings.node')
