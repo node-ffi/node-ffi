@@ -621,13 +621,12 @@ Handle<Value> Pointer::GetCString(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     char            *val = (char *)self->GetPointer();
     
+    Local<String> rtn = String::New(val);
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
-        self->MovePointer(sizeof(unsigned char *));
+        self->MovePointer(rtn->Utf8Length() + 1);
     }
     
-    //printf("Pointer::GetCString (%p): %s\n", self->GetPointer(), val);
-    
-    return scope.Close(String::New(val));
+    return scope.Close(rtn);
 }
 
 Handle<Value> Pointer::IsNull(const Arguments& args)
