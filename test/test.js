@@ -456,7 +456,7 @@ assert.ok(absFunc instanceof Function);
 assert.equal(1234, absFunc(-1234));
 
 //////////////////////
- 
+
 var builtValuePtr = FFI.Pointer.alloc("int32", 1234);
 assert.equal(1234, builtValuePtr.getInt32());
 assert.equal(1234, FFI.derefValuePtr("int32", builtValuePtr));
