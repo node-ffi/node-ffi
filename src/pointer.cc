@@ -608,7 +608,7 @@ Handle<Value> Pointer::PutCString(const Arguments& args)
         args[0]->ToString()->WriteUtf8((char *)ptr);
         
         if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
-            self->MovePointer(args[0]->ToString()->Utf8Length());
+            self->MovePointer(args[0]->ToString()->Utf8Length() + 1);
         }
     }
     
