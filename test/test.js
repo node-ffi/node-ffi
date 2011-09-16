@@ -368,8 +368,10 @@ var ptr = basePtr.seek(0);
 
 ptr.putCString('one', true);
 ptr.putCString('two', true);
+ptr.putCString('three', true);
 assert.equal(basePtr.getCString(true), 'one');
 assert.equal(basePtr.getCString(true), 'two');
+assert.equal(basePtr.getCString(true), 'three');
 
 //////////////////////
 
