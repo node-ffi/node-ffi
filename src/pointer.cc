@@ -10,7 +10,7 @@ Pointer::Pointer(unsigned char *ptr)
 Pointer::~Pointer()
 {
     if (this->m_allocated) {
-        printf("Pointer destructor called on ALLOCATED area\n");
+        //printf("Pointer destructor called on ALLOCATED area\n");
         free(this->m_ptr);
     }
 }
@@ -674,7 +674,7 @@ Handle<Value> Pointer::IsNull(const Arguments& args)
 // Callback that gets invoked when the Buffer returned from ToBuffer is being freed
 void Pointer::unref_pointer_callback(char *data, void *hint) {
   Pointer *p = static_cast<Pointer *>(hint);
-  printf("Unref()ing pointer\n");
+  //printf("Unref()ing pointer\n");
   p->Unref();
 }
 
