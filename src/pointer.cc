@@ -672,7 +672,11 @@ Handle<Value> Pointer::IsNull(const Arguments& args)
 }
 
 // Callback that gets invoked when the Buffer returned from ToBuffer is being freed
-void unref_pointer_callback(char *data, void *hint);
+void Pointer::unref_pointer_callback(char *data, void *hint) {
+  Pointer *p = static_cast<Pointer *>(hint);
+  printf("Unref()ing pointer\n");
+  p->Unref();
+}
 
 Handle<Value> Pointer::ToBuffer(const Arguments& args)
 {
@@ -692,10 +696,4 @@ Handle<Value> Pointer::ToBuffer(const Arguments& args)
   // increase the reference count for this Pointer
   self->Ref();
   return scope.Close(actualBuffer);
-}
-
-void unref_pointer_callback(char *data, void *hint) {
-  Pointer *p = static_cast<Pointer *>(hint);
-  printf("Unref()ing pointer\n");
-  //p->Unref();
 }
