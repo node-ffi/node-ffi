@@ -57,6 +57,9 @@ void FFI::InitializeBindings(Handle<Object> target)
     smap->Set(String::New("pointer"),   Integer::New(sizeof(unsigned char *)));
     smap->Set(String::New("string"),    Integer::New(sizeof(char *)));
     smap->Set(String::New("size_t"),    Integer::New(sizeof(size_t)));
+    // Size of a Persistent handle to a JS object
+    smap->Set(String::New("Object"),    Integer::New(sizeof(Persistent<Value>)));
+
     Local<Object> ftmap = Object::New();
     ftmap->Set(String::New("void"),     Pointer::WrapPointer((unsigned char *)&ffi_type_void));
     ftmap->Set(String::New("byte"),     Pointer::WrapPointer((unsigned char *)&ffi_type_uint8));
