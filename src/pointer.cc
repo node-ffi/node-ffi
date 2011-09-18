@@ -1,4 +1,5 @@
 #include "ffi.h"
+#include <node/node_buffer.h>
 
 Pointer::Pointer(unsigned char *ptr)
 {
@@ -9,7 +10,7 @@ Pointer::Pointer(unsigned char *ptr)
 Pointer::~Pointer()
 {
     if (this->m_allocated) {
-        //printf("Pointer destructor called on ALLOCATED area\n");
+        printf("Pointer destructor called on ALLOCATED area\n");
         free(this->m_ptr);
     }
 }
@@ -67,6 +68,7 @@ void Pointer::Initialize(Handle<Object> target)
     NODE_SET_PROTOTYPE_METHOD(t, "putCString", PutCString);
     NODE_SET_PROTOTYPE_METHOD(t, "getCString", GetCString);
     NODE_SET_PROTOTYPE_METHOD(t, "isNull", IsNull);
+    NODE_SET_PROTOTYPE_METHOD(t, "toBuffer", ToBuffer);
     
     target->Set(String::NewSymbol("Pointer"), t->GetFunction());
 }
@@ -667,4 +669,33 @@ Handle<Value> Pointer::IsNull(const Arguments& args)
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     return scope.Close(Boolean::New(self->GetPointer() == NULL));
+}
+
+// Callback that gets invoked when the Buffer returned from ToBuffer is being freed
+void unref_pointer_callback(char *data, void *hint);
+
+Handle<Value> Pointer::ToBuffer(const Arguments& args)
+{
+  HandleScope scope;
+  Pointer *self = ObjectWrap::Unwrap<Pointer>(args.This());
+  // First argument is the size of the new Buffer
+  // TODO: Default to the allocated size of the pointer when available
+  unsigned int sz = args[0]->Uint32Value();
+
+  // http://sambro.is-super-awesome.com/2011/03/03/creating-a-proper-buffer-in-a-node-c-addon
+  Buffer *slowBuffer = Buffer::New((char *)self->GetPointer(), (size_t)sz, unref_pointer_callback, self);
+  Local<Object> globalObj = Context::GetCurrent()->Global();
+  Local<Function> bufferConstructor = Local<Function>::Cast(globalObj->Get(String::New("Buffer")));
+  v8::Handle<Value> constructorArgs[3] = { slowBuffer->handle_, Integer::New(sz), Integer::New(0) };
+  Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
+
+  // increase the reference count for this Pointer
+  self->Ref();
+  return scope.Close(actualBuffer);
+}
+
+void unref_pointer_callback(char *data, void *hint) {
+  Pointer *p = static_cast<Pointer *>(hint);
+  printf("Unref()ing pointer\n");
+  //p->Unref();
 }
