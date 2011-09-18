@@ -682,9 +682,12 @@ Handle<Value> Pointer::ToBuffer(const Arguments& args)
 {
   HandleScope scope;
   Pointer *self = ObjectWrap::Unwrap<Pointer>(args.This());
+
   // First argument is the size of the new Buffer
-  // TODO: Default to the allocated size of the pointer when available
-  unsigned int sz = args[0]->Uint32Value();
+  unsigned int sz = self->m_allocated;
+  if (args.Length() == 1 && args[0]->IsNumber()) {
+    sz = args[0]->Uint32Value();
+  }
 
   // http://sambro.is-super-awesome.com/2011/03/03/creating-a-proper-buffer-in-a-node-c-addon
   Buffer *slowBuffer = Buffer::New((char *)self->GetPointer(), (size_t)sz, unref_pointer_callback, self);
