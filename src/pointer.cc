@@ -62,6 +62,8 @@ void Pointer::Initialize(Handle<Object> target)
     NODE_SET_PROTOTYPE_METHOD(t, "getDouble", GetDouble);
     NODE_SET_PROTOTYPE_METHOD(t, "_putPointer", PutPointerMethod);
     NODE_SET_PROTOTYPE_METHOD(t, "getPointer", GetPointerMethod);
+    NODE_SET_PROTOTYPE_METHOD(t, "getObject", GetObject);
+    NODE_SET_PROTOTYPE_METHOD(t, "putObject", PutObject);
     NODE_SET_PROTOTYPE_METHOD(t, "putCString", PutCString);
     NODE_SET_PROTOTYPE_METHOD(t, "getCString", GetCString);
     NODE_SET_PROTOTYPE_METHOD(t, "isNull", IsNull);
@@ -596,6 +598,37 @@ Handle<Value> Pointer::GetPointerMethod(const Arguments& args)
     }
     
     return scope.Close(WrapPointer(val));
+}
+
+Handle<Value> Pointer::PutObject(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+
+    if (args.Length() >= 1) {
+        Local<Value> obj = args[0];
+        *reinterpret_cast<Persistent<Value>*>(self->GetPointer()) = Persistent<Value>::New(obj);
+
+        if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
+            self->MovePointer(sizeof(Persistent<Value>));
+        }
+    }
+
+    return Undefined();
+}
+
+Handle<Value> Pointer::GetObject(const Arguments& args)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
+    unsigned char   *ptr = self->GetPointer();
+    Persistent<Value> rtn = *reinterpret_cast<Persistent<Value>*>(self->GetPointer());
+
+    if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
+        self->MovePointer(sizeof(Persistent<Value>));
+    }
+
+    return scope.Close(rtn);
 }
 
 Handle<Value> Pointer::PutCString(const Arguments& args)
