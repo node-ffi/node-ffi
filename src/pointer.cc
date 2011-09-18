@@ -683,7 +683,8 @@ Handle<Value> Pointer::ToBuffer(const Arguments& args)
   HandleScope scope;
   Pointer *self = ObjectWrap::Unwrap<Pointer>(args.This());
 
-  // First argument is the size of the new Buffer
+  // Defaults to the size of the allocated Buffer area, but can be explicitly
+  // specified as the first argument.
   unsigned int sz = self->m_allocated;
   if (args.Length() == 1 && args[0]->IsNumber()) {
     sz = args[0]->Uint32Value();
@@ -701,5 +702,6 @@ Handle<Value> Pointer::ToBuffer(const Arguments& args)
 
   // increase the reference count for this Pointer
   self->Ref();
+
   return scope.Close(actualBuffer);
 }
