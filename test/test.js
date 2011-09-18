@@ -375,6 +375,25 @@ assert.equal(basePtr.getCString(true), 'three');
 
 //////////////////////
 
+var p = new FFI.Pointer(128)
+  , orig = p.seek(0)
+
+var put1 = { test: { equality: true } }
+  , put2 = { test2: 'does this work?' }
+
+p.putObject(put1, true)
+p.putObject(put2, true)
+
+var get1 = orig.getObject(true)
+  , get2 = orig.getObject(true)
+
+assert.ok(put1 === get1)
+assert.ok(put2 === get2)
+assert.deepEqual(put1, get1)
+assert.deepEqual(put2, get2)
+
+//////////////////////
+
 assert.ok(FFI.Bindings.StaticFunctions instanceof Object);
 assert.ok(FFI.Bindings.StaticFunctions.dlopen instanceof Pointer);
 assert.ok(FFI.Bindings.StaticFunctions.dlclose instanceof Pointer);
