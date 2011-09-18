@@ -34,10 +34,10 @@ void FFI::InitializeBindings(Handle<Object> target)
     
     Local<Object> smap = Object::New();
     smap->Set(String::New("byte"),      Integer::New(sizeof(unsigned char)));
-    smap->Set(String::New("int8"),      Integer::New(sizeof(int8_t)));    
-    smap->Set(String::New("uint8"),     Integer::New(sizeof(uint8_t)));    
+    smap->Set(String::New("int8"),      Integer::New(sizeof(int8_t)));
+    smap->Set(String::New("uint8"),     Integer::New(sizeof(uint8_t)));
     smap->Set(String::New("int16"),     Integer::New(sizeof(int64_t)));
-    smap->Set(String::New("uint16"),    Integer::New(sizeof(uint16_t)));    
+    smap->Set(String::New("uint16"),    Integer::New(sizeof(uint16_t)));
     smap->Set(String::New("int32"),     Integer::New(sizeof(int32_t)));
     smap->Set(String::New("uint32"),    Integer::New(sizeof(uint32_t)));
     smap->Set(String::New("int64"),     Integer::New(sizeof(int64_t)));
@@ -57,7 +57,6 @@ void FFI::InitializeBindings(Handle<Object> target)
     smap->Set(String::New("pointer"),   Integer::New(sizeof(unsigned char *)));
     smap->Set(String::New("string"),    Integer::New(sizeof(char *)));
     smap->Set(String::New("size_t"),    Integer::New(sizeof(size_t)));
-    
     Local<Object> ftmap = Object::New();
     ftmap->Set(String::New("void"),     Pointer::WrapPointer((unsigned char *)&ffi_type_void));
     ftmap->Set(String::New("byte"),     Pointer::WrapPointer((unsigned char *)&ffi_type_uint8));
