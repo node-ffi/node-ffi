@@ -36,7 +36,7 @@ void FFI::InitializeBindings(Handle<Object> target)
     smap->Set(String::New("byte"),      Integer::New(sizeof(unsigned char)));
     smap->Set(String::New("int8"),      Integer::New(sizeof(int8_t)));
     smap->Set(String::New("uint8"),     Integer::New(sizeof(uint8_t)));
-    smap->Set(String::New("int16"),     Integer::New(sizeof(int64_t)));
+    smap->Set(String::New("int16"),     Integer::New(sizeof(int16_t)));
     smap->Set(String::New("uint16"),    Integer::New(sizeof(uint16_t)));
     smap->Set(String::New("int32"),     Integer::New(sizeof(int32_t)));
     smap->Set(String::New("uint32"),    Integer::New(sizeof(uint32_t)));
