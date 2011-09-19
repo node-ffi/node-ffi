@@ -689,7 +689,7 @@ Handle<Value> Pointer::ToBuffer(const Arguments& args)
   if (args.Length() == 1 && args[0]->IsNumber()) {
     sz = args[0]->Uint32Value();
   }
-  if (sz < 0 || sz > self->m_allocated) {
+  if (self->m_allocated > 0 && (sz < 0 || sz > self->m_allocated)) {
     return v8::ThrowException(v8::Exception::Error(v8::String::New("Out of bounds!")));
   }
 
