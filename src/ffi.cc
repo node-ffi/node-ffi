@@ -78,7 +78,7 @@ void FFI::InitializeBindings(Handle<Object> target)
     ftmap->Set(String::New("ushort"),   Pointer::WrapPointer((unsigned char *)&ffi_type_ushort));
     ftmap->Set(String::New("short"),    Pointer::WrapPointer((unsigned char *)&ffi_type_sshort));
     ftmap->Set(String::New("uint"),     Pointer::WrapPointer((unsigned char *)&ffi_type_uint));
-    ftmap->Set(String::New("int"),      Pointer::WrapPointer((unsigned char *)&ffi_type_sint));  
+    ftmap->Set(String::New("int"),      Pointer::WrapPointer((unsigned char *)&ffi_type_sint));
     ftmap->Set(String::New("float"),    Pointer::WrapPointer((unsigned char *)&ffi_type_float));
     ftmap->Set(String::New("double"),   Pointer::WrapPointer((unsigned char *)&ffi_type_double));
     ftmap->Set(String::New("pointer"),  Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
@@ -90,10 +90,9 @@ void FFI::InitializeBindings(Handle<Object> target)
     if (sizeof(long) == 4) {
         ftmap->Set(String::New("ulong"),    Pointer::WrapPointer((unsigned char *)&ffi_type_uint32));
         ftmap->Set(String::New("long"),     Pointer::WrapPointer((unsigned char *)&ffi_type_sint32));
-    }
-    else if (sizeof(long) == 8) {
+    } else if (sizeof(long) == 8) {
         ftmap->Set(String::New("ulong"),    Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
-        ftmap->Set(String::New("long"),     Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));        
+        ftmap->Set(String::New("long"),     Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
     }
 
     if (sizeof(intptr_t) == 4) {
@@ -107,9 +106,9 @@ void FFI::InitializeBindings(Handle<Object> target)
     // Let libffi handle "long long"
     ftmap->Set(String::New("ulonglong"),Pointer::WrapPointer((unsigned char *)&ffi_type_ulong));
     ftmap->Set(String::New("longlong"), Pointer::WrapPointer((unsigned char *)&ffi_type_slong));
-    
+
     target->Set(String::New("FFI_TYPES"), ftmap);
-    target->Set(String::New("TYPE_SIZE_MAP"), smap);    
+    target->Set(String::New("TYPE_SIZE_MAP"), smap);
 }
 
 Handle<Value> FFI::Strtoul(const Arguments &args)
@@ -126,7 +125,7 @@ Handle<Value> FFI::Strtoul(const Arguments &args)
 
 Handle<Value> FFI::FFIPrepCif(const Arguments& args)
 {
-    HandleScope     scope;
+    HandleScope scope;
 
     if (args.Length() == 3) {
         unsigned int nargs  = args[0]->Uint32Value();
