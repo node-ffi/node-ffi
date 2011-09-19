@@ -57,6 +57,8 @@ void FFI::InitializeBindings(Handle<Object> target)
     smap->Set(String::New("pointer"),   Integer::New(sizeof(unsigned char *)));
     smap->Set(String::New("string"),    Integer::New(sizeof(char *)));
     smap->Set(String::New("size_t"),    Integer::New(sizeof(size_t)));
+    smap->Set(String::New("intptr_t"), Integer::New(sizeof(intptr_t)));
+    smap->Set(String::New("uintptr_t"), Integer::New(sizeof(uintptr_t)));
     // Size of a Persistent handle to a JS object
     smap->Set(String::New("Object"),    Integer::New(sizeof(Persistent<Value>)));
 
@@ -93,7 +95,15 @@ void FFI::InitializeBindings(Handle<Object> target)
         ftmap->Set(String::New("ulong"),    Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
         ftmap->Set(String::New("long"),     Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));        
     }
-    
+
+    if (sizeof(intptr_t) == 4) {
+        ftmap->Set(String::New("uintptr_t"), Pointer::WrapPointer((unsigned char *)&ffi_type_uint32));
+        ftmap->Set(String::New("intptr_t"),  Pointer::WrapPointer((unsigned char *)&ffi_type_sint32));
+    } else if (sizeof(intptr_t) == 8) {
+        ftmap->Set(String::New("uintptr_t"), Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
+        ftmap->Set(String::New("intptr_t"),  Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
+    }
+
     // Let libffi handle "long long"
     ftmap->Set(String::New("ulonglong"),Pointer::WrapPointer((unsigned char *)&ffi_type_ulong));
     ftmap->Set(String::New("longlong"), Pointer::WrapPointer((unsigned char *)&ffi_type_slong));
