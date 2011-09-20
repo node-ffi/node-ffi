@@ -23,6 +23,7 @@ void FFI::InitializeBindings(Handle<Object> target)
 {
     Local<Object> o = Object::New();
     
+    target->Set(String::New("free"),             FunctionTemplate::New(Free)->GetFunction());
     target->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
     target->Set(String::New("strtoul"),          FunctionTemplate::New(Strtoul)->GetFunction());
     target->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
@@ -99,6 +100,14 @@ void FFI::InitializeBindings(Handle<Object> target)
 
     target->Set(String::New("FFI_TYPES"), ftmap);
     target->Set(String::New("TYPE_SIZE_MAP"), smap);
+}
+
+Handle<Value> FFI::Free(const Arguments &args)
+{
+    HandleScope scope;
+    Pointer *p = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
+    free(p->GetPointer());
+    return Undefined();
 }
 
 Handle<Value> FFI::Strtoul(const Arguments &args)

@@ -110,6 +110,7 @@ class FFI : public ObjectWrap {
         static void InitializeBindings(Handle<Object> Target);
 
     protected:
+        static Handle<Value> Free(const Arguments& args);
         static Handle<Value> FFIPrepCif(const Arguments& args);
         static Handle<Value> Strtoul(const Arguments& args);
 };
