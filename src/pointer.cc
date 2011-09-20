@@ -5,11 +5,12 @@ Pointer::Pointer(unsigned char *ptr)
 {
     this->m_ptr = ptr;
     this->m_allocated = 0;
+    this->doFree = false;
 }
 
 Pointer::~Pointer()
 {
-    if (this->m_allocated) {
+    if (this->doFree && this->m_allocated > 0) {
         //printf("Pointer destructor called on ALLOCATED area\n");
         free(this->m_ptr);
     }
@@ -26,6 +27,7 @@ Handle<FunctionTemplate> Pointer::MakeTemplate()
     inst->SetInternalFieldCount(2);
     inst->SetAccessor(String::NewSymbol("address"), GetAddress);
     inst->SetAccessor(String::NewSymbol("allocated"), GetAllocated);
+    inst->SetAccessor(String::NewSymbol("free"), GetFree, SetFree);
 
     return scope.Close(t);
 }
@@ -95,6 +97,9 @@ void Pointer::Alloc(size_t bytes)
             throw "malloc(): Could not allocate Memory";
         }
     }
+    // Any allocated Pointer gets free'd by default
+    // This can be changed in JS-land with `free`
+    this->doFree = true;
 }
 
 Handle<Object> Pointer::WrapInstance(Pointer *inst)
@@ -118,6 +123,11 @@ Handle<Value> Pointer::New(const Arguments& args)
     if (args.Length() >= 1 && args[0]->IsNumber()) {
         unsigned int sz = args[0]->Uint32Value();
         self->Alloc(sz);
+        if (args.Length() == 2 && args[1]->IsBoolean()) {
+            // Second argument specifies whether or not to call `free()` on the
+            // allocated buffer when this Pointer gets garbage collected
+            self->doFree = args[1]->BooleanValue();
+        }
     }
 
     // TODO: Figure out how to throw an exception here for zero args but not
@@ -148,6 +158,22 @@ Handle<Value> Pointer::GetAllocated(Local<String> name, const AccessorInfo& info
     ret = Integer::New(self->m_allocated);
     
     return scope.Close(ret);
+}
+
+Handle<Value> Pointer::GetFree(Local<String> name, const AccessorInfo& info)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(info.Holder());
+    Handle<Value>   ret = Boolean::New(self->doFree);
+    return scope.Close(ret);
+}
+
+void Pointer::SetFree(Local<String> property, Local<Value> value, const AccessorInfo &info)
+{
+    HandleScope     scope;
+    Pointer         *self = ObjectWrap::Unwrap<Pointer>(info.Holder());
+    Handle<Boolean> val = value->ToBoolean();
+    self->doFree = val->BooleanValue();
 }
 
 

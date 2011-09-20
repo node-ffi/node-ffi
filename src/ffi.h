@@ -87,12 +87,15 @@ class Pointer : public ObjectWrap {
 
         static Handle<Value> GetAddress(Local<String> name, const AccessorInfo& info);
         static Handle<Value> GetAllocated(Local<String> name, const AccessorInfo& info);
+        static Handle<Value> GetFree(Local<String> name, const AccessorInfo& info);
+        static void SetFree(Local<String> name, Local<Value> value, const AccessorInfo& info);
 
     private:
         static Persistent<FunctionTemplate> pointer_template;
         static Handle<FunctionTemplate> MakeTemplate();
         unsigned char *m_ptr;
         unsigned int m_allocated;
+        bool doFree;
 };
 
 class AsyncCallParams {
