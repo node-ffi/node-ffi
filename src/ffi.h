@@ -84,10 +84,10 @@ class Pointer : public ObjectWrap {
         static Handle<Value> ToBuffer(const Arguments& args);
 
         static void unref_pointer_callback(char *data, void *hint);
-        
+
         static Handle<Value> GetAddress(Local<String> name, const AccessorInfo& info);
         static Handle<Value> GetAllocated(Local<String> name, const AccessorInfo& info);
-        
+
     private:
         static Persistent<FunctionTemplate> pointer_template;
         static Handle<FunctionTemplate> MakeTemplate();

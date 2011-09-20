@@ -26,20 +26,20 @@ Handle<FunctionTemplate> Pointer::MakeTemplate()
     inst->SetInternalFieldCount(2);
     inst->SetAccessor(String::NewSymbol("address"), GetAddress);
     inst->SetAccessor(String::NewSymbol("allocated"), GetAllocated);
-    
+
     return scope.Close(t);
 }
 
 void Pointer::Initialize(Handle<Object> target)
 {
     HandleScope scope;
-    
+
     if (pointer_template.IsEmpty()) {
         pointer_template = Persistent<FunctionTemplate>::New(MakeTemplate());
     }
-    
+
     Handle<FunctionTemplate> t = pointer_template;
-    
+
     NODE_SET_PROTOTYPE_METHOD(t, "seek", Seek);
     NODE_SET_PROTOTYPE_METHOD(t, "putUInt8", PutUInt8);
     NODE_SET_PROTOTYPE_METHOD(t, "getUInt8", GetUInt8);
@@ -69,7 +69,7 @@ void Pointer::Initialize(Handle<Object> target)
     NODE_SET_PROTOTYPE_METHOD(t, "getCString", GetCString);
     NODE_SET_PROTOTYPE_METHOD(t, "isNull", IsNull);
     NODE_SET_PROTOTYPE_METHOD(t, "toBuffer", ToBuffer);
-    
+
     target->Set(String::NewSymbol("Pointer"), t->GetFunction());
 }
 
@@ -87,7 +87,7 @@ void Pointer::Alloc(size_t bytes)
 {
     if (!this->m_allocated && bytes > 0) {
         this->m_ptr = (unsigned char *)malloc(bytes);
-        
+
         if (this->m_ptr != NULL) {
             this->m_allocated = bytes;
         }
@@ -114,15 +114,15 @@ Handle<Value> Pointer::New(const Arguments& args)
 {
     HandleScope     scope;
     Pointer         *self = new Pointer(NULL);
-            
-    if (args.Length() == 1 && args[0]->IsNumber()) {
+
+    if (args.Length() >= 1 && args[0]->IsNumber()) {
         unsigned int sz = args[0]->Uint32Value();
         self->Alloc(sz);
     }
-    
+
     // TODO: Figure out how to throw an exception here for zero args but not
     // break WrapPointer's NewInstance() call.
-    
+
     self->Wrap(args.This());
     return args.This();
 }
@@ -159,7 +159,7 @@ Handle<Value> Pointer::Seek(const Arguments& args)
     
     if (args.Length() > 0 && args[0]->IsNumber()) {
         size_t offset = args[0]->IntegerValue();
-        ret = WrapPointer(static_cast<unsigned char *>(self->GetPointer()) + offset);      
+        ret = WrapPointer(static_cast<unsigned char *>(self->GetPointer()) + offset);
     }
     else {
         return THROW_ERROR_EXCEPTION("Must specify an offset");
