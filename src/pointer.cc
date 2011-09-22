@@ -24,7 +24,7 @@ Handle<FunctionTemplate> Pointer::MakeTemplate()
     Handle<FunctionTemplate> t = FunctionTemplate::New(New);
 
     Local<ObjectTemplate> inst = t->InstanceTemplate();
-    inst->SetInternalFieldCount(2);
+    inst->SetInternalFieldCount(1);
     inst->SetAccessor(String::NewSymbol("address"), GetAddress);
     inst->SetAccessor(String::NewSymbol("allocated"), GetAllocated);
     inst->SetAccessor(String::NewSymbol("free"), GetFree, SetFree);
