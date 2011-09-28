@@ -21,10 +21,19 @@ CallbackInfo::~CallbackInfo()
 
 void CallbackInfo::DispatchToV8(CallbackInfo *self, void *retval, void **parameters)
 {
+    HandleScope scope;
+
     Handle<Value> argv[2];
     argv[0] = Pointer::WrapPointer((unsigned char *)retval);
     argv[1] = Pointer::WrapPointer((unsigned char *)parameters);
+
+    TryCatch try_catch;
+
     self->m_function->Call(self->m_this, 2, argv);
+
+    if (try_catch.HasCaught()) {
+        FatalException(try_catch);
+    }
 }
 
 void CallbackInfo::WatcherCallback(EV_P_ ev_async *w, int revents)
