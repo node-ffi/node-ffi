@@ -6,7 +6,7 @@ from logging import fatal
 
 srcdir = '.'
 blddir = 'build'
-VERSION = '0.4.0'
+VERSION = '0.4.1'
 
 def set_options(opt):
   opt.tool_options('compiler_cxx')
