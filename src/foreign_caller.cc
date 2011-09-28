@@ -121,15 +121,25 @@ int ForeignCaller::AsyncFFICall(eio_req *req)
 
 int ForeignCaller::FinishAsyncFFICall(eio_req *req)
 {
+    HandleScope scope;
+
     AsyncCallParams *p = (AsyncCallParams *)req->data;
     Local<Value> argv[1];
     
     argv[0] = Local<Value>::New(String::New("success"));
 
-    // emit a success event
+    // get a reference to the 'emit' function
     Local<Function> emit = Local<Function>::Cast(p->emitter->Get(String::NewSymbol("emit")));
+
+    TryCatch try_catch;
+
+    // emit a success event
     emit->Call(p->emitter, 1, argv);
-    
+
+    if (try_catch.HasCaught()) {
+       FatalException(try_catch);
+    }
+
     // unref the event loop (ref'd in FFICall)
     ev_unref(EV_DEFAULT_UC);
     
