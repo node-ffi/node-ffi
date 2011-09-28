@@ -113,7 +113,7 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args)
 }
 
 int ForeignCaller::AsyncFFICall(eio_req *req)
-{        
+{
     AsyncCallParams *p = (AsyncCallParams *)req->data;
     ffi_call(p->cif, p->ptr, p->res, p->args);
     return 0;
@@ -125,7 +125,7 @@ int ForeignCaller::FinishAsyncFFICall(eio_req *req)
 
     AsyncCallParams *p = (AsyncCallParams *)req->data;
     Local<Value> argv[1];
-    
+
     argv[0] = Local<Value>::New(String::New("success"));
 
     // get a reference to the 'emit' function
@@ -142,12 +142,12 @@ int ForeignCaller::FinishAsyncFFICall(eio_req *req)
 
     // unref the event loop (ref'd in FFICall)
     ev_unref(EV_DEFAULT_UC);
-    
+
     // dispose of our persistent handle to the EventEmitter object
     p->emitter.Dispose();
-    
+
     // free up our memory (allocated in FFICall)
     delete p;
-    
+
     return 0;
 }

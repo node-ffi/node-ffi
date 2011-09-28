@@ -16,7 +16,7 @@ CallbackInfo::CallbackInfo(Handle<Function> func, void *closure)
 CallbackInfo::~CallbackInfo()
 {
     munmap(m_closure, sizeof(ffi_closure));
-    m_function.Dispose();    
+    m_function.Dispose();
 }
 
 void CallbackInfo::DispatchToV8(CallbackInfo *self, void *retval, void **parameters)
@@ -37,17 +37,17 @@ void CallbackInfo::DispatchToV8(CallbackInfo *self, void *retval, void **paramet
 }
 
 void CallbackInfo::WatcherCallback(EV_P_ ev_async *w, int revents)
-{    
+{
     pthread_mutex_lock(&g_queue_mutex);
-    
+
     while (!g_queue.empty()) {
         ThreadedCallbackInvokation *inv = g_queue.front();
         g_queue.pop();
-        
+
         DispatchToV8(inv->m_cbinfo, inv->m_retval, inv->m_parameters);
         inv->SignalDoneExecuting();
     }
-    
+
     pthread_mutex_unlock(&g_queue_mutex);
 }
 
@@ -111,35 +111,36 @@ Handle<Value> CallbackInfo::New(const Arguments& args)
 Handle<FunctionTemplate> CallbackInfo::MakeTemplate()
 {
     HandleScope scope;
+
     Handle<FunctionTemplate> t = FunctionTemplate::New(New);
 
     Local<ObjectTemplate> inst = t->InstanceTemplate();
     inst->SetInternalFieldCount(1);
     inst->SetAccessor(String::NewSymbol("pointer"), GetPointer);
-    
+
     return scope.Close(t);
 }
 
 void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data)
 {
     CallbackInfo    *self = (CallbackInfo *)user_data;
-    
+
     // are we executing from another thread?
     if (!pthread_equal(pthread_self(), g_mainthread)) {
         // create a temporary storage area for our invokation parameters
         ThreadedCallbackInvokation *inv = new ThreadedCallbackInvokation(self, retval, parameters);
-        
+
         // push it to the queue -- threadsafe
         pthread_mutex_lock(&g_queue_mutex);   
         g_queue.push(inv);
         pthread_mutex_unlock(&g_queue_mutex);
- 
+
         // send a message to our main thread to wake up the WatchCallback loop
         ev_async_send(EV_DEFAULT_UC_ &g_async);
-            
+
         // wait for signal from calling thread
         inv->WaitForExecution();
-        
+
         delete inv;
     }
     else {
