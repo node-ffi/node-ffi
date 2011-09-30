@@ -10,7 +10,7 @@ Pointer::Pointer(unsigned char *ptr)
 
 Pointer::~Pointer()
 {
-    if (this->doFree && this->m_allocated > 0) {
+    if (this->doFree) {
         //printf("Pointer destructor called on ALLOCATED area\n");
         free(this->m_ptr);
     }
