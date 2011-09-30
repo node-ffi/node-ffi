@@ -27,7 +27,6 @@ void FFI::InitializeBindings(Handle<Object> target)
     target->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
     target->Set(String::New("strtoul"),          FunctionTemplate::New(Strtoul)->GetFunction());
     target->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
-    target->Set(String::New("SIZE_SIZE"),        Integer::New(sizeof(size_t))); // DEPRECATED
     target->Set(String::New("FFI_TYPE_SIZE"),    Integer::New(sizeof(ffi_type)));
 #if __OBJC__ || __OBJC2__
     target->Set(String::New("HAS_OBJC"),         v8::True(), static_cast<v8::PropertyAttribute>(v8::ReadOnly|v8::DontDelete));
