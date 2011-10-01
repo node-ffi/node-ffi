@@ -723,7 +723,7 @@ Handle<Value> Pointer::ToBuffer(const Arguments& args)
   Buffer *slowBuffer = Buffer::New((char *)self->GetPointer(), (size_t)sz, unref_pointer_callback, self);
   Local<Object> globalObj = Context::GetCurrent()->Global();
   Local<Function> bufferConstructor = Local<Function>::Cast(globalObj->Get(String::New("Buffer")));
-  v8::Handle<Value> constructorArgs[3] = { slowBuffer->handle_, Integer::New(sz), Integer::New(0) };
+  Handle<Value> constructorArgs[3] = { slowBuffer->handle_, Integer::New(sz), Integer::New(0) };
   Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
 
   // increase the reference count for this Pointer

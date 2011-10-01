@@ -29,7 +29,7 @@ void FFI::InitializeBindings(Handle<Object> target)
     target->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
     target->Set(String::New("FFI_TYPE_SIZE"),    Integer::New(sizeof(ffi_type)));
 #if __OBJC__ || __OBJC2__
-    target->Set(String::New("HAS_OBJC"),         v8::True(), static_cast<v8::PropertyAttribute>(v8::ReadOnly|v8::DontDelete));
+    target->Set(String::New("HAS_OBJC"),         True(), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
     
     Local<Object> smap = Object::New();
