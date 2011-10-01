@@ -716,7 +716,7 @@ Handle<Value> Pointer::ToBuffer(const Arguments& args)
     sz = args[0]->Uint32Value();
   }
   if (self->m_allocated > 0 && (sz < 0 || sz > self->m_allocated)) {
-    return v8::ThrowException(v8::Exception::Error(v8::String::New("Out of bounds!")));
+    return ThrowException(Exception::Error(String::New("Out of bounds!")));
   }
 
   // http://sambro.is-super-awesome.com/2011/03/03/creating-a-proper-buffer-in-a-node-c-addon
