@@ -49,7 +49,6 @@ class Pointer : public ObjectWrap {
         unsigned char *GetPointer();
         void MovePointer(int bytes);
         void Alloc(size_t bytes);
-        void Free();
         
     protected:
         static Handle<Value> New(const Arguments& args);
