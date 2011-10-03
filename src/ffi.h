@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#if !defined(bzero)
+#include <strings.h>
+#endif
 #include <dlfcn.h>
 #include <limits.h>
 #include <errno.h>
