@@ -11,6 +11,9 @@
 #define __STDC_LIMIT_MACROS true
 #include <stdint.h>
 #include <sys/mman.h>
+#if __OBJC__ || __OBJC2__
+  #include <objc/objc.h>
+#endif
 #ifdef __APPLE__
 #include <ffi/ffi.h>
 #else
