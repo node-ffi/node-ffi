@@ -14,7 +14,7 @@
 #if __OBJC__ || __OBJC2__
   #include <objc/objc.h>
 #endif
-#ifdef __APPLE__
+#if __APPLE__ && !__arm__
 #include <ffi/ffi.h>
 #else
 #include <ffi.h>
