@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 #if !defined(bzero)
-#include <strings.h>
+  #include <strings.h>
 #endif
 #include <dlfcn.h>
 #include <limits.h>
@@ -15,9 +15,9 @@
   #include <objc/objc.h>
 #endif
 #if __APPLE__ && !__arm__
-#include <ffi/ffi.h>
+  #include <ffi/ffi.h>
 #else
-#include <ffi.h>
+  #include <ffi.h>
 #endif
 #include <node/eio.h>
 #include <node/node_version.h>
