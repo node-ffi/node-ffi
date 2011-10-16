@@ -40,6 +40,9 @@ def configure(conf):
   # there are ports of ObjC for linux, etc. but I'm not sure
   # the best way to detect for that
   if sys.platform.startswith("darwin"):
+    if not conf.check(lib='objc'):
+      if not conf.check(lib="objc", libpath=['/usr/lib'], uselib_store="OBJC"):
+        fatal("libobjc not found.")
     conf.env.append_value('CCFLAGS',  '-ObjC++')
     conf.env.append_value('CXXFLAGS', '-ObjC++')
 
@@ -51,4 +54,4 @@ def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
   obj.target = 'ffi_bindings'
   obj.source = './src/ffi.cc ./src/callback_info.cc ./src/pointer.cc ./src/threaded_callback_invokation.cc ./src/foreign_caller.cc'
-  obj.uselib = 'FFI DL'
+  obj.uselib = 'FFI DL OBJC'
