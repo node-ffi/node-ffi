@@ -9,36 +9,42 @@ node-ffi is a Node.js addon for loading and calling dynamic libraries using pure
 
 It also simplifies the augmentation of node.js with C code as it takes care of handling the translation of types across JavaScript and C, which can add reams of boilerplate code to your otherwise simple C. See the `example/factorial` for an example of this use case.
 
-WARNING: node-ffi assumes you know what you're doing. You can pretty easily create situations where you will segfault the interpreter and unless you've got C debugger skills, you probably won't know what's going on.
+**WARNING**: node-ffi assumes you know what you're doing. You can pretty easily create situations where you will segfault the interpreter and unless you've got C debugger skills, you probably won't know what's going on.
 
 # EXAMPLE
 
-    var FFI = require("node-ffi");
+``` js
+var FFI = require("node-ffi");
 
-    var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ] ] });
-    libm.ceil(1.5); // 2
+var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ] ] });
+libm.ceil(1.5); // 2
 
-    // You can also access just functions in the current process by passing a null
-    var current = new FFI.Library(null, { "atoi": [ "int32", [ "string" ] ] });
-    current.atoi("1234"); // 1234
+// You can also access just functions in the current process by passing a null
+var current = new FFI.Library(null, { "atoi": [ "int32", [ "string" ] ] });
+current.atoi("1234"); // 1234
+```
 
 # REQUIREMENTS
 
 * Linux, OS X, or Solaris.
-* The current version is tested to run on node.js 0.4 (specifically, 0.4.7)
+* The current version is tested to run on node.js 0.4 (specifically, 0.4.12)
 * libffi installed -- with development headers (comes with OS X and most Linux distros)
 
 # NPM INSTALL
-  
-    $ npm install node-ffi
+
+``` bash
+$ npm install node-ffi
+```
 
 # SOURCE INSTALL
 
-    $ git clone git://github.com/rbranson/node-ffi.git
-    $ cd node-ffi
-    $ node-waf configure build
-    $ node test.js
-    $ node-waf install
+``` bash
+$ git clone git://github.com/rbranson/node-ffi.git
+$ cd node-ffi
+$ node-waf configure build
+$ node test.js
+$ node-waf install
+```
 
 # TYPES
 
@@ -61,13 +67,13 @@ In addition to the basic types, there are type aliases for common C types.
     char        char
     uchar       unsigned char
     short       short
-    ushort		unsigned short
-    int			int
-    uint		unsigned int
-    long		long
-    ulong		unsigned long
-    longlong	long long
-    ulonglong	unsigned long long
+    ushort      unsigned short
+    int         int
+    uint        unsigned int
+    long        long
+    ulong       unsigned long
+    longlong    long
+    ulonglong   unsigned long long
     size_t      platform-dependent, usually pointer size
 
 # V8 and 64-bit Types
