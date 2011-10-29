@@ -19,7 +19,6 @@
         "url":          "http://github.com/rbranson/node-ffi.git"
     },
     "bugs": {
-        "mail":         "",
-        "web":          "http://github.com/rbranson/node-ffi/issues"
+        "url":          "http://github.com/rbranson/node-ffi/issues"
     }
 }
