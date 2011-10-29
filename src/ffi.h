@@ -19,7 +19,6 @@
 #else
   #include <ffi.h>
 #endif
-#include <node/eio.h>
 #include <node/node_version.h>
 #if !NODE_VERSION_AT_LEAST(0, 5, 4)
   #include <node/node_events.h>

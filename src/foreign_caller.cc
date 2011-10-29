@@ -84,7 +84,7 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args)
         p->emitter = Persistent<Object>::New(emitterConstructor->NewInstance());
 
         ev_ref(EV_DEFAULT_UC);
-#if NODE_VERSION_AT_LEAST(0, 5, 4) && !NODE_VERSION_AT_LEAST(0, 5, 7)
+#if NODE_VERSION_AT_LEAST(0, 5, 4)
         eio_custom((void (*)(eio_req*))ForeignCaller::AsyncFFICall, EIO_PRI_DEFAULT, ForeignCaller::FinishAsyncFFICall, p);
 #else
         eio_custom(ForeignCaller::AsyncFFICall, EIO_PRI_DEFAULT, ForeignCaller::FinishAsyncFFICall, p);
