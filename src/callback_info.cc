@@ -54,15 +54,15 @@ void CallbackInfo::WatcherCallback(EV_P_ ev_async *w, int revents)
 void CallbackInfo::Initialize(Handle<Object> target)
 {
     HandleScope scope;
-    
+
     if (callback_template.IsEmpty()) {
         callback_template = Persistent<FunctionTemplate>::New(MakeTemplate());
     }
-    
+
     Handle<FunctionTemplate> t = callback_template;
-    
+
     target->Set(String::NewSymbol("CallbackInfo"), t->GetFunction());
-    
+
     // initialize our threaded invokation stuff
     g_mainthread = pthread_self();
     ev_async_init(&g_async, CallbackInfo::WatcherCallback);
@@ -78,18 +78,18 @@ Handle<Value> CallbackInfo::New(const Arguments& args)
         Pointer         *cif        = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
         Local<Function> callback    = Local<Function>::Cast(args[1]);
         ffi_closure     *closure;
-        
+
         if ((closure = (ffi_closure *)mmap(NULL, sizeof(ffi_closure), PROT_READ | PROT_WRITE | PROT_EXEC,
             MAP_ANON | MAP_PRIVATE, -1, 0)) == (void*)-1)
         {
             return ThrowException(String::New("mmap() Returned Error"));
         }
-        
+
         CallbackInfo *self = new CallbackInfo(
             callback,
             closure
         );
-        
+
         // TODO: Check for failure here
         ffi_prep_closure(
             closure,
@@ -97,10 +97,10 @@ Handle<Value> CallbackInfo::New(const Arguments& args)
             Invoke,
             (void *)self
         );
-        
+
         self->Wrap(args.This());
         self->m_this = args.This();
-        
+
         return args.This();
     }
     else {
@@ -131,7 +131,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
         ThreadedCallbackInvokation *inv = new ThreadedCallbackInvokation(self, retval, parameters);
 
         // push it to the queue -- threadsafe
-        pthread_mutex_lock(&g_queue_mutex);   
+        pthread_mutex_lock(&g_queue_mutex);
         g_queue.push(inv);
         pthread_mutex_unlock(&g_queue_mutex);
 

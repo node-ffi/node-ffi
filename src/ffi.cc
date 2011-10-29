@@ -5,7 +5,7 @@
 void FFI::InitializeStaticFunctions(Handle<Object> target)
 {
     Local<Object>       o = Object::New();
-    
+
     // abs and atoi here for testing purposes
     o->Set(String::New("abs"),      Pointer::WrapPointer((unsigned char *)abs));
     o->Set(String::New("atoi"),     Pointer::WrapPointer((unsigned char *)atoi));
@@ -13,7 +13,7 @@ void FFI::InitializeStaticFunctions(Handle<Object> target)
     o->Set(String::New("dlclose"),  Pointer::WrapPointer((unsigned char *)dlclose));
     o->Set(String::New("dlsym"),    Pointer::WrapPointer((unsigned char *)dlsym));
     o->Set(String::New("dlerror"),  Pointer::WrapPointer((unsigned char *)dlerror));
-    
+
     target->Set(String::NewSymbol("StaticFunctions"), o);
 }
 
@@ -22,7 +22,7 @@ void FFI::InitializeStaticFunctions(Handle<Object> target)
 void FFI::InitializeBindings(Handle<Object> target)
 {
     Local<Object> o = Object::New();
-    
+
     target->Set(String::New("free"),             FunctionTemplate::New(Free)->GetFunction());
     target->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
     target->Set(String::New("strtoul"),          FunctionTemplate::New(Strtoul)->GetFunction());
@@ -31,7 +31,7 @@ void FFI::InitializeBindings(Handle<Object> target)
 #if __OBJC__ || __OBJC2__
     target->Set(String::New("HAS_OBJC"),         True(), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
-    
+
     Local<Object> smap = Object::New();
     smap->Set(String::New("byte"),      Integer::New(sizeof(unsigned char)));
     smap->Set(String::New("int8"),      Integer::New(sizeof(int8_t)));
@@ -82,7 +82,7 @@ void FFI::InitializeBindings(Handle<Object> target)
     ftmap->Set(String::New("pointer"),  Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
     ftmap->Set(String::New("string"),   Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
     ftmap->Set(String::New("size_t"),   Pointer::WrapPointer((unsigned char *)&ffi_type_pointer));
-    
+
     // libffi is weird when it comes to long data types (defaults to 64-bit), so we emulate here, since
     // some platforms have 32-bit longs and some platforms have 64-bit longs.
     if (sizeof(long) == 4) {
@@ -92,7 +92,7 @@ void FFI::InitializeBindings(Handle<Object> target)
         ftmap->Set(String::New("ulong"),    Pointer::WrapPointer((unsigned char *)&ffi_type_uint64));
         ftmap->Set(String::New("long"),     Pointer::WrapPointer((unsigned char *)&ffi_type_sint64));
     }
-    
+
     // Let libffi handle "long long"
     ftmap->Set(String::New("ulonglong"),Pointer::WrapPointer((unsigned char *)&ffi_type_ulong));
     ftmap->Set(String::New("longlong"), Pointer::WrapPointer((unsigned char *)&ffi_type_slong));
@@ -115,9 +115,9 @@ Handle<Value> FFI::Strtoul(const Arguments &args)
     Pointer *middle = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
     char buf[128];
     args[0]->ToString()->WriteUtf8(buf);
-    
+
     unsigned long val = strtoul(buf, (char **)middle->GetPointer(), args[2]->Int32Value());
-    
+
     return scope.Close(Integer::NewFromUnsigned(val));
 }
 
@@ -130,21 +130,21 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args)
         Pointer *rtype      = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
         Pointer *atypes     = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
         ffi_status status;
-        
+
         Pointer *cif = new Pointer(NULL);
         cif->Alloc(sizeof(ffi_cif));
-        
+
         if ((status = ffi_prep_cif(
             (ffi_cif *)cif->GetPointer(),
             FFI_DEFAULT_ABI,
             nargs,
             (ffi_type *)rtype->GetPointer(),
             (ffi_type **)atypes->GetPointer()))) {
-                
+
             delete cif;
             return THROW_ERROR_EXCEPTION("ffi_prep_cif() returned error.");
         }
-        
+
         return scope.Close(Pointer::WrapInstance(cif));
     }
     else {

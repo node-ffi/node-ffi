@@ -1,7 +1,7 @@
 import sys
 import Options
 from os import unlink, symlink, popen
-from os.path import exists 
+from os.path import exists
 from logging import fatal
 
 srcdir = '.'

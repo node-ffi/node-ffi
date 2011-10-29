@@ -142,10 +142,10 @@ Handle<Value> Pointer::GetAddress(Local<String> name, const AccessorInfo& info)
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(info.Holder());
     Handle<Value>   ret;
-    
+
     // TODO: make this access the private var directly
     ret = Number::New((size_t)self->GetPointer());
-    
+
     return scope.Close(ret);
 }
 
@@ -154,9 +154,9 @@ Handle<Value> Pointer::GetAllocated(Local<String> name, const AccessorInfo& info
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(info.Holder());
     Handle<Value>   ret;
-    
+
     ret = Integer::New(self->m_allocated);
-    
+
     return scope.Close(ret);
 }
 
@@ -182,7 +182,7 @@ Handle<Value> Pointer::Seek(const Arguments& args)
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     Handle<Value>   ret;
-    
+
     if (args.Length() > 0 && args[0]->IsNumber()) {
         size_t offset = args[0]->IntegerValue();
         ret = WrapPointer(static_cast<unsigned char *>(self->GetPointer()) + offset);
@@ -190,19 +190,19 @@ Handle<Value> Pointer::Seek(const Arguments& args)
     else {
         return THROW_ERROR_EXCEPTION("Must specify an offset");
     }
-    
+
     return scope.Close(ret);
 }
 
 Handle<Value> Pointer::PutUInt8(const Arguments& args)
-{    
+{
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
 
     if (args.Length() >= 1 && args[0]->IsNumber()) {
         int64_t val = args[0]->IntegerValue();
-        
+
         if (val >= UINT8_MIN && val <= UINT8_MAX) {
             uint8_t cvt = (uint8_t)val;
             memcpy(ptr, &cvt, sizeof(uint8_t));
@@ -232,14 +232,14 @@ Handle<Value> Pointer::GetUInt8(const Arguments& args)
 }
 
 Handle<Value> Pointer::PutInt8(const Arguments& args)
-{    
+{
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
 
     if (args.Length() >= 1 && args[0]->IsNumber()) {
         int64_t val = args[0]->IntegerValue();
-        
+
         if (val >= INT8_MIN && val <= INT8_MAX) {
             int8_t cvt = (int8_t)val;
             memcpy(ptr, &cvt, sizeof(int8_t));
@@ -279,7 +279,7 @@ Handle<Value> Pointer::PutInt16(const Arguments& args)
     // TODO: Exception handling here for out of range values
     if (args.Length() >= 1 && args[0]->IsNumber()) {
         int64_t val = args[0]->IntegerValue();
-        
+
         if (val >= INT16_MIN && val <= INT16_MAX) {
             int16_t cvt = (int16_t)val;
             memcpy(ptr, &cvt, sizeof(int16_t));
@@ -291,7 +291,7 @@ Handle<Value> Pointer::PutInt16(const Arguments& args)
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(int16_t));
     }
-    
+
     return Undefined();
 }
 
@@ -305,7 +305,7 @@ Handle<Value> Pointer::GetInt16(const Arguments& args)
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(int16_t));
     }
-    
+
     return scope.Close(Integer::New(val));
 }
 
@@ -318,7 +318,7 @@ Handle<Value> Pointer::PutUInt16(const Arguments& args)
     // TODO: Exception handling here for out of range values
     if (args.Length() >= 1 && args[0]->IsNumber()) {
         int64_t val = args[0]->IntegerValue();
-        
+
         if (val >= UINT16_MIN && val <= UINT16_MAX) {
             uint16_t cvt = (uint16_t)val;
             memcpy(ptr, &cvt, sizeof(uint16_t));
@@ -330,7 +330,7 @@ Handle<Value> Pointer::PutUInt16(const Arguments& args)
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(uint16_t));
     }
-    
+
     return Undefined();
 }
 
@@ -356,7 +356,7 @@ Handle<Value> Pointer::PutInt32(const Arguments& args)
 
     if (args.Length() >= 1 && args[0]->IsNumber()) {
         int64_t val = args[0]->IntegerValue();
-        
+
         if (val >= INT32_MIN && val <= INT32_MAX) { // XXX: Will this ever be false?
             memcpy(ptr, &val, sizeof(int32_t));
         }
@@ -367,7 +367,7 @@ Handle<Value> Pointer::PutInt32(const Arguments& args)
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(int32_t));
     }
-    
+
     return Undefined();
 }
 
@@ -381,7 +381,7 @@ Handle<Value> Pointer::GetInt32(const Arguments& args)
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(int32_t));
     }
-    
+
     return scope.Close(Integer::New(val));
 }
 
@@ -393,7 +393,7 @@ Handle<Value> Pointer::PutUInt32(const Arguments& args)
 
     if (args.Length() >= 1 && args[0]->IsNumber()) {
         int64_t val = args[0]->IntegerValue();
-        
+
         if (val >= UINT32_MIN && val <= UINT32_MAX) { // XXX: Will this ever be false?
             memcpy(ptr, &val, sizeof(uint32_t));
         }
@@ -404,7 +404,7 @@ Handle<Value> Pointer::PutUInt32(const Arguments& args)
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(uint32_t));
     }
-    
+
     return Undefined();
 }
 
@@ -430,19 +430,19 @@ Handle<Value> Pointer::PutInt64(const Arguments& args)
 
     // Have to do this because strtoll doesn't set errno to 0 on success :(
     errno = 0;
-    
+
     if (args.Length() >= 1) {
         if (args[0]->IsNumber() || args[0]->IsString()) {
             int64_t val;
-            
+
             if (args[0]->IsNumber()) {
                 val = args[0]->IntegerValue();
             }
             else { // assumed args[0]->IsString() from condition above
                 String::Utf8Value str(args[0]->ToString());
-                val = STR_TO_INT64(*str);                
+                val = STR_TO_INT64(*str);
             }
-            
+
             if (errno != ERANGE && (val >= INT64_MIN && val <= INT64_MAX)) {
                 memcpy(ptr, &val, sizeof(int64_t));
             }
@@ -454,7 +454,7 @@ Handle<Value> Pointer::PutInt64(const Arguments& args)
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(int64_t));
     }
-    
+
     return Undefined();
 }
 
@@ -465,14 +465,14 @@ Handle<Value> Pointer::GetInt64(const Arguments& args)
     unsigned char   *ptr = self->GetPointer();
     int64_t         val = *((int64_t *)ptr);
     char            buf[INTEGER_CONVERSION_BUFFER_SIZE];
-    
+
     bzero(buf, INTEGER_CONVERSION_BUFFER_SIZE);
     snprintf(buf, INTEGER_CONVERSION_BUFFER_SIZE, "%lld", val);
-    
+
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(int64_t));
     }
-    
+
     return scope.Close(String::New(buf));
 }
 
@@ -484,15 +484,15 @@ Handle<Value> Pointer::PutUInt64(const Arguments& args)
 
     // Have to do this because strtoull doesn't set errno to 0 on success :(
     errno = 0;
-    
+
     if (args.Length() >= 1) {
         if (args[0]->IsNumber() || args[0]->IsString()) {
             uint64_t val;
-            
+
             // Convert everything to a string because it's easier this way
             String::Utf8Value str(args[0]->ToString());
             val = STR_TO_UINT64(*str);
-            
+
             if ((*str)[0] != '-' && errno != ERANGE && (val >= UINT64_MIN && val <= UINT64_MAX)) {
                 memcpy(ptr, &val, sizeof(uint64_t));
             }
@@ -504,7 +504,7 @@ Handle<Value> Pointer::PutUInt64(const Arguments& args)
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(uint64_t));
     }
-    
+
     return Undefined();
 }
 
@@ -515,14 +515,14 @@ Handle<Value> Pointer::GetUInt64(const Arguments& args)
     unsigned char   *ptr = self->GetPointer();
     uint64_t        val = *((uint64_t *)ptr);
     char            buf[INTEGER_CONVERSION_BUFFER_SIZE];
-    
+
     bzero(buf, INTEGER_CONVERSION_BUFFER_SIZE);
     snprintf(buf, INTEGER_CONVERSION_BUFFER_SIZE, "%llu", val);
-    
+
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(uint64_t));
     }
-    
+
     return scope.Close(String::New(buf));
 }
 
@@ -539,7 +539,7 @@ Handle<Value> Pointer::PutFloat(const Arguments& args)
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(float));
     }
-    
+
     return Undefined();
 }
 
@@ -549,11 +549,11 @@ Handle<Value> Pointer::GetFloat(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
     float           val = *((float *)ptr);
-    
+
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(float));
     }
-    
+
     return scope.Close(Number::New((double)val));
 }
 
@@ -570,7 +570,7 @@ Handle<Value> Pointer::PutDouble(const Arguments& args)
     if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
         self->MovePointer(sizeof(double));
     }
-    
+
     return Undefined();
 }
 
@@ -580,11 +580,11 @@ Handle<Value> Pointer::GetDouble(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
     double          val = *((double *)ptr);
-    
+
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(double));
     }
-    
+
     return scope.Close(Number::New(val));
 }
 
@@ -600,7 +600,7 @@ Handle<Value> Pointer::PutPointerMethod(const Arguments& args)
         }
         else {
             Pointer *obj = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
-            *((unsigned char **)ptr) = obj->GetPointer();            
+            *((unsigned char **)ptr) = obj->GetPointer();
         }
         //printf("Pointer::PutPointerMethod: writing pointer %p at %p\n", *((unsigned char **)ptr), ptr);
 
@@ -608,7 +608,7 @@ Handle<Value> Pointer::PutPointerMethod(const Arguments& args)
             self->MovePointer(sizeof(unsigned char *));
         }
     }
-    
+
     return Undefined();
 }
 
@@ -618,13 +618,13 @@ Handle<Value> Pointer::GetPointerMethod(const Arguments& args)
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     unsigned char   *ptr = self->GetPointer();
     unsigned char   *val = *((unsigned char **)ptr);
-    
+
     //printf("Pointer::GetPointerMethod: got %p from %p\n", val, ptr);
-    
+
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(sizeof(unsigned char *));
     }
-    
+
     return scope.Close(WrapPointer(val));
 }
 
@@ -667,12 +667,12 @@ Handle<Value> Pointer::PutCString(const Arguments& args)
 
     if (args.Length() >= 1 && args[0]->IsString()) {
         args[0]->ToString()->WriteUtf8((char *)ptr);
-        
+
         if (args.Length() == 2 && args[1]->IsBoolean() && args[1]->BooleanValue()) {
             self->MovePointer(args[0]->ToString()->Utf8Length() + 1);
         }
     }
-    
+
     return Undefined();
 }
 
@@ -681,12 +681,12 @@ Handle<Value> Pointer::GetCString(const Arguments& args)
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
     char            *val = (char *)self->GetPointer();
-    
+
     Local<String> rtn = String::New(val);
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
         self->MovePointer(rtn->Utf8Length() + 1);
     }
-    
+
     return scope.Close(rtn);
 }
 

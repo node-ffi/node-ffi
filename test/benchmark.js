@@ -3,7 +3,7 @@ var FFI     = require("../lib/ffi"),
 
 function measureIterationsOverTime(what, duration, f, granularity) {
     granularity = granularity || 1000;
-    
+
     var iterations  = 0,
         start       = Date.now();
 
@@ -13,10 +13,10 @@ function measureIterationsOverTime(what, duration, f, granularity) {
         }
         iterations += granularity;
     };
-    
+
     var duration    = Date.now() - start,
         persec      = (iterations / (Date.now() - start)) * 1000;
-        
+
     util.log("Executed " + what + " " + iterations + " times in " + duration + "ms " + "(" + persec + "/sec)");
 }
 

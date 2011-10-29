@@ -5,7 +5,7 @@ ThreadedCallbackInvokation::ThreadedCallbackInvokation(CallbackInfo *cbinfo, voi
     m_cbinfo = cbinfo;
     m_retval = retval;
     m_parameters = parameters;
-    
+
     pthread_mutex_init(&m_mutex, NULL);
     pthread_cond_init(&m_cond, NULL);
     ev_ref(EV_DEFAULT_UC); // hold the event loop open while this is executing

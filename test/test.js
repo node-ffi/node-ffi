@@ -226,7 +226,7 @@ assert.equal(17, ptr.getULongLong());
 ///////////////////////////////
 
 assert.throws(function() {
-   ptr.putSizeT(-1); 
+   ptr.putSizeT(-1);
 });
 
 ptr.putSizeT(18);
@@ -510,9 +510,9 @@ assert.ok(!ceilPtr.isNull());
 
 var ceil = FFI.ForeignFunction.build(ceilPtr, "double", [ "double" ]);
 assert.ok(ceil instanceof Function);
- 
+
 assert.equal(2, ceil(1.5));
- 
+
 libm.close();
 
 ///////////////////////
@@ -581,7 +581,7 @@ var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ], {"async":
 assert.ok(libm instanceof FFI.Library);
 assert.ok(libm.ceil instanceof Function);
 
-libm.ceil(1.5).on("success", function(res) { 
+libm.ceil(1.5).on("success", function(res) {
     libmCeilAsyncCallExecuted = true;
     assert.equal(2, res);
 });
@@ -603,12 +603,12 @@ setTimeout(function() {
         ["long", "tv_sec"],
         ["long", "tv_usec"]
     ]);
-    
+
     var lib = new FFI.Library(null, { "gettimeofday": [ "int", [ "pointer", "pointer"] ] });
-    
+
     var tv = new timeval();
     lib.gettimeofday(tv.ref(), null);
-    
+
     assert.equal(tv.tv_sec, Math.floor(Date.now() / 1000));
 })();
 
@@ -618,17 +618,17 @@ setTimeout(function() {
         ["int", "a"],
         ["int", "b"]
     ]);
-    
+
     var ParentStructType = FFI.Struct([
         [ChildStructType, "childA"],
         [ChildStructType, "childB"]
     ]);
-    
+
     var ps = new ParentStructType({
         "childA": { "a": 100, "b": 200 },
         "childB": { "a": 300, "b": 400 }
     });
-    
+
     assert.equal(100, ps.childA.a);
     assert.equal(200, ps.childA.b);
     assert.equal(300, ps.childB.a);

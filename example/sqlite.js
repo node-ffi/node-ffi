@@ -33,16 +33,16 @@ for (var i = 0; i < 5; i++) {
 var rowCount = 0;
 var callback = new FFI.Callback(["int32", ["pointer", "int32", "pointer", "pointer"]], function(tmp, cols, argv, colv) {
     var obj = {};
-    
+
     for (var i = 0; i < cols; i++) {
         var colName = colv.getPointer().getCString();
         var colData = argv.getPointer().getCString();
         obj[colName] = colData;
     }
-    
+
     util.log("Row: " + JSON.stringify(obj));
     rowCount++;
-    
+
     return 0;
 });
 

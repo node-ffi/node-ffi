@@ -5,7 +5,7 @@ http://github.com/rbranson/node-ffi
 
 # DESCRIPTION
 
-node-ffi is a Node.js addon for loading and calling dynamic libraries using pure JavaScript. It can be used to create bindings to native libraries without writing any C++ code. 
+node-ffi is a Node.js addon for loading and calling dynamic libraries using pure JavaScript. It can be used to create bindings to native libraries without writing any C++ code.
 
 It also simplifies the augmentation of node.js with C code as it takes care of handling the translation of types across JavaScript and C, which can add reams of boilerplate code to your otherwise simple C. See the `example/factorial` for an example of this use case.
 
@@ -54,8 +54,8 @@ $ node-waf install
     uint16      Unsigned 16-bit Integer
     int32       Signed 32-bit Integer
     uint32      Unsigned 32-bit Integer
-    int64       Signed 64-bit Integer 
-    uint64      Unsigned 64-bit Integer 
+    int64       Signed 64-bit Integer
+    uint64      Unsigned 64-bit Integer
     float       Single Precision Floating Point Number (float)
     double      Double Precision Floating Point Number (double)
     pointer     Pointer Type
@@ -78,7 +78,7 @@ In addition to the basic types, there are type aliases for common C types.
 
 # V8 and 64-bit Types
 
-Internally, V8 stores integers that will fit into a 32-bit space in a 32-bit integer, and those that fall outside of this get put into double-precision floating point numbers. This is problematic because FP numbers are imprecise. To get around this, the methods in node-ffi that deal with 64-bit integers return strings and can accept strings as parameters. 
+Internally, V8 stores integers that will fit into a 32-bit space in a 32-bit integer, and those that fall outside of this get put into double-precision floating point numbers. This is problematic because FP numbers are imprecise. To get around this, the methods in node-ffi that deal with 64-bit integers return strings and can accept strings as parameters.
 
 # Call Overhead
 
