@@ -1,6 +1,6 @@
 {
     "name":         "node-ffi",
-    "version":      "0.4.1",
+    "version":      "0.4.2",
     "author":       "Rick Branson",
     "contributors": [
       "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
