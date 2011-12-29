@@ -5,6 +5,8 @@ var expect = require('expect.js')
 
 describe('Pointer', function () {
 
+  afterEach(gc)
+
   it('should work with the `new` operator', function () {
     var p = new Pointer(8)
       , test = p instanceof Pointer
