@@ -92,14 +92,15 @@ void Pointer::Alloc(size_t bytes)
 
         if (this->m_ptr != NULL) {
             this->m_allocated = bytes;
+
+            // Any allocated Pointer gets free'd by default
+            // This can be changed in JS-land with `free`
+            this->doFree = true;
         }
         else {
             throw "malloc(): Could not allocate Memory";
         }
     }
-    // Any allocated Pointer gets free'd by default
-    // This can be changed in JS-land with `free`
-    this->doFree = true;
 }
 
 Handle<Object> Pointer::WrapInstance(Pointer *inst)
