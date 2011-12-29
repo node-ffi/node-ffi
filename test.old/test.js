@@ -58,29 +58,6 @@ assert.throws(function() { ptr.putUInt64("-1"); });
 ptr.putUInt64("18446744073709551615");
 assert.equal("18446744073709551615", ptr.getUInt64());
 
-////////////////
-
-// TODO: values outside of "float" precision create unpredictable results
-ptr.putFloat(1.5);
-assert.equal(1.5, ptr.getFloat());
-
-ptr.putDouble(1000.005);
-assert.equal(1000.005, ptr.getDouble());
-
-var nptr = new Pointer(32);
-nptr.putDouble(1234.5678);
-ptr.putPointer(nptr);
-
-assert.equal(nptr.address, ptr.getPointer().address);
-assert.equal(1234.5678, ptr.getPointer().getDouble());
-assert.equal(32, nptr.allocated);
-
-ptr.putCString("Hello World!");
-assert.equal("Hello World!", ptr.getCString());
-
-////////////////////////
-
-
 //////////////////////////
 
 // Exercise the "non-specific" getters/putters

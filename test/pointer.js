@@ -10,6 +10,11 @@ describe('Pointer', function () {
     expect(test).to.be.true
   })
 
+  it('should have a valid "allocated" property when malloc()\'d', function () {
+    var p = new Pointer(1024)
+    expect(p.allocated).to.equal(1024)
+  })
+
   it('should have a valid "address"', function () {
     var p = new Pointer(8)
     expect(p.address).to.be.greaterThan(0)
@@ -38,7 +43,7 @@ describe('Pointer', function () {
 
   })
 
-  describe('putInt8()', function () {
+  describe('int8', function () {
 
     it('should throw on out of bounds values (minimum)', function () {
       var p = new Pointer(8)
@@ -61,7 +66,7 @@ describe('Pointer', function () {
 
   })
 
-  describe('putUInt8()', function () {
+  describe('uint8', function () {
 
     it('should throw on out of bounds values (minimum)', function () {
       var p = new Pointer(8)
@@ -84,7 +89,7 @@ describe('Pointer', function () {
 
   })
 
-  describe('putInt16()', function () {
+  describe('int16', function () {
 
     it('should throw on out of bounds values (minimum)', function () {
       var p = new Pointer(8)
@@ -107,7 +112,7 @@ describe('Pointer', function () {
 
   })
 
-  describe('putUInt16()', function () {
+  describe('uint16', function () {
 
     it('should throw on out of bounds values (minimum)', function () {
       var p = new Pointer(8)
@@ -126,6 +131,53 @@ describe('Pointer', function () {
         , val = Math.pow(2, 16) - 1
       p.putUInt16(val)
       expect(p.getUInt16()).to.equal(val)
+    })
+
+  })
+
+  describe('float', function () {
+
+    it('should write a "float" value properly', function () {
+      var p = new Pointer(16)
+        , val = 1.5
+      p.putFloat(val)
+      expect(p.getFloat()).to.equal(val)
+    })
+
+  })
+
+  describe('double', function () {
+
+    it('should write a "double" value properly', function () {
+      var p = new Pointer(16)
+        , val = 1000.005
+      p.putDouble(val)
+      expect(p.getDouble()).to.equal(val)
+    })
+
+  })
+
+  describe('pointer', function () {
+
+    it('should write another Pointer instance properly', function () {
+      var p = new Pointer(16)
+        , p2 = new Pointer(32)
+        , val = 1234.5678
+      p2.putDouble(val)
+      p.putPointer(p2)
+      expect(p.getPointer().address).to.equal(p2.address)
+      expect(p.getPointer().getDouble()).to.equal(val)
+    })
+
+  })
+
+  describe('string', function () {
+
+    it('should wrte a C string (char array) properly', function () {
+      var p = new Pointer(32)
+        , msg = 'Hello World!'
+      p.putCString(msg)
+      expect(p.getCString()).to.equal(msg)
     })
 
   })
