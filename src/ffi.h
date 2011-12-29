@@ -95,6 +95,7 @@ class Pointer : public ObjectWrap {
         static Persistent<FunctionTemplate> pointer_template;
         static Handle<FunctionTemplate> MakeTemplate();
         unsigned char *m_ptr;
+        unsigned char *origPtr;
         unsigned int m_allocated;
         bool doFree;
 };

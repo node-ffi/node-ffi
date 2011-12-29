@@ -3,6 +3,7 @@
 
 Pointer::Pointer(unsigned char *ptr)
 {
+    this->origPtr = ptr;
     this->m_ptr = ptr;
     this->m_allocated = 0;
     this->doFree = false;
@@ -11,8 +12,8 @@ Pointer::Pointer(unsigned char *ptr)
 Pointer::~Pointer()
 {
     if (this->doFree) {
-        //printf("Pointer destructor called on ALLOCATED area\n");
-        free(this->m_ptr);
+        //fprintf(stderr, "Pointer destructor called on ALLOCATED area: %p\n", this->m_ptr);
+        free(this->origPtr);
     }
 }
 
@@ -89,6 +90,8 @@ void Pointer::Alloc(size_t bytes)
 {
     if (!this->m_allocated && bytes > 0) {
         this->m_ptr = (unsigned char *)malloc(bytes);
+        this->origPtr = this->m_ptr;
+        //fprintf(stderr, "malloc()'d %p\n", this->m_ptr);
 
         if (this->m_ptr != NULL) {
             this->m_allocated = bytes;
