@@ -154,11 +154,6 @@ assert.throws(function() {
 ptr.putSizeT(18);
 assert.equal(18, ptr.getSizeT());
 
-//////////////////////
-
-var nullptr = new Pointer(0);
-assert.ok(nullptr.isNull());
-
 // test put + advance calls
 var advptr = ptr.seek(0);
 assert.ok(advptr.address == ptr.address);
@@ -340,13 +335,6 @@ assert.equal(-10000,            msInstance.int32Val);
 assert.equal(1.25,              msInstance.floatVal);
 assert.equal(1000.0005,         msInstance.doubleVal);
 assert.equal(msTestPtr.address, msInstance.pointerVal.address);
-
-assert.throws(function() {
-    FFI.Struct([
-        ["byte", "a"],
-        ["byte", "a"]
-    ]);
-}, Error, "Error when constructing Struct: a field specified twice!");
 
 //////////////////////
 assert.ok(FFI.Bindings.FFI_TYPES["void"] instanceof FFI.Pointer);
