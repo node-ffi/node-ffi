@@ -37,11 +37,11 @@ describe('Library', function () {
   })
 
   it('should throw when an invalid function name is used', function () {
-    //expect(function () {
+    expect(function () {
       new Library(null, {
           'doesnotexist__': [ 'void', [] ]
       })
-    //}).to.throwException()
+    }).to.throwException()
   })
 
 })
