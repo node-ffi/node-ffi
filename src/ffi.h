@@ -20,9 +20,6 @@
   #include <ffi.h>
 #endif
 #include <node/node_version.h>
-#if !NODE_VERSION_AT_LEAST(0, 5, 4)
-  #include <node/node_events.h>
-#endif
 #include <node_object_wrap.h>
 #include <node.h>
 #include <pthread.h>
