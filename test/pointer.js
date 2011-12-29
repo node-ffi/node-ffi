@@ -10,6 +10,11 @@ describe('Pointer', function () {
     expect(test).to.be.true
   })
 
+  it('should detect the `null` pointer', function () {
+    var p = new Pointer(0)
+    expect(p.isNull()).to.be.true
+  })
+
   it('should have a valid "allocated" property when malloc()\'d', function () {
     var p = new Pointer(1024)
     expect(p.allocated).to.equal(1024)
