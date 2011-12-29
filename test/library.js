@@ -44,4 +44,18 @@ describe('Library', function () {
     }).to.throwException()
   })
 
+  describe('async', function () {
+
+    it('should call a function asynchronously', function (done) {
+      var libm = new Library('libm', {
+          'ceil': [ 'double', [ 'double' ], { async: true } ]
+      })
+      libm.ceil(1.1).on('success', function (res) {
+        expect(res).to.equal(2)
+        done()
+      })
+    })
+
+  })
+
 })

@@ -425,18 +425,6 @@ assert.equal(1234, callMyTestCallback(-1234));
 
 ///////////////////////
 
-var libmCeilAsyncCallExecuted = false;
-var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ], {"async": true } ] });
-assert.ok(libm instanceof FFI.Library);
-assert.ok(libm.ceil instanceof Function);
-
-libm.ceil(1.5).on("success", function(res) {
-    libmCeilAsyncCallExecuted = true;
-    assert.equal(2, res);
-});
-
-///////////////////////
-
 // allow the event loop to complete
 setTimeout(function() {
     assert.ok(libmCeilAsyncCallExecuted);
