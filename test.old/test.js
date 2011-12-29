@@ -447,13 +447,6 @@ assert.equal(1234, callMyTestCallback(-1234));
 
 ///////////////////////
 
-var asyncAbsCallExecuted = false;
-var asyncAbs = FFI.ForeignFunction.build(FFI.Bindings.StaticFunctions.abs, "int32", [ "int32" ], true);
-asyncAbs(-1234).on("success", function (res) {
-    asyncAbsCallExecuted = true;
-    assert.equal(1234, res);
-});
-
 var libmCeilAsyncCallExecuted = false;
 var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ], {"async": true } ] });
 assert.ok(libm instanceof FFI.Library);
@@ -468,7 +461,6 @@ libm.ceil(1.5).on("success", function(res) {
 
 // allow the event loop to complete
 setTimeout(function() {
-    assert.ok(asyncAbsCallExecuted);
     assert.ok(libmCeilAsyncCallExecuted);
     util.log("Tests pass!");
 }, 250);
