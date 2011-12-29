@@ -58,21 +58,6 @@ assert.throws(function() { ptr.putUInt64("-1"); });
 ptr.putUInt64("18446744073709551615");
 assert.equal("18446744073709551615", ptr.getUInt64());
 
-//////////////////////////
-
-// Exercise the "non-specific" getters/putters
-
-ptr.putByte(6);
-assert.equal(6, ptr.getByte());
-
-///////////////////////////////
-
-ptr.putChar(-6);
-assert.equal(-6, ptr.getChar());
-
-ptr.putChar(6);
-assert.equal(6, ptr.getChar());
-
 ///////////////////////////////
 
 assert.throws(function() {
@@ -296,38 +281,6 @@ advptr = ptr.seek(0);
 assert.ok(advptr.address == ptr.address);
 advptr.getCString(true);
 assert.ok(advptr.address > ptr.address);
-
-//////////////////////
-// https://github.com/rbranson/node-ffi/issues/27
-
-var basePtr = new FFI.Pointer(128);
-var ptr = basePtr.seek(0);
-
-ptr.putCString('one', true);
-ptr.putCString('two', true);
-ptr.putCString('three', true);
-assert.equal(basePtr.getCString(true), 'one');
-assert.equal(basePtr.getCString(true), 'two');
-assert.equal(basePtr.getCString(true), 'three');
-
-//////////////////////
-
-var p = new FFI.Pointer(128)
-  , orig = p.seek(0)
-
-var put1 = { test: { equality: true } }
-  , put2 = { test2: 'does this work?' }
-
-p.putObject(put1, true)
-p.putObject(put2, true)
-
-var get1 = orig.getObject(true)
-  , get2 = orig.getObject(true)
-
-assert.ok(put1 === get1)
-assert.ok(put2 === get2)
-assert.deepEqual(put1, get1)
-assert.deepEqual(put2, get2)
 
 //////////////////////
 

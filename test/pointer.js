@@ -135,6 +135,17 @@ describe('Pointer', function () {
 
   })
 
+  describe('int64', function () {
+
+    it('should write "int64" values properly', function () {
+      var p = new Pointer(1024)
+        , val = 0 - Math.pow(2, 63)
+      p.putInt64(val)
+      expect(p.getInt64()).to.eql(val)
+    })
+
+  })
+
   describe('float', function () {
 
     it('should write a "float" value properly', function () {
@@ -173,11 +184,70 @@ describe('Pointer', function () {
 
   describe('string', function () {
 
-    it('should wrte a C string (char array) properly', function () {
+    it('should write a C string (char array) properly', function () {
       var p = new Pointer(32)
         , msg = 'Hello World!'
       p.putCString(msg)
       expect(p.getCString()).to.equal(msg)
+    })
+
+    // https://github.com/rbranson/node-ffi/issues/27
+    it('should write multiple strings properly', function () {
+      var p = new Pointer(128)
+        , base = p.seek(0)
+      p.putCString('one', true)
+      p.putCString('two', true)
+      p.putCString('three', true)
+      expect(base.getCString(true)).to.equal('one')
+      expect(base.getCString(true)).to.equal('two')
+      expect(base.getCString(true)).to.equal('three')
+    })
+
+  })
+
+  describe('Object', function () {
+
+    it('should write a JavaScript Object reference properly', function () {
+      var p = new Pointer(32)
+        , o = { foo: 'bar' }
+      p.putObject(o)
+      expect(p.getObject()).to.eql(o)
+    })
+
+    it('should write multiple JavaScript Object references properly', function () {
+      var p = new Pointer(32)
+        , base = p.seek(0)
+        , o = { foo: 'bar' }
+        , o2 = { test: { equality: true } }
+      p.putObject(o, true)
+      p.putObject(o2, true)
+      expect(base.getObject(true)).to.eql(o)
+      expect(base.getObject(true)).to.eql(o2)
+    })
+
+  })
+
+  describe('byte', function () {
+
+    it('should write a "byte" properly', function () {
+      var p = new Pointer(8)
+        , val = 6
+      p.putByte(val)
+      expect(p.getByte()).to.equal(val)
+    })
+
+  })
+
+  describe('char', function () {
+
+    it('should write a "char" properly', function () {
+      var p = new Pointer(8)
+        , val = 6
+      p.putChar(val)
+      expect(p.getChar()).to.equal(val)
+      val = -6
+      p.putChar(val)
+      expect(p.getChar()).to.equal(val)
     })
 
   })
