@@ -279,64 +279,6 @@ assert.ok(advptr.address > ptr.address);
 
 //////////////////////
 
-assert.ok(FFI.Bindings.StaticFunctions instanceof Object);
-assert.ok(FFI.Bindings.StaticFunctions.dlopen instanceof Pointer);
-assert.ok(FFI.Bindings.StaticFunctions.dlclose instanceof Pointer);
-assert.ok(FFI.Bindings.StaticFunctions.dlsym instanceof Pointer);
-assert.ok(FFI.Bindings.StaticFunctions.dlerror instanceof Pointer);
-
-//////////////////////
-
-var SimpleStruct = new FFI.Struct([
-    ["byte", "first"],
-    ["byte", "last"]
-]);
-
-var stInstance = new SimpleStruct();
-
-stInstance.first = 50;
-stInstance.last  = 100;
-
-assert.equal(50,    stInstance.first);
-assert.equal(100,   stInstance.last);
-
-var MegaStruct = new FFI.Struct([
-    ["byte", "byteVal"],
-    ["int8", "int8Val"],
-    ["int16", "int16Val"],
-    ["uint16", "uint16Val"],
-    ["int32", "int32Val"],
-    ["uint32", "uint32Val"],
-    ["float", "floatVal"],
-    ["double", "doubleVal"],
-    ["pointer", "pointerVal"]
-]);
-
-var msTestPtr = new Pointer(4);
-
-var msInstance = new MegaStruct({
-   "byteVal": 100,
-   "int8Val": -100,
-   "int16Val": -1000,
-   "uint16Val": 1000,
-   "int32Val": -10000,
-   "uint32Val": 10000,
-   "floatVal": 1.25,
-   "doubleVal": 1000.0005,
-   "pointerVal": msTestPtr
-});
-
-assert.equal(100,               msInstance.byteVal);
-assert.equal(-100,              msInstance.int8Val);
-assert.equal(1000,              msInstance.uint16Val);
-assert.equal(-1000,             msInstance.int16Val);
-assert.equal(10000,             msInstance.uint32Val);
-assert.equal(-10000,            msInstance.int32Val);
-assert.equal(1.25,              msInstance.floatVal);
-assert.equal(1000.0005,         msInstance.doubleVal);
-assert.equal(msTestPtr.address, msInstance.pointerVal.address);
-
-//////////////////////
 assert.ok(FFI.Bindings.FFI_TYPES["void"] instanceof FFI.Pointer);
 assert.ok(FFI.Bindings.FFI_TYPES["int8"] instanceof FFI.Pointer);
 
