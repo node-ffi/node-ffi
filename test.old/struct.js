@@ -84,11 +84,9 @@ var ffi_type = ffi.Struct([
 ])
 if (ffi.Bindings.POINTER_SIZE == 4) {
   inspect(ffi_type, 12, [0,4,6,8])
-}
-else if (ffi.Bindings.POINTER_SIZE == 8) {
+} else if (ffi.Bindings.POINTER_SIZE == 8) {
   inspect(ffi_type, 24, [0,8,10,16])
-}
-else {
+} else {
   console.log("Bad platform pointer size: %d bytes", PSZ);
 }
 
