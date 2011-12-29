@@ -7,6 +7,7 @@ Pointer::Pointer(unsigned char *ptr)
     this->m_ptr = ptr;
     this->m_allocated = 0;
     this->doFree = false;
+    //fprintf(stderr, "Creating new Pointer %p\n", this->m_ptr);
 }
 
 Pointer::~Pointer()
@@ -157,10 +158,7 @@ Handle<Value> Pointer::GetAllocated(Local<String> name, const AccessorInfo& info
 {
     HandleScope     scope;
     Pointer         *self = ObjectWrap::Unwrap<Pointer>(info.Holder());
-    Handle<Value>   ret;
-
-    ret = Integer::New(self->m_allocated);
-
+    Handle<Value>   ret = Integer::New(self->m_allocated);
     return scope.Close(ret);
 }
 
