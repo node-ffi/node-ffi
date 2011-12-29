@@ -36,4 +36,12 @@ describe('Library', function () {
     expect(libm.ceil(1.1)).to.equal(2)
   })
 
+  it('should throw when an invalid function name is used', function () {
+    //expect(function () {
+      new Library(null, {
+          'doesnotexist__': [ 'void', [] ]
+      })
+    //}).to.throwException()
+  })
+
 })
