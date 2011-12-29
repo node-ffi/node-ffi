@@ -395,28 +395,6 @@ libm.close();
 
 ///////////////////////
 
-var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ] ] });
-assert.ok(libm instanceof FFI.Library);
-assert.ok(libm.ceil instanceof Function);
-assert.equal(2, libm.ceil(1.5));
-
-///////////////////////
-
-var thisfuncs = new FFI.Library(null, {
-    "fopen": [ "pointer", [ "string", "string" ] ],
-    "fclose": [ "int32", [ "pointer" ] ]
-});
-
-assert.ok(thisfuncs instanceof FFI.Library);
-
-var fd = thisfuncs.fopen("/etc/passwd", "r");
-assert.ok(!fd.isNull());
-
-assert.equal(0, thisfuncs.fclose(fd));
-
-
-///////////////////////
-
 var closureCalled = 0;
 var cifPtr = new FFI.CIF("int32", [ "int32" ]);
 var clz = new FFI.CallbackInfo(cifPtr.getPointer(), function(result, args) {
