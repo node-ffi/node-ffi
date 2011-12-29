@@ -9,7 +9,7 @@
 , "engines": { "node": ">=0.4.0" }
 , "main": "./lib/ffi"
 , "devDependencies": {
-      "should": "*"
+      "expect.js": "*"
     , "mocha": "*"
   }
 , "scripts": {
