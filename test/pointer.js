@@ -48,6 +48,13 @@ describe('Pointer', function () {
       expect(p).to.not.equal(p2)
     })
 
+    it('should not attempt to `free` the seeked Pointer', function () {
+      var p = new Pointer(8)
+        , p2 = p.seek(1)
+      expect(p.free).to.be(true)
+      expect(p2.free).to.be(false)
+    })
+
     it('should return a Pointer with its "address" offset by the specified amount'
     , function () {
       var p = new Pointer(8)
