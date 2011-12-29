@@ -425,14 +425,6 @@ assert.equal(1234, callMyTestCallback(-1234));
 
 ///////////////////////
 
-// allow the event loop to complete
-setTimeout(function() {
-    assert.ok(libmCeilAsyncCallExecuted);
-    util.log("Tests pass!");
-}, 250);
-
-///////////////////////
-
 // test gettimeofday() with FFI.Struct
 (function() {
     var timeval = FFI.Struct([
