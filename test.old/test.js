@@ -6,46 +6,6 @@ var assert  = require("assert"),
 
 var Pointer = FFI.Pointer;
 
-/////////
-
-var ptr = new Pointer(1024);
-
-assert.ok(ptr.address > 0);
-
-var ptr2 = ptr.seek(32);
-assert.equal(ptr.address + 32, ptr2.address);
-
-ptr.attach(ptr2);
-assert.equal(ptr.address, ptr2.__attached[0].address);
-
-////////////////
-
-assert.throws(function() { ptr.putInt8(Math.pow(2, 7) + 1); });
-assert.throws(function() { ptr.putInt8(0 - Math.pow(2, 7) - 1); });
-
-ptr.putInt8(0 - Math.pow(2, 7));
-assert.equal(0 - Math.pow(2, 7), ptr.getInt8());
-
-assert.throws(function() { ptr.putUInt8(-1); });
-assert.throws(function() { ptr.putUInt8(Math.pow(2, 8)); });
-
-ptr.putUInt8(Math.pow(2, 8) - 1);
-assert.equal(Math.pow(2, 8) - 1, ptr.getUInt8());
-
-////////////////
-
-assert.throws(function() { ptr.putInt16(Math.pow(2, 15) + 1); });
-assert.throws(function() { ptr.putInt16(0 - Math.pow(2, 15) - 1); });
-
-ptr.putInt16(0 - Math.pow(2, 15));
-assert.equal(0 - Math.pow(2, 15), ptr.getInt16());
-
-assert.throws(function() { ptr.putUInt16(-1); });
-assert.throws(function() { ptr.putUInt16(Math.pow(2, 16)); });
-
-ptr.putUInt16(Math.pow(2, 16) - 1);
-assert.equal(Math.pow(2, 16) - 1, ptr.getUInt16());
-
 ////////////////
 
 assert.throws(function() { ptr.putInt32(Math.pow(2, 31) + 1); });
