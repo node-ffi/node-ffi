@@ -1,3 +1,4 @@
+
 var expect = require('expect.js')
   , ffi = require('../')
   , Pointer = ffi.Pointer
@@ -7,12 +8,17 @@ describe('Pointer', function () {
   it('should work with the `new` operator', function () {
     var p = new Pointer(8)
       , test = p instanceof Pointer
-    expect(test).to.be.true
+    expect(test).to.be(true)
   })
 
   it('should detect the `null` pointer', function () {
     var p = new Pointer(0)
-    expect(p.isNull()).to.be.true
+    expect(p.isNull()).to.be(true)
+  })
+
+  it('should not free the `null` pointer', function () {
+    var p = new Pointer(0)
+    expect(p.free).to.be(false)
   })
 
   it('should have a valid "allocated" property when malloc()\'d', function () {
@@ -36,7 +42,7 @@ describe('Pointer', function () {
       var p = new Pointer(8)
         , p2 = p.seek(0)
         , test = p2 instanceof Pointer
-      expect(test).to.be.true
+      expect(test).to.be(true)
       expect(p).to.not.equal(p2)
     })
 
