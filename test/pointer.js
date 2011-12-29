@@ -53,13 +53,13 @@ describe('Pointer', function () {
 
     it('should throw on out of bounds values (minimum)', function () {
       var p = new Pointer(8)
-        , val = Math.pow(2, 7) + 1
+        , val = 0 - Math.pow(2, 7) - 1
       expect(p.putInt8.bind(p, val)).to.throwException()
     })
 
     it('should throw on out of bounds values (maximum)', function () {
       var p = new Pointer(8)
-        , val = 0 - Math.pow(2, 7) - 1
+        , val = Math.pow(2, 7) + 1
       expect(p.putInt8.bind(p, val)).to.throwException()
     })
 
@@ -99,13 +99,13 @@ describe('Pointer', function () {
 
     it('should throw on out of bounds values (minimum)', function () {
       var p = new Pointer(8)
-        , val = Math.pow(2, 15) + 1
+        , val = 0 - Math.pow(2, 15) - 1
       expect(p.putInt16.bind(p, val)).to.throwException()
     })
 
     it('should throw on out of bounds values (maximum)', function () {
       var p = new Pointer(8)
-        , val = 0 - Math.pow(2, 15) - 1
+        , val = Math.pow(2, 15) + 1
       expect(p.putInt16.bind(p, val)).to.throwException()
     })
 
@@ -144,10 +144,61 @@ describe('Pointer', function () {
   describe('int64', function () {
 
     it('should write "int64" values properly', function () {
-      var p = new Pointer(1024)
+      var p = new Pointer(8)
         , val = 0 - Math.pow(2, 63)
       p.putInt64(val)
       expect(p.getInt64()).to.eql(val)
+    })
+
+    it('should accept String values', function () {
+      var p = new Pointer(8)
+        , val = '1'
+      p.putInt64(val)
+      expect(p.getInt64()).to.equal(val)
+    })
+
+    it('should return String values', function () {
+      var p = new Pointer(8)
+        , val = '1'
+      p.putInt64(val)
+      expect(p.getInt64()).to.be.a('string')
+    })
+
+    it('should allow INT64_MAX value', function () {
+      var p = new Pointer(8)
+        , val = '9223372036854775807'
+      p.putInt64(val)
+      expect(p.getInt64()).to.equal(val)
+    })
+
+    it('should allow INT64_MIX value', function () {
+      var p = new Pointer(8)
+        , val = '-9223372036854775808'
+      p.putInt64(val)
+      expect(p.getInt64()).to.equal(val)
+    })
+
+  })
+
+  describe('uint64', function () {
+
+    it('should throw on out of bounds values (minimum)', function () {
+      var p = new Pointer(8)
+        , val = -1
+      expect(p.putUInt64.bind(p, val)).to.throwException()
+    })
+
+    it('should throw on out of bounds values (maximum)', function () {
+      var p = new Pointer(8)
+        , val = 18446744073709551616
+      expect(p.putUInt64.bind(p, val)).to.throwException()
+    })
+
+    it('should allow UINT64_MAX value', function () {
+      var p = new Pointer(8)
+        , val = '18446744073709551615'
+      p.putUInt64(val)
+      expect(p.getUInt64()).to.equal(val)
     })
 
   })
