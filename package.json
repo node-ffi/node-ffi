@@ -8,6 +8,10 @@
 , "homepage": "http://github.com/rbranson/node-ffi"
 , "engines": { "node": ">=0.4.0" }
 , "main": "./lib/ffi"
+, "devDependencies": {
+      "should": "*"
+    , "mocha": "*"
+  }
 , "scripts": {
     "preinstall": "node-waf configure build"
   , "test": "node test/test.js"
