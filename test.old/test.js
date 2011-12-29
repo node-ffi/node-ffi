@@ -577,25 +577,4 @@ if (FFI.Bindings.HAS_OBJC) {
 
 ///////////////////////
 
-// Test Pointer#toBuffer()
-var p = new FFI.Pointer(128)
-  , b = p.toBuffer()
-assert.equal(p.allocated, b.length)
-
-// Test Buffer -> Pointer
-b.write('hello\0');
-assert.equal(p.getCString(), 'hello')
-
-// Test Pointer -> Buffer
-var hw = 'hello world';
-p.putCString(hw);
-assert.equal(b.slice(0, hw.length).toString(), hw)
-
-// Test modifying a single byte in the Buffer
-b[2] = 'L'.charCodeAt(0)
-assert.equal(p.getCString(), 'heLlo world')
-
-
-///////////////////////
-
 util.log("Heap increased by " + ((process.memoryUsage()["rss"] - rss) / 1024) + " KB");
