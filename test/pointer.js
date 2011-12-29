@@ -29,6 +29,7 @@ describe('Pointer', function () {
 
     it('should have function "seek()"', function () {
       expect(Pointer.prototype).to.have.property('seek')
+      expect(Pointer.prototype.seek).to.be.a('function')
     })
 
     it('should return a new Pointer instance', function () {
