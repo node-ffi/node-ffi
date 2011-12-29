@@ -3,3 +3,4 @@
 *.so
 build
 ffi_bindings.node
+node_modules
