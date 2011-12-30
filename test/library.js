@@ -5,6 +5,8 @@ var expect = require('expect.js')
 
 describe('Library', function () {
 
+  afterEach(gc)
+
   it('should be a function', function () {
     expect(Library).to.be.a('function')
   })
