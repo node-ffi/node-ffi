@@ -336,22 +336,6 @@ assert.equal(2, closureCalled);
 
 ///////////////////////
 
-var callback = new FFI.Callback(["int32", ["int32"]], function(inValue) {
-   return Math.abs(inValue);
-});
-
-var callMyTestCallback = FFI.ForeignFunction.build(callback.getPointer(), "int32", ["int32"]);
-
-// force a garbage collection for --gc_interval=10
-var gcTestObj = {};
-for (var i = 0; i < 25; i++) {
-    gcTestObj[i] = {i: gcTestObj, s: ""};
-}
-
-assert.equal(1234, callMyTestCallback(-1234));
-
-///////////////////////
-
 // test gettimeofday() with FFI.Struct
 (function() {
     var timeval = FFI.Struct([

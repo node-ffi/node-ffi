@@ -16,4 +16,13 @@ describe('Callback', function () {
     expect(Pointer.isPointer(pointer)).to.be(true)
   })
 
+  it('should be invokable', function () {
+    var callback = new Callback(['int32', ['int32']], function (val) {
+      return Math.abs(val)
+    })
+    var pointer = callback.getPointer()
+      , func = ffi.ForeignFunction.build(pointer, 'int32', ['int32'])
+    expect(func(-1234)).to.equal(1234)
+  })
+
 })
