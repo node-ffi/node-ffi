@@ -279,11 +279,6 @@ assert.ok(advptr.address > ptr.address);
 
 //////////////////////
 
-assert.ok(FFI.Bindings.FFI_TYPES["void"] instanceof FFI.Pointer);
-assert.ok(FFI.Bindings.FFI_TYPES["int8"] instanceof FFI.Pointer);
-
-//////////////////////
-
 var tcif = new FFI.CIF("int32", ["int32"]);
 assert.ok(tcif.getArgTypesPointer() instanceof FFI.Pointer);
 var cifat = tcif.getArgTypesPointer().seek(0);
@@ -333,23 +328,6 @@ callMyTestClosure(1);
 assert.equal(1, closureCalled);
 callMyTestClosure(1);
 assert.equal(2, closureCalled);
-
-///////////////////////
-
-// test gettimeofday() with FFI.Struct
-(function() {
-    var timeval = FFI.Struct([
-        ["long", "tv_sec"],
-        ["long", "tv_usec"]
-    ]);
-
-    var lib = new FFI.Library(null, { "gettimeofday": [ "int", [ "pointer", "pointer"] ] });
-
-    var tv = new timeval();
-    lib.gettimeofday(tv.ref(), null);
-
-    assert.equal(tv.tv_sec, Math.floor(Date.now() / 1000));
-})();
 
 ///////////////////////
 

@@ -66,6 +66,19 @@ describe('Library', function () {
     expect(buf.getCString()).to.equal(ZEROS_2K)
   })
 
+  it('should work with "gettimeofday" and a Struct pointer', function () {
+    var TimeVal = new ffi.Struct([
+        ['long','tv_sec']
+      , ['long','tv_usec']
+    ])
+    var l = new Library(null, {
+        'gettimeofday': ['int', ['pointer', 'pointer']]
+    })
+    var tv = new TimeVal()
+    l.gettimeofday(tv.ref(), null)
+    expect(tv.tv_sec == Math.floor(Date.now() / 1000)).to.be(true)
+  })
+
   describe('async', function () {
 
     it('should call a function asynchronously', function (done) {
