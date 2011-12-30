@@ -5,6 +5,8 @@ var expect = require('expect.js')
 
 describe('Pointer', function () {
 
+  afterEach(gc)
+
   describe('toBuffer()', function () {
 
     it('should return a "Buffer" instance', function () {

@@ -5,6 +5,8 @@ var expect = require('expect.js')
 
 describe('errno()', function () {
 
+  afterEach(gc)
+
   it('should be a function', function () {
     expect(errno).to.be.a('function')
   })

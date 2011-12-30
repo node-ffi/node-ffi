@@ -72,8 +72,6 @@ assert.notEqual(Math.pow(2, 63).toString(), "9223372036854775808");
 ptr.putInt64(0 - Math.pow(2, 63));
 assert.equal(0 - Math.pow(2, 63), ptr.getInt64());
 
-console.error('good')
-
 assert.throws(function() { ptr.putUInt64(-1); });
 assert.throws(function() { ptr.putUInt64(18446744073709551616); });
 

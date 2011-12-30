@@ -4,6 +4,8 @@ var expect = require('expect.js')
 
 describe('ForeignFunction', function () {
 
+  afterEach(gc)
+
   it('should call the static "abs" bindings', function () {
     var abs = ffi.ForeignFunction.build(
         ffi.Bindings.StaticFunctions.abs

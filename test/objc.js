@@ -6,6 +6,8 @@ if (ffi.Bindings.HAS_OBJC) {
 
   describe('@try / @catch', function () {
 
+    afterEach(gc)
+
     var objcLib = new ffi.Library('libobjc', {
         'objc_msgSend': [ 'pointer', [ 'pointer', 'pointer' ] ]
       , 'objc_getClass': [ 'pointer', [ 'string' ] ]

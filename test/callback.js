@@ -6,6 +6,8 @@ var expect = require('expect.js')
 
 describe('Callback', function () {
 
+  afterEach(gc)
+
   it('should create a C function pointer for a JS function', function () {
     var callback = new Callback(['int32', ['int32']], function (val) {
       return Math.abs(val)
