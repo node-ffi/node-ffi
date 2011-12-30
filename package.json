@@ -14,7 +14,7 @@
   }
 , "scripts": {
     "preinstall": "node-waf configure build"
-  , "test": "node --expose-gc ./node_modules/mocha/bin/_mocha --reporter spec"
+  , "test": "node --expose-gc ./node_modules/mocha/bin/_mocha"
   }
 , "repository": {
     "type": "git"
