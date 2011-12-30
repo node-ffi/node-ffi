@@ -68,6 +68,28 @@ describe('Struct', function () {
     expect(ms.pointerVal.address).to.equal(msTestPtr.address)
   })
 
+  it('should allow Struct nesting', function () {
+
+    var ChildStruct = new Struct([
+        ['int', 'a']
+      , ['int', 'b']
+    ])
+    var ParentStruct = new Struct([
+        [ChildStruct, 'childA']
+      , [ChildStruct, 'childB']
+    ])
+
+    var ps = new ParentStruct({
+        childA: { a: 100, b: 200 }
+      , childB: { a: 300, b: 400 }
+    })
+
+    expect(ps.childA.a).to.equal(100)
+    expect(ps.childA.b).to.equal(200)
+    expect(ps.childB.a).to.equal(300)
+    expect(ps.childB.b).to.equal(400)
+  })
+
   describe('offsets and sizeofs', function () {
 
     function inspect (struct, expectedSize, expectedOffsets) {

@@ -375,29 +375,6 @@ assert.equal(1234, callMyTestCallback(-1234));
     assert.equal(tv.tv_sec, Math.floor(Date.now() / 1000));
 })();
 
-// Test FFI.Struct nesting
-(function() {
-    var ChildStructType = FFI.Struct([
-        ["int", "a"],
-        ["int", "b"]
-    ]);
-
-    var ParentStructType = FFI.Struct([
-        [ChildStructType, "childA"],
-        [ChildStructType, "childB"]
-    ]);
-
-    var ps = new ParentStructType({
-        "childA": { "a": 100, "b": 200 },
-        "childB": { "a": 300, "b": 400 }
-    });
-
-    assert.equal(100, ps.childA.a);
-    assert.equal(200, ps.childA.b);
-    assert.equal(300, ps.childB.a);
-    assert.equal(400, ps.childB.b);
-})();
-
 ///////////////////////
 
 // Test string argument NULL handling
