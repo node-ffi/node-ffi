@@ -14,6 +14,14 @@ describe('ForeignFunction', function () {
     expect(abs(-1234)).to.equal(1234)
   })
 
+  it('should call the static "atoi" bindings', function () {
+    var atoi = ffi.ForeignFunction.build(
+        ffi.Bindings.StaticFunctions.atoi
+      , 'int32', [ 'string' ])
+    expect(atoi).to.be.a('function')
+    expect(atoi('1234')).to.equal(1234)
+  })
+
   describe('async', function () {
 
     it('should call the static "abs" bindings asynchronously', function (done) {

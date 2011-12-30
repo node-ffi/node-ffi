@@ -306,14 +306,6 @@ assert.equal("Hello World!", stringDerefer(builtStringPtr));
 
 //////////////////////
 
-var abs = FFI.ForeignFunction.build(FFI.Bindings.StaticFunctions.abs, "int32", [ "int32" ]);
-assert.equal(1234, abs(-1234));
-
-var atoi = FFI.ForeignFunction.build(FFI.Bindings.StaticFunctions.atoi, "int32", [ "string" ]);
-assert.equal(1234, atoi("1234"));
-
-//////////////////////
-
 var libm = new FFI.DynamicLibrary("libm" + FFI.PLATFORM_LIBRARY_EXTENSIONS[process.platform], FFI.DynamicLibrary.FLAGS.RTLD_NOW);
 assert.ok(libm instanceof FFI.DynamicLibrary);
 
