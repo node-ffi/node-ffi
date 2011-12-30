@@ -46,6 +46,26 @@ describe('Library', function () {
     }).to.throwException()
   })
 
+  it('should work with "strcpy" and a 128 length string', function () {
+    var ZEROS_128 = Array(128 + 1).join('0')
+    var buf = new ffi.Pointer(256)
+    var strcpy = new Library(null, {
+        'strcpy': [ 'pointer', [ 'pointer', 'string' ] ]
+    }).strcpy
+    strcpy(buf, ZEROS_128)
+    expect(buf.getCString()).to.equal(ZEROS_128)
+  })
+
+  it('should work with "strcpy" and a 2k length string', function () {
+    var ZEROS_2K = Array(2e3 + 1).join('0')
+    var strcpy = new Library(null, {
+        'strcpy': [ 'pointer', [ 'pointer', 'string' ] ]
+    }).strcpy
+    var buf = new ffi.Pointer(4096)
+    strcpy(buf, ZEROS_2K)
+    expect(buf.getCString()).to.equal(ZEROS_2K)
+  })
+
   describe('async', function () {
 
     it('should call a function asynchronously', function (done) {
