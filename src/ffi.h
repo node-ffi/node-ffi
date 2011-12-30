@@ -101,7 +101,7 @@ class Pointer : public ObjectWrap {
 };
 
 class AsyncCallParams {
-public:
+  public:
     ffi_cif *cif;
     void (*ptr)(void);
     void *res;
