@@ -400,12 +400,6 @@ assert.equal(1234, callMyTestCallback(-1234));
 
 ///////////////////////
 
-var strtoulLib = new FFI.Library(null, { "strtoul": [ "ulong", [ "string", "pointer", "int"] ] });
-strtoulLib.strtoul("1234567890123456789012345678901234567890", null, 0);
-assert.equal(34, FFI.errno()); // errno == ERANGE because value was outside of strtoul's range.
-
-///////////////////////
-
 // Test string argument NULL handling
 var memcpyLib   = new FFI.Library(null, { "memcpy": [ "int", [ "pointer", "string", "size_t" ] ] });
 var bufPtr      = new Pointer(128);
