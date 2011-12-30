@@ -24,6 +24,7 @@ Handle<FunctionTemplate> Pointer::MakeTemplate()
 {
     HandleScope scope;
     Handle<FunctionTemplate> t = FunctionTemplate::New(New);
+    t->SetClassName(String::NewSymbol("Pointer"));
 
     Local<ObjectTemplate> inst = t->InstanceTemplate();
     inst->SetInternalFieldCount(1);

@@ -7,10 +7,23 @@ describe('Pointer', function () {
 
   afterEach(gc)
 
+  it('should be a function', function () {
+    expect(Pointer).to.be.a('function')
+  })
+
+  it('shoulhd have "name" set to "Pointer"', function () {
+    expect(Pointer.name).to.equal('Pointer')
+  })
+
   it('should work with the `new` operator', function () {
     var p = new Pointer(8)
       , test = p instanceof Pointer
     expect(test).to.be(true)
+  })
+
+  it('should have its internal __class__ set to "Pointer"', function () {
+    var p = new Pointer(1)
+    expect(Object.prototype.toString.call(p)).to.equal('[object Pointer]')
   })
 
   it('should detect the `null` pointer', function () {
