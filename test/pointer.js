@@ -160,7 +160,7 @@ describe('Pointer', function () {
       expect(p.putUInt16.bind(p, val)).to.throwException()
     })
 
-    it('should write a "uint8" value properly', function () {
+    it('should write a "uint16" value properly', function () {
       var p = new Pointer(8)
         , val = Math.pow(2, 16) - 1
       p.putUInt16(val)
