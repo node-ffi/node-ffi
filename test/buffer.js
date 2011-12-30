@@ -10,7 +10,7 @@ describe('Pointer', function () {
     it('should return a "Buffer" instance', function () {
       var p = new Pointer(8)
         , b = p.toBuffer()
-      expect(Buffer.isBuffer(b)).to.be.true
+      expect(Buffer.isBuffer(b)).to.be(true)
     })
 
     it('`Buffer#length` should match `Pointer#allocated`', function () {

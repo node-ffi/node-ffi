@@ -14,7 +14,7 @@ describe('Library', function () {
   it('should work with the `new` operator', function () {
     var l = new Library()
       , test = l instanceof Library
-    expect(test).to.be.true
+    expect(test).to.be(true)
   })
 
   it('should accept `null` as a first argument', function () {
@@ -23,8 +23,8 @@ describe('Library', function () {
     })
     var test1 = thisFuncs instanceof Library
       , test2 = thisFuncs.printf instanceof Function
-    expect(test1).to.be.true
-    expect(test2).to.be.true
+    expect(test1).to.be(true)
+    expect(test2).to.be(true)
   })
 
   it('should accept a lib name as a first argument', function () {
@@ -33,8 +33,8 @@ describe('Library', function () {
     })
     var test1 = libm instanceof Library
       , test2 = libm.ceil instanceof Function
-    expect(test1).to.be.true
-    expect(test2).to.be.true
+    expect(test1).to.be(true)
+    expect(test2).to.be(true)
     expect(libm.ceil(1.1)).to.equal(2)
   })
 

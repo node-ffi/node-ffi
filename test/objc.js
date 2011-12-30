@@ -27,10 +27,10 @@ if (ffi.Bindings.HAS_OBJC) {
       var sel_retain = objcLib.sel_registerName('retain')
       try {
         objcLib.objc_msgSend(pool, sel_retain)
-        expect(false).to.be.true
+        expect(false).to.be(true)
       } catch (e) {
-        expect(ffi.Pointer.isPointer(e)).to.be.true
-        expect(e.isNull()).to.be.false
+        expect(ffi.Pointer.isPointer(e)).to.be(true)
+        expect(e.isNull()).to.be(false)
         expect(e.address).to.be.greaterThan(0)
       }
     })
