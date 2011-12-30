@@ -42,8 +42,6 @@ $ npm install node-ffi
 $ git clone git://github.com/rbranson/node-ffi.git
 $ cd node-ffi
 $ node-waf configure build
-$ node test.js
-$ node-waf install
 ```
 
 # TYPES
