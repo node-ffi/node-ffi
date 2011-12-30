@@ -5,6 +5,8 @@ var expect = require('expect.js')
 
 describe('Struct', function () {
 
+  afterEach(gc)
+
   it('should be a function', function () {
     expect(Struct).to.be.a('function')
   })
