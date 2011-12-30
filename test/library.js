@@ -58,10 +58,10 @@ describe('Library', function () {
 
   it('should work with "strcpy" and a 2k length string', function () {
     var ZEROS_2K = Array(2e3 + 1).join('0')
+    var buf = new ffi.Pointer(4096)
     var strcpy = new Library(null, {
         'strcpy': [ 'pointer', [ 'pointer', 'string' ] ]
     }).strcpy
-    var buf = new ffi.Pointer(4096)
     strcpy(buf, ZEROS_2K)
     expect(buf.getCString()).to.equal(ZEROS_2K)
   })
