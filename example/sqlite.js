@@ -1,4 +1,4 @@
-var FFI     = require("node-ffi"),
+var FFI     = require("../"),
     util    = require("util");
 
 var SQLite3 = new FFI.Library("libsqlite3", {
@@ -55,5 +55,3 @@ SQLite3Async.sqlite3_exec(dbh, "SELECT * FROM foo;", callback.getPointer(), null
     fin = true;
     SQLite3.sqlite3_close(dbh);
 });
-
-setTimeout(2000, function() { });
