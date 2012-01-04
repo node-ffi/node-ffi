@@ -10,7 +10,7 @@
         , 'src/foreign_caller.cc'
       ],
       'libraries': [ 'deps/libffi/.libs/libffi.a' ],
-      'include_dirs': [ 'deps/libffi', 'deps/libffi/include' ],
+      'include_dirs': [ 'deps/libffi/include' ],
     }
   ]
 }
