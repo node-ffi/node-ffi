@@ -11,12 +11,8 @@
 #if __OBJC__ || __OBJC2__
   #include <objc/objc.h>
 #endif
-#if __APPLE__ && !__arm__
-  #include <ffi/ffi.h>
-#else
-  #include <ffi.h>
-#endif
-#include <node/node_version.h>
+#include <ffi.h>
+#include <node_version.h>
 #include <node_object_wrap.h>
 #include <node.h>
 #include <pthread.h>
