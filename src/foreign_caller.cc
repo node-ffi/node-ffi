@@ -83,13 +83,7 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args)
         // construct a new process.Promise object
         p->emitter = Persistent<Object>::New(emitterConstructor->NewInstance());
 
-        ev_ref(EV_DEFAULT_UC);
-#if NODE_VERSION_AT_LEAST(0, 5, 4)
-        eio_custom((void (*)(eio_req*))ForeignCaller::AsyncFFICall, EIO_PRI_DEFAULT, ForeignCaller::FinishAsyncFFICall, p);
-#else
-        eio_custom(ForeignCaller::AsyncFFICall, EIO_PRI_DEFAULT, ForeignCaller::FinishAsyncFFICall, p);
-#endif
-
+        BEGIN_ASYNC(p, ForeignCaller::AsyncFFICall, ForeignCaller::FinishAsyncFFICall);
         return scope.Close(p->emitter);
     }
     else {
@@ -112,14 +106,14 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args)
     return Undefined();
 }
 
-int ForeignCaller::AsyncFFICall(eio_req *req)
+async_rtn ForeignCaller::AsyncFFICall(uv_work_t *req)
 {
     AsyncCallParams *p = (AsyncCallParams *)req->data;
     ffi_call(p->cif, p->ptr, p->res, p->args);
-    return 0;
+    RETURN_ASYNC;
 }
 
-int ForeignCaller::FinishAsyncFFICall(eio_req *req)
+async_rtn ForeignCaller::FinishAsyncFFICall(uv_work_t *req)
 {
     HandleScope scope;
 
@@ -149,5 +143,5 @@ int ForeignCaller::FinishAsyncFFICall(eio_req *req)
     // free up our memory (allocated in FFICall)
     delete p;
 
-    return 0;
+    RETURN_ASYNC_AFTER;
 }

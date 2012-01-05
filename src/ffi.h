@@ -25,6 +25,8 @@
 #include <pthread.h>
 #include <queue>
 
+#include "node_async_shim.h"
+
 #define INTEGER_CONVERSION_BUFFER_SIZE  64
 
 #define UINT8_MIN     0
@@ -129,8 +131,8 @@ class ForeignCaller : public ObjectWrap {
     protected:
         static Handle<Value> New(const Arguments& args);
         static Handle<Value> Exec(const Arguments& args);
-        static int AsyncFFICall(eio_req *req);
-        static int FinishAsyncFFICall(eio_req *req);
+        static async_rtn AsyncFFICall(uv_work_t *req);
+        static async_rtn FinishAsyncFFICall(uv_work_t *req);
 
         ffi_cif *m_cif;
         void (*m_fn)(void);
