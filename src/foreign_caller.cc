@@ -134,9 +134,6 @@ async_rtn ForeignCaller::FinishAsyncFFICall(uv_work_t *req)
        FatalException(try_catch);
     }
 
-    // unref the event loop (ref'd in FFICall)
-    ev_unref(EV_DEFAULT_UC);
-
     // dispose of our persistent handle to the EventEmitter object
     p->emitter.Dispose();
 
