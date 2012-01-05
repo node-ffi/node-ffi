@@ -140,7 +140,7 @@ Handle<Value> Pointer::New(const Arguments& args)
     // break WrapPointer's NewInstance() call.
 
     self->Wrap(args.This());
-    return args.This();
+    return scope.Close(args.This());
 }
 
 Handle<Value> Pointer::GetAddress(Local<String> name, const AccessorInfo& info)

@@ -57,7 +57,7 @@ Handle<Value> ForeignCaller::New(const Arguments& args)
     }
 
     self->Wrap(args.This());
-    return args.This();
+    return scope.Close(args.This());
 }
 
 Handle<Value> ForeignCaller::Exec(const Arguments& args)
@@ -66,7 +66,6 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args)
     ForeignCaller   *self = ObjectWrap::Unwrap<ForeignCaller>(args.This());
 
     if (self->m_async) {
-        HandleScope scope;
         AsyncCallParams *p = new AsyncCallParams();
 
         // cuter way of doing this?
@@ -80,13 +79,12 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args)
         Local<Object> events = global->Get(String::NewSymbol("process"))->ToObject();
         Local<Function> emitterConstructor = Local<Function>::Cast(events->Get(String::NewSymbol("EventEmitter")));
 
-        // construct a new process.Promise object
+        // construct a new EventEmitter object
         p->emitter = Persistent<Object>::New(emitterConstructor->NewInstance());
 
         BEGIN_ASYNC(p, ForeignCaller::AsyncFFICall, ForeignCaller::FinishAsyncFFICall);
         return scope.Close(p->emitter);
-    }
-    else {
+    } else {
 #if __OBJC__ || __OBJC2__
       @try {
 #endif
@@ -106,15 +104,13 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args)
     return Undefined();
 }
 
-async_rtn ForeignCaller::AsyncFFICall(uv_work_t *req)
-{
+async_rtn ForeignCaller::AsyncFFICall(uv_work_t *req) {
     AsyncCallParams *p = (AsyncCallParams *)req->data;
     ffi_call(p->cif, p->ptr, p->res, p->args);
     RETURN_ASYNC;
 }
 
-async_rtn ForeignCaller::FinishAsyncFFICall(uv_work_t *req)
-{
+async_rtn ForeignCaller::FinishAsyncFFICall(uv_work_t *req) {
     HandleScope scope;
 
     AsyncCallParams *p = (AsyncCallParams *)req->data;
@@ -123,22 +119,23 @@ async_rtn ForeignCaller::FinishAsyncFFICall(uv_work_t *req)
     argv[0] = Local<Value>::New(String::New("success"));
 
     // get a reference to the 'emit' function
-    Local<Function> emit = Local<Function>::Cast(p->emitter->Get(String::NewSymbol("emit")));
+    Local<Value> emitVal = p->emitter->Get(String::NewSymbol("emit"));
+    Local<Function> emit = Local<Function>::Cast(emitVal);
 
     TryCatch try_catch;
 
     // emit a success event
     emit->Call(p->emitter, 1, argv);
 
-    if (try_catch.HasCaught()) {
-       FatalException(try_catch);
-    }
-
     // dispose of our persistent handle to the EventEmitter object
     p->emitter.Dispose();
 
     // free up our memory (allocated in FFICall)
     delete p;
+
+    if (try_catch.HasCaught()) {
+       FatalException(try_catch);
+    }
 
     RETURN_ASYNC_AFTER;
 }
