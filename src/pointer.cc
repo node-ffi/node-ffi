@@ -469,7 +469,7 @@ Handle<Value> Pointer::GetInt64(const Arguments& args)
     int64_t         val = *((int64_t *)ptr);
     char            buf[INTEGER_CONVERSION_BUFFER_SIZE];
 
-    bzero(buf, INTEGER_CONVERSION_BUFFER_SIZE);
+    memset(buf, 0, INTEGER_CONVERSION_BUFFER_SIZE);
     snprintf(buf, INTEGER_CONVERSION_BUFFER_SIZE, "%lld", val);
 
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
@@ -519,7 +519,7 @@ Handle<Value> Pointer::GetUInt64(const Arguments& args)
     uint64_t        val = *((uint64_t *)ptr);
     char            buf[INTEGER_CONVERSION_BUFFER_SIZE];
 
-    bzero(buf, INTEGER_CONVERSION_BUFFER_SIZE);
+    memset(buf, 0, INTEGER_CONVERSION_BUFFER_SIZE);
     snprintf(buf, INTEGER_CONVERSION_BUFFER_SIZE, "%llu", val);
 
     if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
