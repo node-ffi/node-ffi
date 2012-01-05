@@ -12,7 +12,6 @@
   #include <objc/objc.h>
 #endif
 #include <ffi.h>
-#include <node_version.h>
 #include <node_object_wrap.h>
 #include <node.h>
 #include <pthread.h>
