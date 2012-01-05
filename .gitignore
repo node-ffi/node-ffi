@@ -1,6 +1,14 @@
 .lock-wscript
 *.dylib
 *.so
+*.o
+*.lo
+*.Makefile
 build
 ffi_bindings.node
 node_modules
+.deps
+Makefile
+gyp-mac-tool
+.dirstamp
+ffi_bindings.target.mk
