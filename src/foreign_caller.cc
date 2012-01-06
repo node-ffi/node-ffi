@@ -36,21 +36,20 @@ Handle<Value> ForeignCaller::New(const Arguments& args) {
   HandleScope     scope;
   ForeignCaller   *self = new ForeignCaller();
 
-  if (args.Length() == 5) {
-    Pointer *cif    = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
-    Pointer *fn     = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
-    Pointer *fnargs = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
-    Pointer *res    = ObjectWrap::Unwrap<Pointer>(args[3]->ToObject());
-
-    self->m_cif     = (ffi_cif *)cif->GetPointer();
-    self->m_fn      = (void (*)(void))fn->GetPointer();
-    self->m_res     = (void *)res->GetPointer();
-    self->m_fnargs  = (void **)fnargs->GetPointer();
-
-    self->m_async   = args[4]->BooleanValue();
-  } else {
-    return THROW_ERROR_EXCEPTION("Not enough arguments");
+  if (args.Length() != 5) {
+    return THROW_ERROR_EXCEPTION("new ForeignCaller() requires 5 arguments!");
   }
+
+  Pointer *cif    = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
+  Pointer *fn     = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
+  Pointer *fnargs = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
+  Pointer *res    = ObjectWrap::Unwrap<Pointer>(args[3]->ToObject());
+
+  self->m_cif     = (ffi_cif *)cif->GetPointer();
+  self->m_fn      = (void (*)(void))fn->GetPointer();
+  self->m_res     = (void *)res->GetPointer();
+  self->m_fnargs  = (void **)fnargs->GetPointer();
+  self->m_async   = args[4]->BooleanValue();
 
   self->Wrap(args.This());
   return scope.Close(args.This());
