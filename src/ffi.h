@@ -17,6 +17,10 @@
 #include <pthread.h>
 #include <queue>
 
+#ifdef _WIN32_
+  #include "winpthread.h"
+#endif
+
 #include "node_async_shim.h"
 
 #define INTEGER_CONVERSION_BUFFER_SIZE  64
