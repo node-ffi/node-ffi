@@ -9,8 +9,17 @@
         , 'src/threaded_callback_invokation.cc'
         , 'src/foreign_caller.cc'
       ],
-      'libraries': [ 'deps/libffi/.libs/libffi.a' ],
       'include_dirs': [ 'deps/libffi/include' ],
+      'conditions': [
+        ['OS=="win"', {
+          'libraries': [ 'deps/libffi/.libs/libffi.lib' ],
+          'dependencies': [
+              'deps/dlfcn-win32/dlfcn.gyp:dlfcn'
+          ]
+        }, {
+          'libraries': [ 'deps/libffi/.libs/libffi.a' ],
+        }]
+      ]
     }
   ]
 }
