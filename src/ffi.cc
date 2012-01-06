@@ -2,34 +2,32 @@
 
 ///////////////
 
-void FFI::InitializeStaticFunctions(Handle<Object> target)
-{
-    Local<Object>       o = Object::New();
+void FFI::InitializeStaticFunctions(Handle<Object> target) {
+    Local<Object> o = Object::New();
 
     // abs and atoi here for testing purposes
-    o->Set(String::New("abs"),      Pointer::WrapPointer((unsigned char *)abs));
-    o->Set(String::New("atoi"),     Pointer::WrapPointer((unsigned char *)atoi));
-    o->Set(String::New("dlopen"),   Pointer::WrapPointer((unsigned char *)dlopen));
-    o->Set(String::New("dlclose"),  Pointer::WrapPointer((unsigned char *)dlclose));
-    o->Set(String::New("dlsym"),    Pointer::WrapPointer((unsigned char *)dlsym));
-    o->Set(String::New("dlerror"),  Pointer::WrapPointer((unsigned char *)dlerror));
+    o->Set(String::New("abs"), Pointer::WrapPointer((unsigned char *)abs));
+    o->Set(String::New("atoi"), Pointer::WrapPointer((unsigned char *)atoi));
+    o->Set(String::New("dlopen"), Pointer::WrapPointer((unsigned char *)dlopen));
+    o->Set(String::New("dlclose"), Pointer::WrapPointer((unsigned char *)dlclose));
+    o->Set(String::New("dlsym"), Pointer::WrapPointer((unsigned char *)dlsym));
+    o->Set(String::New("dlerror"), Pointer::WrapPointer((unsigned char *)dlerror));
 
     target->Set(String::NewSymbol("StaticFunctions"), o);
 }
 
 ///////////////
 
-void FFI::InitializeBindings(Handle<Object> target)
-{
+void FFI::InitializeBindings(Handle<Object> target) {
     Local<Object> o = Object::New();
 
-    target->Set(String::New("free"),             FunctionTemplate::New(Free)->GetFunction());
-    target->Set(String::New("prepCif"),          FunctionTemplate::New(FFIPrepCif)->GetFunction());
-    target->Set(String::New("strtoul"),          FunctionTemplate::New(Strtoul)->GetFunction());
-    target->Set(String::New("POINTER_SIZE"),     Integer::New(sizeof(unsigned char *)));
-    target->Set(String::New("FFI_TYPE_SIZE"),    Integer::New(sizeof(ffi_type)));
+    target->Set(String::New("free"), FunctionTemplate::New(Free)->GetFunction());
+    target->Set(String::New("prepCif"), FunctionTemplate::New(FFIPrepCif)->GetFunction());
+    target->Set(String::New("strtoul"), FunctionTemplate::New(Strtoul)->GetFunction());
+    target->Set(String::New("POINTER_SIZE"), Integer::New(sizeof(unsigned char *)));
+    target->Set(String::New("FFI_TYPE_SIZE"), Integer::New(sizeof(ffi_type)));
 #if __OBJC__ || __OBJC2__
-    target->Set(String::New("HAS_OBJC"),         True(), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+    target->Set(String::New("HAS_OBJC"), True(), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 
     Local<Object> smap = Object::New();
@@ -101,9 +99,9 @@ void FFI::InitializeBindings(Handle<Object> target)
     target->Set(String::New("TYPE_SIZE_MAP"), smap);
 }
 
-Handle<Value> FFI::Free(const Arguments &args)
-{
+Handle<Value> FFI::Free(const Arguments &args) {
     HandleScope scope;
+
     Pointer *p = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
     free(p->GetPointer());
     return Undefined();
@@ -113,9 +111,9 @@ Handle<Value> FFI::Free(const Arguments &args)
  * Hard-coded `stftoul` binding, for the benchmarks.
  */
 
-Handle<Value> FFI::Strtoul(const Arguments &args)
-{
+Handle<Value> FFI::Strtoul(const Arguments &args) {
     HandleScope scope;
+
     Pointer *middle = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
     char buf[128];
     args[0]->ToString()->WriteUtf8(buf);
