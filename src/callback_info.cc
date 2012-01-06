@@ -126,7 +126,9 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
     CallbackInfo    *self = (CallbackInfo *)user_data;
 
     // are we executing from another thread?
-    if (!pthread_equal(pthread_self(), g_mainthread)) {
+    if (pthread_equal(pthread_self(), g_mainthread)) {
+        DispatchToV8(self, retval, parameters);
+    } else {
         // create a temporary storage area for our invokation parameters
         ThreadedCallbackInvokation *inv = new ThreadedCallbackInvokation(self, retval, parameters);
 
@@ -143,14 +145,12 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
 
         delete inv;
     }
-    else {
-        DispatchToV8(self, retval, parameters);
-    }
 }
 
 Handle<Value> CallbackInfo::GetPointer(Local<String> name, const AccessorInfo& info)
 {
-    HandleScope     scope;
-    CallbackInfo    *self = ObjectWrap::Unwrap<CallbackInfo>(info.Holder());
-    return scope.Close(Pointer::WrapPointer((unsigned char *)self->m_closure));
+    HandleScope scope;
+    CallbackInfo *self = ObjectWrap::Unwrap<CallbackInfo>(info.Holder());
+    Handle<Value> ptr = Pointer::WrapPointer((unsigned char *)self->m_closure);
+    return scope.Close(ptr);
 }

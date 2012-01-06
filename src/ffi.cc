@@ -58,7 +58,7 @@ void FFI::InitializeBindings(Handle<Object> target)
     smap->Set(String::New("string"),    Integer::New(sizeof(char *)));
     smap->Set(String::New("size_t"),    Integer::New(sizeof(size_t)));
     // Size of a Persistent handle to a JS object
-    smap->Set(String::New("Object"),    Integer::New(sizeof(Persistent<Value>)));
+    smap->Set(String::New("Object"),    Integer::New(sizeof(Persistent<Object>)));
 
     Local<Object> ftmap = Object::New();
     ftmap->Set(String::New("void"),     Pointer::WrapPointer((unsigned char *)&ffi_type_void));
@@ -108,6 +108,10 @@ Handle<Value> FFI::Free(const Arguments &args)
     free(p->GetPointer());
     return Undefined();
 }
+
+/**
+ * Hard-coded `stftoul` binding, for the benchmarks.
+ */
 
 Handle<Value> FFI::Strtoul(const Arguments &args)
 {

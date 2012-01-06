@@ -51,9 +51,8 @@ Handle<Value> ForeignCaller::New(const Arguments& args)
         self->m_fnargs  = (void **)fnargs->GetPointer();
 
         self->m_async   = args[4]->BooleanValue();
-    }
-    else {
-        return THROW_ERROR_EXCEPTION("Not enough arguments");
+    } else {
+      return THROW_ERROR_EXCEPTION("Not enough arguments");
     }
 
     self->Wrap(args.This());
