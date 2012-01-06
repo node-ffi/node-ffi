@@ -66,7 +66,7 @@ static void global_add( HMODULE hModule )
 
     for( pobject = &first_object; pobject->next ; pobject = pobject->next );
 
-    nobject = malloc( sizeof(global_object) );
+    nobject = (global_object *)malloc( sizeof(global_object) );
 
     /* Should this be enough to fail global_add, and therefore also fail
      * dlopen?
@@ -265,7 +265,7 @@ void *dlsym( void *handle, const char *name )
 
     current_error = NULL;
 
-    symbol = GetProcAddress( handle, name );
+    symbol = GetProcAddress( (HMODULE)handle, name );
 
     if( symbol == NULL )
     {
