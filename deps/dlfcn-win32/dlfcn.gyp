@@ -48,7 +48,7 @@
         'include_dirs': [ '.' ],
       },
       'defines': [ ],
-      'sources': [ './dlfnc.c', ],
+      'sources': [ './dlfcn.c', ],
       'conditions': [
         ['OS=="win"', {
           'msvs_settings': {
