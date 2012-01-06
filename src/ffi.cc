@@ -125,35 +125,42 @@ Handle<Value> FFI::Strtoul(const Arguments &args)
     return scope.Close(Integer::NewFromUnsigned(val));
 }
 
-Handle<Value> FFI::FFIPrepCif(const Arguments& args)
-{
-    HandleScope scope;
+/**
+ * Function that creates and returns an `ffi_cif` pointer from the given return
+ * value type and argument types.
+ */
 
-    if (args.Length() == 3) {
-        unsigned int nargs  = args[0]->Uint32Value();
-        Pointer *rtype      = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
-        Pointer *atypes     = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
-        ffi_status status;
+Handle<Value> FFI::FFIPrepCif(const Arguments& args) {
+  HandleScope scope;
 
-        Pointer *cif = new Pointer(NULL);
-        cif->Alloc(sizeof(ffi_cif));
+  unsigned int nargs;
+  Pointer *rtype, *atypes, *cif;
+  ffi_status status;
 
-        if ((status = ffi_prep_cif(
-            (ffi_cif *)cif->GetPointer(),
-            FFI_DEFAULT_ABI,
-            nargs,
-            (ffi_type *)rtype->GetPointer(),
-            (ffi_type **)atypes->GetPointer()))) {
+  if (args.Length() != 3) {
+    return THROW_ERROR_EXCEPTION("prepCif() requires 3 arguments!");
+  }
 
-            delete cif;
-            return THROW_ERROR_EXCEPTION("ffi_prep_cif() returned error.");
-        }
+  nargs = args[0]->Uint32Value();
+  rtype = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
+  atypes = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
 
-        return scope.Close(Pointer::WrapInstance(cif));
-    }
-    else {
-        return THROW_ERROR_EXCEPTION("Not Enough Arguments");
-    }
+  cif = new Pointer(NULL);
+  cif->Alloc(sizeof(ffi_cif));
+
+  status = ffi_prep_cif(
+    (ffi_cif *)cif->GetPointer(),
+    FFI_DEFAULT_ABI,
+    nargs,
+    (ffi_type *)rtype->GetPointer(),
+    (ffi_type **)atypes->GetPointer());
+
+  if (status != FFI_OK) {
+    delete cif;
+    return THROW_ERROR_EXCEPTION("ffi_prep_cif() returned error.");
+  }
+
+  return scope.Close(Pointer::WrapInstance(cif));
 }
 
 ///////////////
