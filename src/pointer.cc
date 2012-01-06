@@ -479,10 +479,9 @@ Handle<Value> Pointer::PutUInt64(const Arguments& args) {
       String::Utf8Value str(args[0]->ToString());
       val = STR_TO_UINT64(*str);
 
-      if ((*str)[0] != '-' && errno != ERANGE && (val >= UINT64_MIN && val <= UINT64_MAX)) {
+      if ((*str)[0] != '-' && errno != ERANGE && val <= UINT64_MAX) {
         memcpy(ptr, &val, sizeof(uint64_t));
-      }
-      else {
+      } else {
         return THROW_ERROR_EXCEPTION("Value out of Range.");
       }
     }
@@ -627,7 +626,7 @@ Handle<Value> Pointer::GetObject(const Arguments& args) {
   HandleScope     scope;
   Pointer         *self = ObjectWrap::Unwrap<Pointer>(args.This());
   unsigned char   *ptr = self->GetPointer();
-  Persistent<Value> rtn = *reinterpret_cast<Persistent<Value>*>(self->GetPointer());
+  Persistent<Value> rtn = *reinterpret_cast<Persistent<Value>*>(ptr);
 
   if (args.Length() == 1 && args[0]->IsBoolean() && args[0]->BooleanValue()) {
     self->MovePointer(sizeof(Persistent<Value>));
