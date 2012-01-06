@@ -82,7 +82,7 @@ void Pointer::MovePointer(int bytes) {
   this->m_ptr += bytes;
 }
 
-void Pointer::Alloc(size_t bytes) {
+Handle<Value> Pointer::Alloc(size_t bytes) {
   if (!this->m_allocated && bytes > 0) {
     this->m_ptr = (unsigned char *)malloc(bytes);
     this->origPtr = this->m_ptr;
@@ -94,17 +94,25 @@ void Pointer::Alloc(size_t bytes) {
       // Any allocated Pointer gets free'd by default
       // This can be changed in JS-land with `free`
       this->doFree = true;
-    }
-    else {
-      throw "malloc(): Could not allocate Memory";
+    } else {
+      return THROW_ERROR_EXCEPTION("malloc(): Could not allocate Memory");
     }
   }
+  return Undefined();
 }
 
-Handle<Object> Pointer::WrapInstance(Pointer *inst) {
-  HandleScope     scope;
+/**
+ * Sentinel Object used to determine when Pointer::New() is being called from
+ * JS-land or from within a Pointer::WrapInstance() call.
+ */
 
-  Local<Object>   obj = pointer_template->GetFunction()->NewInstance();
+static Persistent<Value> SENTINEL = Persistent<Object>::New(Object::New());
+static Persistent<Value> WRAP_ARGS[] = { SENTINEL };
+
+Handle<Object> Pointer::WrapInstance(Pointer *inst) {
+  HandleScope scope;
+
+  Local<Object> obj = pointer_template->GetFunction()->NewInstance(1, WRAP_ARGS);
   inst->Wrap(obj);
   return scope.Close(obj);
 }
@@ -114,24 +122,28 @@ Handle<Object> Pointer::WrapPointer(unsigned char *ptr) {
 }
 
 Handle<Value> Pointer::New(const Arguments& args) {
-  HandleScope     scope;
+  HandleScope scope;
 
-  Pointer         *self = new Pointer(NULL);
+  int argc = args.Length();
 
-  if (args.Length() >= 1 && args[0]->IsNumber()) {
-    unsigned int sz = args[0]->Uint32Value();
+  if (argc < 1) {
+    return THROW_ERROR_EXCEPTION("new Pointer() requires at least 1 argument");
+  }
+
+  Handle<Value> arg0 = args[0];
+  if (!arg0->StrictEquals(SENTINEL)) {
+    Pointer *self = new Pointer(NULL);
+    unsigned int sz = arg0->Uint32Value();
     self->Alloc(sz);
-    if (args.Length() == 2 && args[1]->IsBoolean()) {
+
+    if (argc >= 2) {
       // Second argument specifies whether or not to call `free()` on the
       // allocated buffer when this Pointer gets garbage collected
       self->doFree = args[1]->BooleanValue();
     }
+    self->Wrap(args.This());
   }
 
-  // TODO: Figure out how to throw an exception here for zero args but not
-  // break WrapPointer's NewInstance() call.
-
-  self->Wrap(args.This());
   return scope.Close(args.This());
 }
 

@@ -52,7 +52,7 @@ class Pointer : public ObjectWrap {
     static Handle<Object> WrapPointer(unsigned char *ptr);
     unsigned char *GetPointer();
     void MovePointer(int bytes);
-    void Alloc(size_t bytes);
+    Handle<Value> Alloc(size_t bytes);
 
   protected:
     static Handle<Value> New(const Arguments& args);
