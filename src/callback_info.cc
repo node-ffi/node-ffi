@@ -4,7 +4,7 @@ Persistent<FunctionTemplate> CallbackInfo::callback_template;
 pthread_t CallbackInfo::g_mainthread;
 pthread_mutex_t CallbackInfo::g_queue_mutex;
 std::queue<ThreadedCallbackInvokation *> CallbackInfo::g_queue;
-ev_async CallbackInfo::g_async;
+uv_async_t CallbackInfo::g_async;
 
 
 CallbackInfo::CallbackInfo(Handle<Function> func, void *closure) {
@@ -33,7 +33,7 @@ void CallbackInfo::DispatchToV8(CallbackInfo *self, void *retval, void **paramet
   }
 }
 
-void CallbackInfo::WatcherCallback(EV_P_ ev_async *w, int revents) {
+void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
   pthread_mutex_lock(&g_queue_mutex);
 
   while (!g_queue.empty()) {
@@ -60,10 +60,11 @@ void CallbackInfo::Initialize(Handle<Object> target) {
 
   // initialize our threaded invokation stuff
   g_mainthread = pthread_self();
-  ev_async_init(&g_async, CallbackInfo::WatcherCallback);
+  uv_async_init(uv_default_loop(), &g_async, CallbackInfo::WatcherCallback);
   pthread_mutex_init(&g_queue_mutex, NULL);
-  ev_async_start(EV_DEFAULT_UC_ &g_async);
-  ev_unref(EV_DEFAULT_UC); // allow the event loop to exit while this is running
+
+  // allow the event loop to exit while this is running
+  uv_unref(uv_default_loop());
 }
 
 Handle<Value> CallbackInfo::New(const Arguments& args) {
@@ -134,7 +135,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
     pthread_mutex_unlock(&g_queue_mutex);
 
     // send a message to our main thread to wake up the WatchCallback loop
-    ev_async_send(EV_DEFAULT_UC_ &g_async);
+    uv_async_send(&g_async);
 
     // wait for signal from calling thread
     inv->WaitForExecution();

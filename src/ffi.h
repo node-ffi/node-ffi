@@ -8,14 +8,18 @@
 #define __STDC_LIMIT_MACROS true
 #include <stdint.h>
 #include <sys/mman.h>
-#if __OBJC__ || __OBJC2__
-#include <objc/objc.h>
-#endif
-#include <ffi.h>
-#include <node_object_wrap.h>
-#include <node.h>
 #include <pthread.h>
 #include <queue>
+
+#include <ffi.h>
+
+#include <uv.h>
+#include <node_object_wrap.h>
+#include <node.h>
+
+#if __OBJC__ || __OBJC2__
+  #include <objc/objc.h>
+#endif
 
 #ifdef _WIN32_
   #include "winpthread.h"
@@ -150,7 +154,7 @@ class CallbackInfo : public ObjectWrap {
     ~CallbackInfo();
     static void Initialize(Handle<Object> Target);
     Handle<Value> GetPointerObject();
-    static void WatcherCallback(EV_P_ ev_async *w, int revents);
+    static void WatcherCallback(uv_async_t *w, int revents);
 
   protected:
     static void DispatchToV8(CallbackInfo *self, void *retval, void **parameters);
@@ -165,7 +169,7 @@ class CallbackInfo : public ObjectWrap {
     static pthread_t        g_mainthread;
     static pthread_mutex_t  g_queue_mutex;
     static std::queue<ThreadedCallbackInvokation *> g_queue;
-    static ev_async         g_async;
+    static uv_async_t         g_async;
 
     void                    *m_closure;
     Persistent<Function>    m_function;
