@@ -12,3 +12,4 @@ Makefile
 gyp-mac-tool
 .dirstamp
 ffi_bindings.target.mk
+out
