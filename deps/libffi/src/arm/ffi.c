@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2011 Plausible Labs Cooperative, Inc.
+   ffi.c - Copyright (c) 2011 Timothy Wall
+           Copyright (c) 2011 Plausible Labs Cooperative, Inc.
            Copyright (c) 2011 Anthony Green
 	   Copyright (c) 2011 Free Software Foundation
            Copyright (c) 1998, 2008, 2011  Red Hat, Inc.
@@ -64,6 +65,7 @@ int ffi_prep_args(char *stack, extended_cif *ecif, float *vfp_space)
        i--, p_arg++)
     {
       size_t z;
+      size_t alignment;
 
       /* Allocated in VFP registers. */
       if (ecif->cif->abi == FFI_VFP
@@ -81,8 +83,13 @@ int ffi_prep_args(char *stack, extended_cif *ecif, float *vfp_space)
 	}
 
       /* Align if necessary */
-      if (((*p_arg)->alignment - 1) & (unsigned) argp) {
-	argp = (char *) ALIGN(argp, (*p_arg)->alignment);
+      alignment = (*p_arg)->alignment;
+#ifdef _WIN32_WCE
+      if (alignment > 4)
+	alignment = 4;
+#endif
+      if ((alignment - 1) & (unsigned) argp) {
+	argp = (char *) ALIGN(argp, alignment);
       }
 
       if ((*p_arg)->type == FFI_TYPE_STRUCT)
@@ -187,6 +194,18 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     layout_vfp_args (cif);
 
   return FFI_OK;
+}
+
+/* Perform machine dependent cif processing for variadic calls */
+ffi_status ffi_prep_cif_machdep_var(ffi_cif *cif,
+				    unsigned int nfixedargs,
+				    unsigned int ntotalargs)
+{
+  /* VFP variadic calls actually use the SYSV ABI */
+  if (cif->abi == FFI_VFP)
+	cif->abi = FFI_SYSV;
+
+  return ffi_prep_cif_machdep(cif);
 }
 
 /* Prototypes for assembly functions, in sysv.S */
@@ -320,6 +339,11 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
       alignment = (*p_arg)->alignment;
       if (alignment < 4)
 	alignment = 4;
+#ifdef _WIN32_WCE
+      else
+	if (alignment > 4)
+	  alignment = 4;
+#endif
       /* Align if necessary */
       if ((alignment - 1) & (unsigned) argp) {
 	argp = (char *) ALIGN(argp, alignment);
@@ -339,6 +363,8 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
 }
 
 /* How to make a trampoline.  */
+
+extern unsigned int ffi_arm_trampoline[3];
 
 #if FFI_EXEC_TRAMPOLINE_TABLE
 
@@ -559,9 +585,7 @@ ffi_closure_free (void *ptr)
    unsigned int  __fun = (unsigned int)(FUN);				\
    unsigned int  __ctx = (unsigned int)(CTX);				\
    unsigned char *insns = (unsigned char *)(CTX);                       \
-   *(unsigned int*) &__tramp[0] = 0xe92d000f; /* stmfd sp!, {r0-r3} */	\
-   *(unsigned int*) &__tramp[4] = 0xe59f0000; /* ldr r0, [pc] */	\
-   *(unsigned int*) &__tramp[8] = 0xe59ff000; /* ldr pc, [pc] */	\
+   memcpy (__tramp, ffi_arm_trampoline, sizeof ffi_arm_trampoline);     \
    *(unsigned int*) &__tramp[12] = __ctx;				\
    *(unsigned int*) &__tramp[16] = __fun;				\
    __clear_cache((&__tramp[0]), (&__tramp[19])); /* Clear data mapping.  */ \

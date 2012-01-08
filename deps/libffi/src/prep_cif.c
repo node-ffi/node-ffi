@@ -90,20 +90,33 @@ static ffi_status initialize_aggregate(ffi_type *arg)
 /* Perform machine independent ffi_cif preparation, then call
    machine dependent routine. */
 
-ffi_status ffi_prep_cif(ffi_cif *cif, ffi_abi abi, unsigned int nargs,
-			ffi_type *rtype, ffi_type **atypes)
+/* For non variadic functions isvariadic should be 0 and
+   nfixedargs==ntotalargs.
+
+   For variadic calls, isvariadic should be 1 and nfixedargs
+   and ntotalargs set as appropriate. nfixedargs must always be >=1 */
+
+
+ffi_status FFI_HIDDEN ffi_prep_cif_core(ffi_cif *cif, ffi_abi abi,
+			     unsigned int isvariadic,
+                             unsigned int nfixedargs,
+                             unsigned int ntotalargs,
+			     ffi_type *rtype, ffi_type **atypes)
 {
   unsigned bytes = 0;
   unsigned int i;
   ffi_type **ptr;
 
   FFI_ASSERT(cif != NULL);
+  FFI_ASSERT((!isvariadic) || (nfixedargs >= 1));
+  FFI_ASSERT(nfixedargs <= ntotalargs);
+
   if (! (abi > FFI_FIRST_ABI && abi < FFI_LAST_ABI))
     return FFI_BAD_ABI;
 
   cif->abi = abi;
   cif->arg_types = atypes;
-  cif->nargs = nargs;
+  cif->nargs = ntotalargs;
   cif->rtype = rtype;
 
   cif->flags = 0;
@@ -159,9 +172,30 @@ ffi_status ffi_prep_cif(ffi_cif *cif, ffi_abi abi, unsigned int nargs,
   cif->bytes = bytes;
 
   /* Perform machine dependent cif processing */
+#ifdef FFI_TARGET_SPECIFIC_VARIADIC
+  if (isvariadic)
+	return ffi_prep_cif_machdep_var(cif, nfixedargs, ntotalargs);
+#endif
+
   return ffi_prep_cif_machdep(cif);
 }
 #endif /* not __CRIS__ */
+
+ffi_status ffi_prep_cif(ffi_cif *cif, ffi_abi abi, unsigned int nargs,
+			     ffi_type *rtype, ffi_type **atypes)
+{
+  return ffi_prep_cif_core(cif, abi, 0, nargs, nargs, rtype, atypes);
+}
+
+ffi_status ffi_prep_cif_var(ffi_cif *cif,
+                            ffi_abi abi,
+                            unsigned int nfixedargs,
+                            unsigned int ntotalargs,
+                            ffi_type *rtype,
+                            ffi_type **atypes)
+{
+  return ffi_prep_cif_core(cif, abi, 1, nfixedargs, ntotalargs, rtype, atypes);
+}
 
 #if FFI_CLOSURES
 

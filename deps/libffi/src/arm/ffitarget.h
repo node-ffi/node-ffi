@@ -55,6 +55,8 @@ typedef enum ffi_abi {
 #define FFI_TYPE_STRUCT_VFP_FLOAT  (FFI_TYPE_LAST + 1)
 #define FFI_TYPE_STRUCT_VFP_DOUBLE (FFI_TYPE_LAST + 2)
 
+#define FFI_TARGET_SPECIFIC_VARIADIC
+
 /* ---- Definitions for closures ----------------------------------------- */
 
 #define FFI_CLOSURES 1
@@ -62,4 +64,3 @@ typedef enum ffi_abi {
 #define FFI_NATIVE_RAW_API 0
 
 #endif
-
