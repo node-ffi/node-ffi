@@ -7,7 +7,6 @@
 #include <errno.h>
 #define __STDC_LIMIT_MACROS true
 #include <stdint.h>
-#include <sys/mman.h>
 #include <pthread.h>
 #include <queue>
 
