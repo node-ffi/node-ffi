@@ -150,7 +150,7 @@ class ThreadedCallbackInvokation;
 
 class CallbackInfo : public ObjectWrap {
   public:
-    CallbackInfo(Handle<Function> func, void *closure);
+    CallbackInfo(Handle<Function> func, void *closure, void *code);
     ~CallbackInfo();
     static void Initialize(Handle<Object> Target);
     Handle<Value> GetPointerObject();
@@ -172,6 +172,7 @@ class CallbackInfo : public ObjectWrap {
     static uv_async_t         g_async;
 
     void                    *m_closure;
+    void                    *code;
     Persistent<Function>    m_function;
     Handle<Object>          m_this;
 };

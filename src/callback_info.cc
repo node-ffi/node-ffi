@@ -7,13 +7,14 @@ std::queue<ThreadedCallbackInvokation *> CallbackInfo::g_queue;
 uv_async_t CallbackInfo::g_async;
 
 
-CallbackInfo::CallbackInfo(Handle<Function> func, void *closure) {
+CallbackInfo::CallbackInfo(Handle<Function> func, void *closure, void *code) {
   m_function = Persistent<Function>::New(func);
   m_closure = closure;
+  this->code = code;
 }
 
 CallbackInfo::~CallbackInfo() {
-  munmap(m_closure, sizeof(ffi_closure));
+  ffi_closure_free(m_closure);
   m_function.Dispose();
 }
 
@@ -80,20 +81,22 @@ Handle<Value> CallbackInfo::New(const Arguments& args) {
   Local<Function> callback = Local<Function>::Cast(args[1]);
   ffi_closure *closure;
   ffi_status status;
+  void *code;
 
-  if ((closure = (ffi_closure *)mmap(NULL, sizeof(ffi_closure), PROT_READ | PROT_WRITE | PROT_EXEC,
-          MAP_ANON | MAP_PRIVATE, -1, 0)) == (void*)-1)
-  {
-    return ThrowException(String::New("mmap() Returned Error"));
+  closure = (ffi_closure *)ffi_closure_alloc(sizeof(ffi_closure), &code);
+
+  if (!closure) {
+    return ThrowException(String::New("ffi_closure_alloc() Returned Error"));
   }
 
-  CallbackInfo *self = new CallbackInfo(callback, closure);
+  CallbackInfo *self = new CallbackInfo(callback, closure, code);
 
-  status = ffi_prep_closure(
+  status = ffi_prep_closure_loc(
     closure,
     (ffi_cif *)cif->GetPointer(),
     Invoke,
-    (void *)self
+    (void *)self,
+    code
   );
 
   if (status != FFI_OK) {
