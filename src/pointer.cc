@@ -1,5 +1,5 @@
 #include "ffi.h"
-#include <node/node_buffer.h>
+#include <node_buffer.h>
 
 Pointer::Pointer(unsigned char *ptr) {
   this->origPtr = ptr;

@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <dlfcn.h>
 #include <limits.h>
 #include <errno.h>
 #define __STDC_LIMIT_MACROS true
 #include <stdint.h>
-#include <pthread.h>
 #include <queue>
+
+#include <dlfcn.h>
+#include <pthread.h>
 
 #include <ffi.h>
 
@@ -20,8 +21,10 @@
   #include <objc/objc.h>
 #endif
 
-#ifdef _WIN32_
-  #include "winpthread.h"
+#ifdef _WIN32
+  #define snprintf _snprintf_s
+  #define strtoll _strtoi64
+  #define strtoull _strtoui64
 #endif
 
 #include "node_async_shim.h"
