@@ -5,11 +5,13 @@
 void FFI::InitializeStaticFunctions(Handle<Object> target) {
   Local<Object> o = Object::New();
 
-  // abs and atoi here for testing purposes
-  // Temporarily commented out for Windows...
-  // "cannot convert from overloaded function to unsigned char *"
-  //o->Set(String::New("abs"), Pointer::WrapPointer((unsigned char *)abs));
-  //o->Set(String::New("atoi"), Pointer::WrapPointer((unsigned char *)atoi));
+  // atoi and abs here for testing purposes
+  o->Set(String::New("atoi"), Pointer::WrapPointer((unsigned char *)atoi));
+  // Windows has multiple `abs` signatures, so we need to manually disambiguate
+  int (*absPtr)(int)(abs);
+  o->Set(String::New("abs"), Pointer::WrapPointer((unsigned char *)absPtr));
+
+  // dl functions used by the DynamicLibrary JS class
   o->Set(String::New("dlopen"), Pointer::WrapPointer((unsigned char *)dlopen));
   o->Set(String::New("dlclose"), Pointer::WrapPointer((unsigned char *)dlclose));
   o->Set(String::New("dlsym"), Pointer::WrapPointer((unsigned char *)dlsym));
