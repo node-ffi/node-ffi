@@ -49,31 +49,12 @@
       },
       'defines': [ ],
       'sources': [ './dlfcn.c', ],
-      #'conditions': [
-      #  ['OS=="win"', {
-      #    'msvs_settings': {
-      #      'VCCLCompilerTool': {
-      #        # Compile as C++. http_parser.c is actually C99, but C++ is
-      #        # close enough in this case.
-      #        'CompileAs': 2,
-      #      },
-      #    },
-      #  }]
-      #],
-    },
-
-    {
-      'target_name': testdll',
-      'type': 'shared_library',
-      'defines': [ ],
-      'sources': [ './testdll.c', ],
-      'dependencies': [ 'dlfcn' ],
     },
 
     {
       'target_name': 'test',
       'type': 'executable',
-      'dependencies': [ 'testdll' ],
+      'dependencies': [ 'dlfcn' ],
       'sources': [ 'test.c' ]
     }
   ]
