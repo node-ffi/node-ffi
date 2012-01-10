@@ -9,15 +9,22 @@
         , 'src/threaded_callback_invokation.cc'
         , 'src/foreign_caller.cc'
       ],
-      'include_dirs': [ 'deps/libffi/include' ],
+      'include_dirs': [
+          'deps/libffi/include'
+      ],
       'conditions': [
         ['OS=="win"', {
-          'libraries': [ 'deps/libffi/.libs/libffi.lib' ],
+          'libraries': [
+              'deps/libffi/.libs/libffi.lib'
+          ],
           'dependencies': [
               'deps/dlfcn-win32/dlfcn.gyp:dlfcn'
+            , 'deps/pthreads-win32/pthread.gyp:pthread'
           ]
         }, {
-          'libraries': [ 'deps/libffi/.libs/libffi.a' ],
+          'libraries': [
+              'deps/libffi/.libs/libffi.a'
+          ],
         }]
       ]
     }
