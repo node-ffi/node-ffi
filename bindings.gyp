@@ -25,6 +25,17 @@
           'libraries': [
               'deps/libffi/.libs/libffi.a'
           ],
+        }],
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'MACOSX_DEPLOYMENT_TARGET': '10.5',
+            'OTHER_CFLAGS': [
+                '-ObjC++'
+            ]
+          },
+          'libraries': [
+              '-lobjc'
+          ],
         }]
       ]
     }
