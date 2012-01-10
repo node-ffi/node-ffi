@@ -30,9 +30,12 @@ void FFI::InitializeBindings(Handle<Object> target) {
   target->Set(String::New("strtoul"), FunctionTemplate::New(Strtoul)->GetFunction());
   target->Set(String::New("POINTER_SIZE"), Integer::New(sizeof(unsigned char *)));
   target->Set(String::New("FFI_TYPE_SIZE"), Integer::New(sizeof(ffi_type)));
+
+  bool hasObjc = false;
 #if __OBJC__ || __OBJC2__
-  target->Set(String::New("HAS_OBJC"), True(), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  hasObjc = true;
 #endif
+  target->Set(String::New("HAS_OBJC"), Boolean::New(hasObjc), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 
   Local<Object> smap = Object::New();
   smap->Set(String::New("byte"),      Integer::New(sizeof(unsigned char)));
