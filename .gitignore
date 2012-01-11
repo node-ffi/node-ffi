@@ -5,7 +5,6 @@
 *.lo
 *.Makefile
 build
-ffi_bindings.node
 node_modules
 .deps
 Makefile
