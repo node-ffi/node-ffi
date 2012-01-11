@@ -28,8 +28,8 @@ current.atoi("1234"); // 1234
 
  * Linux, OS X, Windows, or Solaris.
  * `libffi` comes bundled with node-ffi, it does not need to be installed on your system.
- * The current version is tested to run on node 0.6 (specifically, 0.6.6).
- * If you need node 0.4 support, use the `0.4` branch of node-ffi.
+ * The current version is tested to run on node 0.6.x.
+ * If you need node 0.4.x support, use the `0.4` branch of node-ffi.
 
 # NPM INSTALL
 
