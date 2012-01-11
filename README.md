@@ -14,21 +14,22 @@ It also simplifies the augmentation of node.js with C code as it takes care of h
 # EXAMPLE
 
 ``` js
-var FFI = require("node-ffi");
+var ffi = require("node-ffi");
 
-var libm = new FFI.Library("libm", { "ceil": [ "double", [ "double" ] ] });
+var libm = new ffi.Library("libm", { "ceil": [ "double", [ "double" ] ] });
 libm.ceil(1.5); // 2
 
 // You can also access just functions in the current process by passing a null
-var current = new FFI.Library(null, { "atoi": [ "int32", [ "string" ] ] });
+var current = new ffi.Library(null, { "atoi": [ "int32", [ "string" ] ] });
 current.atoi("1234"); // 1234
 ```
 
 # REQUIREMENTS
 
-* Linux, OS X, or Solaris.
-* The current version is tested to run on node.js 0.4 (specifically, 0.4.12)
-* libffi installed -- with development headers (comes with OS X and most Linux distros)
+ * Linux, OS X, Windows, or Solaris.
+ * `libffi` comes bundled with node-ffi, it does not need to be installed on your system.
+ * The current version is tested to run on node 0.6 (specifically, 0.6.6).
+ * If you need node 0.4 support, use the `0.4` branch of node-ffi.
 
 # NPM INSTALL
 
@@ -36,13 +37,18 @@ current.atoi("1234"); // 1234
 $ npm install node-ffi
 ```
 
+Most popular operating systems have a pre-compiled binary that comes along with node-ffi, so most of the time you will not need to compile anything! (Unless of course you want to, then see below).
+
 # SOURCE INSTALL
 
 ``` bash
 $ git clone git://github.com/rbranson/node-ffi.git
 $ cd node-ffi
-$ node-waf configure build
+$ $(NODE_SOURCE)/tools/gyp_addon -f make
+$ BUILDTYPE=Release make
 ```
+
+Note that the `NODE_SOURCE` variable needs to be set to the root dir of the node source tree.
 
 # TYPES
 
