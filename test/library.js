@@ -62,7 +62,7 @@ describe('Library', function () {
     expect(buf.getCString()).to.equal(ZEROS_2K)
   })
 
-  if (process.plaform == 'win32') {
+  if (process.platform == 'win32') {
 
     // TODO: Add GetTimeOfDay() with FILETIME struct test
 
