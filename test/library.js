@@ -25,7 +25,8 @@ describe('Library', function () {
   })
 
   it('should accept a lib name as a first argument', function () {
-    var libm = new Library('libm', {
+    var lib = process.platform == 'win32' ? 'msvcrt' : 'libm'
+    var libm = new Library(lib, {
         'ceil': [ 'double', [ 'double' ] ]
     })
     var test = libm.ceil instanceof Function
@@ -77,7 +78,8 @@ describe('Library', function () {
   describe('async', function () {
 
     it('should call a function asynchronously', function (done) {
-      var libm = new Library('libm', {
+      var lib = process.platform == 'win32' ? 'msvcrt' : 'libm'
+      var libm = new Library(lib, {
           'ceil': [ 'double', [ 'double' ], { async: true } ]
       })
       libm.ceil(1.1).on('success', function (res) {
