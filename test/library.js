@@ -64,11 +64,25 @@ describe('Library', function () {
 
   if (process.platform == 'win32') {
 
-    // TODO: Add GetTimeOfDay() with FILETIME struct test
+    it('should work with "GetTimeOfDay" and a "FILETIME" Struct pointer',
+    function () {
+      var FILETIME = new ffi.Struct([
+          ['uint32', 'dwLowDateTime']
+        , ['uint32', 'dwHighDateTime']
+      ])
+      var l = new Library('kernel32', {
+          'GetSystemTimeAsFileTime': [ 'void', [ 'pointer' ]]
+      })
+      var ft = new FILETIME()
+      l.GetSystemTimeAsFileTime(ft.ref())
+      console.error(ft.dwLowDateTime)
+      console.error(ft.dwHighDateTime)
+    })
 
   } else {
 
-    it('should work with "gettimeofday" and a "timeval" Struct pointer', function () {
+    it('should work with "gettimeofday" and a "timeval" Struct pointer',
+    function () {
       var timeval = new ffi.Struct([
           ['long','tv_sec']
         , ['long','tv_usec']
