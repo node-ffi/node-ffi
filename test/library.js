@@ -75,8 +75,7 @@ describe('Library', function () {
       })
       var ft = new FILETIME()
       l.GetSystemTimeAsFileTime(ft.ref())
-      console.error(ft.dwLowDateTime)
-      console.error(ft.dwHighDateTime)
+      // TODO: Add an expect() clause here...
     })
 
   } else {
