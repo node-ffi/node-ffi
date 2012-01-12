@@ -41,8 +41,8 @@ Most popular operating systems have a pre-compiled binary that comes along with 
 ``` bash
 $ git clone git://github.com/rbranson/node-ffi.git
 $ cd node-ffi
-$ $(NODE_SOURCE)/tools/gyp_addon -f make
-$ BUILDTYPE=Release make
+$ "$NODE_SOURCE/tools/gyp_addon" -f make
+$ make BUILDTYPE=Release
 ```
 
 Note that the `NODE_SOURCE` variable needs to be set to the root dir of the node source tree.
