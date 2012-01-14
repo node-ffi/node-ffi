@@ -10,10 +10,10 @@
 , "main": "./lib/ffi"
 , "devDependencies": {
       "expect.js": "*"
-    , "mocha": "*"
+    , "mocha": ">= 0.10.x"
   }
 , "scripts": {
-    "test": "node --expose-gc ./node_modules/mocha/bin/_mocha"
+    "test": "mocha -gc --reporter spec"
   }
 , "repository": {
     "type": "git"
