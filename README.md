@@ -87,4 +87,4 @@ There is non-trivial overhead associated with FFI calls. Comparing a hard-coded 
 
 # LICENSE
 
-See LICENSE file.
+MIT License. See the `LICENSE` file.
