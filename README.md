@@ -36,7 +36,7 @@ $ npm install node-ffi
 
 Most popular operating systems have a pre-compiled binary that comes along with node-ffi, so most of the time you will not need to compile anything! (Unless of course you want to, then see below).
 
-# SOURCE INSTALL
+# SOURCE INSTALL / MANUAL COMPILATION
 
 ``` bash
 $ git clone git://github.com/rbranson/node-ffi.git
