@@ -8,6 +8,9 @@
 , "homepage": "http://github.com/rbranson/node-ffi"
 , "engines": { "node": ">=0.6.0" }
 , "main": "./lib/ffi"
+, "dependencies": {
+      "bindings": "*"
+  }
 , "devDependencies": {
       "expect.js": "*"
     , "mocha": ">= 0.10.x"
