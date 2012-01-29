@@ -20,5 +20,4 @@ Note to fix the CC target path to the msvcc.sh file if it's different for you.
   $ make
 
 
-
-Now that the bundled libffi is compiled, you may proceed with compiled node-ffi.
+Now that the bundled libffi is compiled, you may proceed with compiling node-ffi.
