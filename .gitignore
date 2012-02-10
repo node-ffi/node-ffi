@@ -4,12 +4,14 @@
 *.o
 *.lo
 *.Makefile
+*.target.gyp.mk
 build
+out
+Release
+Debug
 node_modules
 .deps
-Makefile
+Makefile.gyp
 gyp-mac-tool
 .dirstamp
-ffi_bindings.target.mk
-out
 npm-debug.log
