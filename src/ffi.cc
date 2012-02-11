@@ -23,7 +23,6 @@ void FFI::InitializeStaticFunctions(Handle<Object> target) {
 ///////////////
 
 void FFI::InitializeBindings(Handle<Object> target) {
-  Local<Object> o = Object::New();
 
   target->Set(String::New("free"), FunctionTemplate::New(Free)->GetFunction());
   target->Set(String::New("prepCif"), FunctionTemplate::New(FFIPrepCif)->GetFunction());
