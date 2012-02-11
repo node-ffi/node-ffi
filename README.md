@@ -57,8 +57,6 @@ $ node-gyp configure
 $ node-gyp build
 ```
 
-Note that the `NODE_SOURCE` variable needs to be set to the root dir of the node source tree.
-
 # TYPES
 
     int8        Signed 8-bit Integer
