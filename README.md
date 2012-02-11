@@ -38,11 +38,23 @@ Most popular operating systems have a pre-compiled binary that comes along with 
 
 # SOURCE INSTALL / MANUAL COMPILATION
 
+To compile from source it's easiest to use
+[`node-gyp`](https://github.com/TooTallNate/node-gyp):
+
+``` bash
+$ npm install -g node-gyp
+```
+
+Now you can compile `node-ffi`:
+
 ``` bash
 $ git clone git://github.com/rbranson/node-ffi.git
 $ cd node-ffi
-$ "$NODE_SOURCE/tools/gyp_addon" -f make
-$ make BUILDTYPE=Release
+$ pushd deps/libffi
+$ ./configure --enable-static --disable-shared && make
+$ popd
+$ node-gyp configure
+$ node-gyp build
 ```
 
 Note that the `NODE_SOURCE` variable needs to be set to the root dir of the node source tree.
