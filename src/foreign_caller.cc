@@ -76,7 +76,13 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args) {
     // construct a new EventEmitter object
     p->emitter = Persistent<Object>::New(emitterConstructor->NewInstance());
 
-    BEGIN_ASYNC(p, ForeignCaller::AsyncFFICall, ForeignCaller::FinishAsyncFFICall);
+    ev_ref(EV_DEFAULT_UC);
+#if NODE_VERSION_AT_LEAST(0, 5, 4)
+    eio_custom((void (*)(eio_req*))ForeignCaller::AsyncFFICall, EIO_PRI_DEFAULT, ForeignCaller::FinishAsyncFFICall, p);
+#else
+    eio_custom(ForeignCaller::AsyncFFICall, EIO_PRI_DEFAULT, ForeignCaller::FinishAsyncFFICall, p);
+#endif
+
     return scope.Close(p->emitter);
   } else {
 #if __OBJC__ || __OBJC2__
@@ -98,13 +104,15 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args) {
   return Undefined();
 }
 
-async_rtn ForeignCaller::AsyncFFICall(uv_work_t *req) {
+int ForeignCaller::AsyncFFICall(eio_req *req)
+{
   AsyncCallParams *p = (AsyncCallParams *)req->data;
   ffi_call(p->cif, p->ptr, p->res, p->args);
-  RETURN_ASYNC;
+  return 0;
 }
 
-async_rtn ForeignCaller::FinishAsyncFFICall(uv_work_t *req) {
+int ForeignCaller::FinishAsyncFFICall(eio_req *req)
+{
   HandleScope scope;
 
   AsyncCallParams *p = (AsyncCallParams *)req->data;
@@ -131,5 +139,5 @@ async_rtn ForeignCaller::FinishAsyncFFICall(uv_work_t *req) {
     FatalException(try_catch);
   }
 
-  RETURN_ASYNC_AFTER;
+  return 0;
 }

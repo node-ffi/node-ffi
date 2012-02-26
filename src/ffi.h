@@ -27,8 +27,6 @@
   #define strtoull _strtoui64
 #endif
 
-#include "node_async_shim.h"
-
 #define INTEGER_CONVERSION_BUFFER_SIZE  64
 
 #define UINT8_MIN     0
@@ -133,8 +131,8 @@ class ForeignCaller : public ObjectWrap {
   protected:
     static Handle<Value> New(const Arguments& args);
     static Handle<Value> Exec(const Arguments& args);
-    static async_rtn AsyncFFICall(uv_work_t *req);
-    static async_rtn FinishAsyncFFICall(uv_work_t *req);
+    static int AsyncFFICall(eio_req *req);
+    static int FinishAsyncFFICall(eio_req *req);
 
     ffi_cif *m_cif;
     void (*m_fn)(void);
