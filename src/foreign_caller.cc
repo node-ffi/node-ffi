@@ -101,10 +101,19 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args) {
   return Undefined();
 }
 
+/**
+ * Called on the thread pool.
+ */
+
 void ForeignCaller::AsyncFFICall(uv_work_t *req) {
   AsyncCallParams *p = (AsyncCallParams *)req->data;
   ffi_call(p->cif, p->ptr, p->res, p->args);
 }
+
+/**
+ * Called after the AsyncFFICall function completes on the thread pool.
+ * This gets run on the loop thread.
+ */
 
 void ForeignCaller::FinishAsyncFFICall(uv_work_t *req) {
   HandleScope scope;
