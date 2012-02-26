@@ -131,8 +131,8 @@ class ForeignCaller : public ObjectWrap {
   protected:
     static Handle<Value> New(const Arguments& args);
     static Handle<Value> Exec(const Arguments& args);
-    static int AsyncFFICall(eio_req *req);
-    static int FinishAsyncFFICall(eio_req *req);
+    static void AsyncFFICall(uv_work_t *req);
+    static void FinishAsyncFFICall(uv_work_t *req);
 
     ffi_cif *m_cif;
     void (*m_fn)(void);
