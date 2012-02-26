@@ -12,6 +12,6 @@ Debug
 node_modules
 .deps
 Makefile.gyp
-gyp-mac-tool
+gyp-*-tool
 .dirstamp
 npm-debug.log
