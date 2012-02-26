@@ -90,7 +90,7 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args) {
           self->m_fn,
           self->m_res,
           self->m_fnargs
-          );
+        );
 #if __OBJC__ || __OBJC2__
     } @catch (id ex) {
       return ThrowException(Pointer::WrapPointer((unsigned char *)ex));
