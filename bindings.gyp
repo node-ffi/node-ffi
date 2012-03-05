@@ -15,7 +15,7 @@
       'conditions': [
         ['OS=="win"', {
           'libraries': [
-              '../deps/libffi/.libs/libffi.lib'
+              '<(module_root_dir)/deps/libffi/.libs/libffi.lib'
           ],
           'dependencies': [
               'deps/dlfcn-win32/dlfcn.gyp:dlfcn'
@@ -23,7 +23,7 @@
           ]
         }, {
           'libraries': [
-              '../deps/libffi/.libs/libffi.a'
+              '<(module_root_dir)/deps/libffi/.libs/libffi.a'
           ],
         }],
         ['OS=="mac"', {
