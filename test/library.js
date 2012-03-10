@@ -34,6 +34,18 @@ describe('Library', function () {
     expect(libm.ceil(1.1)).to.equal(2)
   })
 
+  it('should accept a lib name with file extension', function() {
+    var lib = process.platform == 'win32'
+      ? 'msvcrt.dll'
+      : 'libm' + ffi.PLATFORM_LIBRARY_EXTENSIONS[process.platform]
+    var libm = new Library(lib, {
+      'ceil': [ 'double', ['double'] ]
+    })
+    var test = libm.ceil instanceof Function
+    expect(test).to.be(true)
+    expect(libm.ceil(100.9)).to.equal(101)
+  })
+
   it('should throw when an invalid function name is used', function () {
     expect(function () {
       new Library(null, {
