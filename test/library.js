@@ -34,6 +34,15 @@ describe('Library', function () {
     expect(libm.ceil(1.1)).to.equal(2)
   })
 
+  it('should accept a lib name with file extension', function() {
+    var lib = process.platform == 'win32' ? 'msvcrt.dll' : 'libm.so'
+    expect(function() {
+      var libm = new Library(lib, {
+        'ceil': [ 'double', ['double'] ]
+      })
+    }).to.not.throwError()
+  })
+
   it('should throw when an invalid function name is used', function () {
     expect(function () {
       new Library(null, {
