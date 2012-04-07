@@ -48,9 +48,11 @@
       'actions': [
         {
           'action_name': 'test',
+          # a hack to run libffi ./configure during `node-gyp configure`
           'inputs': ['<!@(sh libffi-config.sh)'],
           'outputs': [''],
           'action': [
+            # run libffi `make`
             'sh', 'libffi-build.sh'
           ]
         }
