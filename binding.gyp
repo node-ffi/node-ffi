@@ -12,6 +12,9 @@
       'include_dirs': [
           'deps/libffi/include'
       ],
+      'dependencies': [
+        'libffi'
+      ],
       'conditions': [
         ['OS=="win"', {
           'libraries': [
@@ -37,6 +40,20 @@
               '-lobjc'
           ],
         }]
+      ]
+    },
+    {
+      'target_name': 'libffi',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'test',
+          'inputs': ['<!@(sh libffi-config.sh)'],
+          'outputs': [''],
+          'action': [
+            'sh', 'libffi-build.sh'
+          ]
+        }
       ]
     }
   ]

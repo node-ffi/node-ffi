@@ -16,3 +16,4 @@ libtool
 stamp-h1
 libffi*gz
 autom4te.cache
+node_ffi_configure.out
