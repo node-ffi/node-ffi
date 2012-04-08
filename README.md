@@ -50,9 +50,6 @@ Now you can compile `node-ffi`:
 ``` bash
 $ git clone git://github.com/rbranson/node-ffi.git
 $ cd node-ffi
-$ pushd deps/libffi
-$ ./configure --enable-static --disable-shared && make
-$ popd
 $ node-gyp configure
 $ node-gyp build
 ```
