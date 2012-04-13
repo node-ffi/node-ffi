@@ -50,8 +50,7 @@ Now you can compile `node-ffi`:
 ``` bash
 $ git clone git://github.com/rbranson/node-ffi.git
 $ cd node-ffi
-$ node-gyp configure
-$ node-gyp build
+$ node-gyp configure build
 ```
 
 # TYPES
