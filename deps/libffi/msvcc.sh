@@ -43,7 +43,7 @@
 #
 
 args="-nologo -W3"
-md=-MT
+md=-MD
 cl="cl"
 ml="ml"
 safeseh="-safeseh"
@@ -86,7 +86,7 @@ do
       # Link against debug CRT and enable runtime error checks.
       args="$args -RTC1"
       defines="$defines $1"
-      md=-MTd
+      md=-MDd
       shift 1
     ;;
     -c)
