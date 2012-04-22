@@ -687,9 +687,6 @@ Handle<Value> Pointer::ToBuffer(const Arguments& args) {
   if (args.Length() >= 1) {
     sz = args[0]->Uint32Value();
   }
-  if (sz > self->m_allocated) {
-    return ThrowException(Exception::Error(String::New("Out of bounds!")));
-  }
 
   // http://sambro.is-super-awesome.com/2011/03/03/creating-a-proper-buffer-in-a-node-c-addon
   Buffer *slowBuffer = Buffer::New((char *)self->GetPointer(), (size_t)sz, unref_pointer_callback, self);
