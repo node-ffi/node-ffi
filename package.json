@@ -9,11 +9,11 @@
 , "engines": { "node": ">=0.6.0" }
 , "main": "./lib/ffi"
 , "dependencies": {
-      "bindings": "*"
+    "bindings": "*"
   }
 , "devDependencies": {
-      "expect.js": "*"
-    , "mocha": ">= 0.10.x"
+    "expect.js": "*"
+  , "mocha": ">= 0.10.x"
   }
 , "scripts": {
     "test": "mocha -gc --reporter spec"
