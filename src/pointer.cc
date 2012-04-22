@@ -684,7 +684,7 @@ Handle<Value> Pointer::ToBuffer(const Arguments& args) {
   // Defaults to the size of the allocated Buffer area, but can be explicitly
   // specified as the first argument.
   unsigned int sz = self->m_allocated;
-  if (args.Length() == 1 && args[0]->IsNumber()) {
+  if (args.Length() >= 1) {
     sz = args[0]->Uint32Value();
   }
   if (sz > self->m_allocated) {
