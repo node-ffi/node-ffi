@@ -30,7 +30,7 @@ using namespace node;
  * Converts an arbitrary pointer to a node Buffer with 0-length
  */
 
-static Handle<Value> WrapPointer(char *);
+Handle<Value> WrapPointer(char *);
 
 class AsyncCallParams {
   public:

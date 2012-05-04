@@ -1,3 +1,4 @@
+#include <node_buffer.h>
 #include "ffi.h"
 
 ForeignCaller::ForeignCaller() {
@@ -40,15 +41,15 @@ Handle<Value> ForeignCaller::New(const Arguments& args) {
     return THROW_ERROR_EXCEPTION("new ForeignCaller() requires 5 arguments!");
   }
 
-  Pointer *cif    = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
-  Pointer *fn     = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
-  Pointer *fnargs = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
-  Pointer *res    = ObjectWrap::Unwrap<Pointer>(args[3]->ToObject());
+  char *cif    = Buffer::Data(args[0]->ToObject());
+  char *fn     = Buffer::Data(args[1]->ToObject());
+  char *fnargs = Buffer::Data(args[2]->ToObject());
+  char *res    = Buffer::Data(args[3]->ToObject());
 
-  self->m_cif     = (ffi_cif *)cif->GetPointer();
-  self->m_fn      = (void (*)(void))fn->GetPointer();
-  self->m_res     = (void *)res->GetPointer();
-  self->m_fnargs  = (void **)fnargs->GetPointer();
+  self->m_cif     = (ffi_cif *)cif;
+  self->m_fn      = (void (*)(void))fn;
+  self->m_res     = (void *)res;
+  self->m_fnargs  = (void **)fnargs;
   self->m_async   = args[4]->BooleanValue();
 
   self->Wrap(args.This());
@@ -93,7 +94,7 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args) {
         );
 #if __OBJC__ || __OBJC2__
     } @catch (id ex) {
-      return ThrowException(Pointer::WrapPointer((unsigned char *)ex));
+      return ThrowException(WrapPointer((char *)ex));
     }
 #endif
   }

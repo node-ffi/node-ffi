@@ -1,3 +1,4 @@
+#include <node_buffer.h>
 #include "ffi.h"
 
 Persistent<FunctionTemplate> CallbackInfo::callback_template;
@@ -77,7 +78,7 @@ Handle<Value> CallbackInfo::New(const Arguments& args) {
 
   // Args: cif pointer, JS function
   // TODO: Check args
-  Pointer *cif = ObjectWrap::Unwrap<Pointer>(args[0]->ToObject());
+  ffi_cif *cif = (ffi_cif *)Buffer::Data(args[0]->ToObject());
   Local<Function> callback = Local<Function>::Cast(args[1]);
   ffi_closure *closure;
   ffi_status status;
@@ -93,7 +94,7 @@ Handle<Value> CallbackInfo::New(const Arguments& args) {
 
   status = ffi_prep_closure_loc(
     closure,
-    (ffi_cif *)cif->GetPointer(),
+    cif,
     Invoke,
     (void *)self,
     code
@@ -151,6 +152,6 @@ Handle<Value> CallbackInfo::GetPointer(Local<String> name, const AccessorInfo& i
   HandleScope scope;
 
   CallbackInfo *self = ObjectWrap::Unwrap<CallbackInfo>(info.Holder());
-  Handle<Value> ptr = Pointer::WrapPointer((unsigned char *)self->m_closure);
+  Handle<Value> ptr = WrapPointer((char *)self->m_closure);
   return scope.Close(ptr);
 }
