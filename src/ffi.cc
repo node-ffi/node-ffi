@@ -44,7 +44,9 @@ void FFI::InitializeStaticFunctions(Handle<Object> target) {
 
 void FFI::InitializeBindings(Handle<Object> target) {
 
-  target->Set(String::NewSymbol("prepCif"), FunctionTemplate::New(FFIPrepCif)->GetFunction());
+  target->Set(String::NewSymbol("ffi_prep_cif"), FunctionTemplate::New(FFIPrepCif)->GetFunction());
+  target->Set(String::NewSymbol("ffi_call"), FunctionTemplate::New(FFICall)->GetFunction());
+  target->Set(String::NewSymbol("ffi_call_async"), FunctionTemplate::New(FFICallAsync)->GetFunction());
   target->Set(String::NewSymbol("strtoul"), FunctionTemplate::New(Strtoul)->GetFunction());
 
   // `ffi_status` enum values
@@ -72,6 +74,8 @@ void FFI::InitializeBindings(Handle<Object> target) {
 #endif
 
 
+  target->Set(String::NewSymbol("FFI_ARG_SIZE"), Integer::New(sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->Set(String::NewSymbol("FFI_SARG_SIZE"), Integer::New(sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
   target->Set(String::NewSymbol("FFI_TYPE_SIZE"), Integer::New(sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
   target->Set(String::NewSymbol("FFI_CIF_SIZE"), Integer::New(sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 
@@ -175,6 +179,7 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args) {
   if (!Buffer::HasInstance(cif_buf)) {
     return THROW_ERROR_EXCEPTION("prepCif(): Buffer required as first arg");
   }
+
   cif = Buffer::Data(cif_buf.As<Object>());
   nargs = args[1]->Uint32Value();
   rtype = Buffer::Data(args[2]->ToObject());
@@ -189,6 +194,50 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args) {
       (ffi_type **)atypes);
 
   return scope.Close(Integer::NewFromUnsigned(status));
+}
+
+/*
+ * JS wrapper around `ffi_call()`.
+ *
+ * args[0] - Buffer - the `ffi_cif *`
+ * args[1] - Buffer - the C function pointer to invoke
+ * args[2] - Buffer - the `void *` buffer big enough to hold the return value
+ * args[3] - Buffer - the `void **` array of pointers containing the arguments
+ */
+
+Handle<Value> FFI::FFICall(const Arguments& args) {
+  HandleScope scope;
+
+  if (args.Length() != 4) {
+    return THROW_ERROR_EXCEPTION("ffi_call() requires 4 arguments!");
+  }
+
+  char *cif    = Buffer::Data(args[0]->ToObject());
+  char *fn     = Buffer::Data(args[1]->ToObject());
+  char *res    = Buffer::Data(args[2]->ToObject());
+  char *fnargs = Buffer::Data(args[3]->ToObject());
+
+#if __OBJC__ || __OBJC2__
+    @try {
+#endif
+      ffi_call(
+          (ffi_cif *)cif,
+          FFI_FN(fn),
+          (void *)res,
+          (void **)fnargs
+        );
+#if __OBJC__ || __OBJC2__
+    } @catch (id ex) {
+      return ThrowException(WrapPointer((char *)ex));
+    }
+#endif
+
+  return Undefined();
+}
+
+Handle<Value> FFI::FFICallAsync(const Arguments& args) {
+  HandleScope scope;
+  return THROW_ERROR_EXCEPTION("ffi_call_async(): IMPLEMENT ME!");
 }
 
 void init(Handle<Object> target) {
