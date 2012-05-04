@@ -5,7 +5,6 @@
       'sources': [
           'src/ffi.cc'
         , 'src/callback_info.cc'
-        , 'src/pointer.cc'
         , 'src/threaded_callback_invokation.cc'
         , 'src/foreign_caller.cc'
       ],
