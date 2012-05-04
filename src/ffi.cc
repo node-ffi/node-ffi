@@ -1,5 +1,21 @@
 #include "ffi.h"
 
+/*
+ * Called when the wrapped pointer is garbage collected.
+ * We never have to do anything here...
+ */
+
+void wrap_pointer_cb(char *data, void *hint) {
+  //fprintf(stderr, "wrap_pointer_cb\n");
+}
+
+Handle<Value> WrapPointer(char *ptr) {
+  size_t size = 0;
+  void *user_data = NULL;
+  Buffer *buf = Buffer::New(ptr, size, wrap_pointer_cb, user_data);
+  return buf->handle_;
+}
+
 ///////////////
 
 void FFI::InitializeStaticFunctions(Handle<Object> target) {

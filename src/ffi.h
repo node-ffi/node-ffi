@@ -26,6 +26,12 @@
 using namespace v8;
 using namespace node;
 
+/*
+ * Converts an arbitrary pointer to a node Buffer with 0-length
+ */
+
+static Handle<Value> WrapPointer(char *);
+
 class AsyncCallParams {
   public:
     ffi_cif *cif;
