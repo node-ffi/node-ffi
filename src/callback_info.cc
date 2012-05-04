@@ -22,8 +22,8 @@ void CallbackInfo::DispatchToV8(CallbackInfo *self, void *retval, void **paramet
   HandleScope scope;
 
   Handle<Value> argv[2];
-  argv[0] = Pointer::WrapPointer((unsigned char *)retval);
-  argv[1] = Pointer::WrapPointer((unsigned char *)parameters);
+  argv[0] = WrapPointer((char *)retval);
+  argv[1] = WrapPointer((char *)parameters);
 
   TryCatch try_catch;
 

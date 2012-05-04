@@ -45,6 +45,7 @@ void FFI::InitializeBindings(Handle<Object> target) {
   target->Set(String::NewSymbol("strtoul"), FunctionTemplate::New(Strtoul)->GetFunction());
 
   target->Set(String::NewSymbol("FFI_TYPE_SIZE"), Integer::New(sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->Set(String::NewSymbol("FFI_CIF_SIZE"), Integer::New(sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 
   bool hasObjc = false;
 #if __OBJC__ || __OBJC2__
@@ -110,17 +111,25 @@ Handle<Value> FFI::Strtoul(const Arguments &args) {
 /*
  * Function that creates and returns an `ffi_cif` pointer from the given return
  * value type and argument types.
+ *
+ * args[0] - the CIF buffer
+ * args[1] - the number of args
+ * args[2] - the "return type" pointer
+ * args[3] - the "arguments types array" pointer
+ * args[4] - the ABI to use
+ *
+ * returns the ffi_status result from ffi_prep_cif()
  */
 
 Handle<Value> FFI::FFIPrepCif(const Arguments& args) {
   HandleScope scope;
 
   unsigned int nargs;
-  Pointer *rtype, *atypes, *cif;
+  char *rtype, *atypes, *cif;
   ffi_status status;
 
-  if (args.Length() != 3) {
-    return THROW_ERROR_EXCEPTION("prepCif() requires 3 arguments!");
+  if (args.Length() != 5) {
+    return THROW_ERROR_EXCEPTION("prepCif() requires 5 arguments!");
   }
 
   nargs = args[0]->Uint32Value();
