@@ -87,7 +87,6 @@ void FFI::InitializeBindings(Handle<Object> target) {
 
   Local<Object> ftmap = Object::New();
   ftmap->Set(String::NewSymbol("void"),     WrapPointer((char *)&ffi_type_void));
-  //ftmap->Set(String::NewSymbol("byte"),     WrapPointer((char *)&ffi_type_uint8));
   ftmap->Set(String::NewSymbol("int8"),     WrapPointer((char *)&ffi_type_sint8));
   ftmap->Set(String::NewSymbol("uint8"),    WrapPointer((char *)&ffi_type_uint8));
   ftmap->Set(String::NewSymbol("uint16"),   WrapPointer((char *)&ffi_type_uint16));
@@ -105,17 +104,6 @@ void FFI::InitializeBindings(Handle<Object> target) {
   ftmap->Set(String::NewSymbol("float"),    WrapPointer((char *)&ffi_type_float));
   ftmap->Set(String::NewSymbol("double"),   WrapPointer((char *)&ffi_type_double));
   ftmap->Set(String::NewSymbol("pointer"),  WrapPointer((char *)&ffi_type_pointer));
-  //ftmap->Set(String::NewSymbol("size_t"),   WrapPointer((char *)&ffi_type_pointer));
-
-  // libffi is weird when it comes to long data types (defaults to 64-bit), so we emulate here, since
-  // some platforms have 32-bit longs and some platforms have 64-bit longs.
-  /*if (sizeof(long) == 4) {
-    ftmap->Set(String::NewSymbol("ulong"),    WrapPointer((char *)&ffi_type_uint32));
-    ftmap->Set(String::NewSymbol("long"),     WrapPointer((char *)&ffi_type_sint32));
-  } else if (sizeof(long) == 8) {
-    ftmap->Set(String::NewSymbol("ulong"),    WrapPointer((char *)&ffi_type_uint64));
-    ftmap->Set(String::NewSymbol("long"),     WrapPointer((char *)&ffi_type_sint64));
-  }*/
 
   // Let libffi handle "long long"
   ftmap->Set(String::NewSymbol("ulonglong"), WrapPointer((char *)&ffi_type_ulong));
