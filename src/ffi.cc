@@ -1,3 +1,4 @@
+#include <node_buffer.h>
 #include "ffi.h"
 
 /*
@@ -22,27 +23,54 @@ void FFI::InitializeStaticFunctions(Handle<Object> target) {
   Local<Object> o = Object::New();
 
   // atoi and abs here for testing purposes
-  o->Set(String::NewSymbol("atoi"), WrapPointer((unsigned char *)atoi));
+  o->Set(String::NewSymbol("atoi"), WrapPointer((char *)atoi));
 
   // Windows has multiple `abs` signatures, so we need to manually disambiguate
   int (*absPtr)(int)(abs);
-  o->Set(String::NewSymbol("abs"),  WrapPointer((unsigned char *)absPtr));
+  o->Set(String::NewSymbol("abs"),  WrapPointer((char *)absPtr));
 
   // dl functions used by the DynamicLibrary JS class
-  o->Set(String::NewSymbol("dlopen"),  WrapPointer((unsigned char *)dlopen));
-  o->Set(String::NewSymbol("dlclose"), WrapPointer((unsigned char *)dlclose));
-  o->Set(String::NewSymbol("dlsym"),   WrapPointer((unsigned char *)dlsym));
-  o->Set(String::NewSymbol("dlerror"), WrapPointer((unsigned char *)dlerror));
+  o->Set(String::NewSymbol("dlopen"),  WrapPointer((char *)dlopen));
+  o->Set(String::NewSymbol("dlclose"), WrapPointer((char *)dlclose));
+  o->Set(String::NewSymbol("dlsym"),   WrapPointer((char *)dlsym));
+  o->Set(String::NewSymbol("dlerror"), WrapPointer((char *)dlerror));
 
   target->Set(String::NewSymbol("StaticFunctions"), o);
 }
 
 ///////////////
 
+#define SET_ENUM_VALUE(_value) target->Set(String::NewSymbol(#_value), Integer::New(_value), static_cast<PropertyAttribute>(ReadOnly|DontDelete))
+
 void FFI::InitializeBindings(Handle<Object> target) {
 
   target->Set(String::NewSymbol("prepCif"), FunctionTemplate::New(FFIPrepCif)->GetFunction());
   target->Set(String::NewSymbol("strtoul"), FunctionTemplate::New(Strtoul)->GetFunction());
+
+  // `ffi_status` enum values
+  SET_ENUM_VALUE(FFI_OK);
+  SET_ENUM_VALUE(FFI_BAD_TYPEDEF);
+  SET_ENUM_VALUE(FFI_BAD_ABI);
+
+  // `ffi_abi` enum values
+  SET_ENUM_VALUE(FFI_DEFAULT_ABI);
+  SET_ENUM_VALUE(FFI_LAST_ABI);
+  /* ---- Intel x86 Win32 ---------- */
+#ifdef X86_WIN32
+  SET_ENUM_VALUE(FFI_SYSV);
+  SET_ENUM_VALUE(FFI_STDCALL);
+  SET_ENUM_VALUE(FFI_THISCALL);
+  SET_ENUM_VALUE(FFI_FASTCALL);
+  SET_ENUM_VALUE(FFI_MS_CDECL);
+#elif defined(X86_WIN64)
+  SET_ENUM_VALUE(FFI_WIN64);
+#else
+  /* ---- Intel x86 and AMD x86-64 - */
+  SET_ENUM_VALUE(FFI_SYSV);
+  /* Unix variants all use the same ABI for x86-64  */
+  SET_ENUM_VALUE(FFI_UNIX64);
+#endif
+
 
   target->Set(String::NewSymbol("FFI_TYPE_SIZE"), Integer::New(sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
   target->Set(String::NewSymbol("FFI_CIF_SIZE"), Integer::New(sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
@@ -54,56 +82,66 @@ void FFI::InitializeBindings(Handle<Object> target) {
   target->Set(String::NewSymbol("HAS_OBJC"), Boolean::New(hasObjc), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 
   Local<Object> ftmap = Object::New();
-  ftmap->Set(String::NewSymbol("void"),     WrapPointer((unsigned char *)&ffi_type_void));
-  //ftmap->Set(String::NewSymbol("byte"),     WrapPointer((unsigned char *)&ffi_type_uint8));
-  ftmap->Set(String::NewSymbol("int8"),     WrapPointer((unsigned char *)&ffi_type_sint8));
-  ftmap->Set(String::NewSymbol("uint8"),    WrapPointer((unsigned char *)&ffi_type_uint8));
-  ftmap->Set(String::NewSymbol("uint16"),   WrapPointer((unsigned char *)&ffi_type_uint16));
-  ftmap->Set(String::NewSymbol("int16"),    WrapPointer((unsigned char *)&ffi_type_sint16));
-  ftmap->Set(String::NewSymbol("uint32"),   WrapPointer((unsigned char *)&ffi_type_uint32));
-  ftmap->Set(String::NewSymbol("int32"),    WrapPointer((unsigned char *)&ffi_type_sint32));
-  ftmap->Set(String::NewSymbol("uint64"),   WrapPointer((unsigned char *)&ffi_type_uint64));
-  ftmap->Set(String::NewSymbol("int64"),    WrapPointer((unsigned char *)&ffi_type_sint64));
-  ftmap->Set(String::NewSymbol("uchar"),    WrapPointer((unsigned char *)&ffi_type_uchar));
-  ftmap->Set(String::NewSymbol("char"),     WrapPointer((unsigned char *)&ffi_type_schar));
-  ftmap->Set(String::NewSymbol("ushort"),   WrapPointer((unsigned char *)&ffi_type_ushort));
-  ftmap->Set(String::NewSymbol("short"),    WrapPointer((unsigned char *)&ffi_type_sshort));
-  ftmap->Set(String::NewSymbol("uint"),     WrapPointer((unsigned char *)&ffi_type_uint));
-  ftmap->Set(String::NewSymbol("int"),      WrapPointer((unsigned char *)&ffi_type_sint));
-  ftmap->Set(String::NewSymbol("float"),    WrapPointer((unsigned char *)&ffi_type_float));
-  ftmap->Set(String::NewSymbol("double"),   WrapPointer((unsigned char *)&ffi_type_double));
-  ftmap->Set(String::NewSymbol("pointer"),  WrapPointer((unsigned char *)&ffi_type_pointer));
-  //ftmap->Set(String::NewSymbol("size_t"),   WrapPointer((unsigned char *)&ffi_type_pointer));
+  ftmap->Set(String::NewSymbol("void"),     WrapPointer((char *)&ffi_type_void));
+  //ftmap->Set(String::NewSymbol("byte"),     WrapPointer((char *)&ffi_type_uint8));
+  ftmap->Set(String::NewSymbol("int8"),     WrapPointer((char *)&ffi_type_sint8));
+  ftmap->Set(String::NewSymbol("uint8"),    WrapPointer((char *)&ffi_type_uint8));
+  ftmap->Set(String::NewSymbol("uint16"),   WrapPointer((char *)&ffi_type_uint16));
+  ftmap->Set(String::NewSymbol("int16"),    WrapPointer((char *)&ffi_type_sint16));
+  ftmap->Set(String::NewSymbol("uint32"),   WrapPointer((char *)&ffi_type_uint32));
+  ftmap->Set(String::NewSymbol("int32"),    WrapPointer((char *)&ffi_type_sint32));
+  ftmap->Set(String::NewSymbol("uint64"),   WrapPointer((char *)&ffi_type_uint64));
+  ftmap->Set(String::NewSymbol("int64"),    WrapPointer((char *)&ffi_type_sint64));
+  ftmap->Set(String::NewSymbol("uchar"),    WrapPointer((char *)&ffi_type_uchar));
+  ftmap->Set(String::NewSymbol("char"),     WrapPointer((char *)&ffi_type_schar));
+  ftmap->Set(String::NewSymbol("ushort"),   WrapPointer((char *)&ffi_type_ushort));
+  ftmap->Set(String::NewSymbol("short"),    WrapPointer((char *)&ffi_type_sshort));
+  ftmap->Set(String::NewSymbol("uint"),     WrapPointer((char *)&ffi_type_uint));
+  ftmap->Set(String::NewSymbol("int"),      WrapPointer((char *)&ffi_type_sint));
+  ftmap->Set(String::NewSymbol("float"),    WrapPointer((char *)&ffi_type_float));
+  ftmap->Set(String::NewSymbol("double"),   WrapPointer((char *)&ffi_type_double));
+  ftmap->Set(String::NewSymbol("pointer"),  WrapPointer((char *)&ffi_type_pointer));
+  //ftmap->Set(String::NewSymbol("size_t"),   WrapPointer((char *)&ffi_type_pointer));
 
   // libffi is weird when it comes to long data types (defaults to 64-bit), so we emulate here, since
   // some platforms have 32-bit longs and some platforms have 64-bit longs.
   /*if (sizeof(long) == 4) {
-    ftmap->Set(String::NewSymbol("ulong"),    WrapPointer((unsigned char *)&ffi_type_uint32));
-    ftmap->Set(String::NewSymbol("long"),     WrapPointer((unsigned char *)&ffi_type_sint32));
+    ftmap->Set(String::NewSymbol("ulong"),    WrapPointer((char *)&ffi_type_uint32));
+    ftmap->Set(String::NewSymbol("long"),     WrapPointer((char *)&ffi_type_sint32));
   } else if (sizeof(long) == 8) {
-    ftmap->Set(String::NewSymbol("ulong"),    WrapPointer((unsigned char *)&ffi_type_uint64));
-    ftmap->Set(String::NewSymbol("long"),     WrapPointer((unsigned char *)&ffi_type_sint64));
+    ftmap->Set(String::NewSymbol("ulong"),    WrapPointer((char *)&ffi_type_uint64));
+    ftmap->Set(String::NewSymbol("long"),     WrapPointer((char *)&ffi_type_sint64));
   }*/
 
   // Let libffi handle "long long"
-  ftmap->Set(String::NewSymbol("ulonglong"), WrapPointer((unsigned char *)&ffi_type_ulong));
-  ftmap->Set(String::NewSymbol("longlong"),  WrapPointer((unsigned char *)&ffi_type_slong));
+  ftmap->Set(String::NewSymbol("ulonglong"), WrapPointer((char *)&ffi_type_ulong));
+  ftmap->Set(String::NewSymbol("longlong"),  WrapPointer((char *)&ffi_type_slong));
 
   target->Set(String::NewSymbol("FFI_TYPES"), ftmap);
 }
 
 /*
  * Hard-coded `strtoul` binding, for the benchmarks.
+ *
+ * args[0] - the string number to convert to a real Number
+ * args[1] - a "buffer" instance to write into (the "endptr")
+ * args[2] - the base (0 means autodetect)
  */
 
 Handle<Value> FFI::Strtoul(const Arguments &args) {
   HandleScope scope;
-
-  Pointer *middle = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
   char buf[128];
+  int base;
+  char **endptr;
+
   args[0]->ToString()->WriteUtf8(buf);
 
-  unsigned long val = strtoul(buf, (char **)middle->GetPointer(), args[2]->Int32Value());
+  Local<Value> endptr_arg = args[0];
+  endptr = (char **)Buffer::Data(endptr_arg.As<Object>());
+
+  base = args[2]->Int32Value();
+
+  unsigned long val = strtoul(buf, endptr, base);
 
   return scope.Close(Integer::NewFromUnsigned(val));
 }
@@ -127,31 +165,30 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args) {
   unsigned int nargs;
   char *rtype, *atypes, *cif;
   ffi_status status;
+  ffi_abi abi;
 
   if (args.Length() != 5) {
     return THROW_ERROR_EXCEPTION("prepCif() requires 5 arguments!");
   }
 
-  nargs = args[0]->Uint32Value();
-  rtype = ObjectWrap::Unwrap<Pointer>(args[1]->ToObject());
-  atypes = ObjectWrap::Unwrap<Pointer>(args[2]->ToObject());
-
-  cif = new Pointer(NULL);
-  cif->Alloc(sizeof(ffi_cif));
+  Handle<Value> cif_buf = args[0];
+  if (!Buffer::HasInstance(cif_buf)) {
+    return THROW_ERROR_EXCEPTION("prepCif(): Buffer required as first arg");
+  }
+  cif = Buffer::Data(cif_buf.As<Object>());
+  nargs = args[1]->Uint32Value();
+  rtype = Buffer::Data(args[2]->ToObject());
+  atypes = Buffer::Data(args[3]->ToObject());
+  abi = (ffi_abi)args[4]->Uint32Value();
 
   status = ffi_prep_cif(
-      (ffi_cif *)cif->GetPointer(),
-      FFI_DEFAULT_ABI,
+      (ffi_cif *)cif,
+      abi,
       nargs,
-      (ffi_type *)rtype->GetPointer(),
-      (ffi_type **)atypes->GetPointer());
+      (ffi_type *)rtype,
+      (ffi_type **)atypes);
 
-  if (status != FFI_OK) {
-    delete cif;
-    return THROW_ERROR_EXCEPTION("ffi_prep_cif() returned error.");
-  }
-
-  return scope.Close(WrapInstance(cif));
+  return scope.Close(Integer::NewFromUnsigned(status));
 }
 
 void init(Handle<Object> target) {
