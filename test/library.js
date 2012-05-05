@@ -37,7 +37,7 @@ describe('Library', function () {
   it('should accept a lib name with file extension', function() {
     var lib = process.platform == 'win32'
       ? 'msvcrt.dll'
-      : 'libm' + ffi.PLATFORM_LIBRARY_EXTENSIONS[process.platform]
+      : 'libm' + ffi.LIB_EXT
     var libm = new Library(lib, {
       'ceil': [ 'double', ['double'] ]
     })
@@ -56,7 +56,7 @@ describe('Library', function () {
 
   it('should work with "strcpy" and a 128 length string', function () {
     var ZEROS_128 = Array(128 + 1).join('0')
-    var buf = new ffi.Pointer(256)
+    var buf = new Buffer(256)
     var strcpy = new Library(null, {
         'strcpy': [ 'pointer', [ 'pointer', 'string' ] ]
     }).strcpy
@@ -66,7 +66,7 @@ describe('Library', function () {
 
   it('should work with "strcpy" and a 2k length string', function () {
     var ZEROS_2K = Array(2e3 + 1).join('0')
-    var buf = new ffi.Pointer(4096)
+    var buf = new Buffer(4096)
     var strcpy = new Library(null, {
         'strcpy': [ 'pointer', [ 'pointer', 'string' ] ]
     }).strcpy
