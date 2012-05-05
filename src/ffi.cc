@@ -223,9 +223,116 @@ Handle<Value> FFI::FFICall(const Arguments& args) {
   return Undefined();
 }
 
+/*
+ * Asynchronous JS wrapper around `ffi_call()`.
+ *
+ * args[0] - Buffer - the `ffi_cif *`
+ * args[1] - Buffer - the C function pointer to invoke
+ * args[2] - Buffer - the `void *` buffer big enough to hold the return value
+ * args[3] - Buffer - the `void **` array of pointers containing the arguments
+ * args[4] - Function - the callback function to invoke when complete
+ */
+
 Handle<Value> FFI::FFICallAsync(const Arguments& args) {
   HandleScope scope;
-  return THROW_ERROR_EXCEPTION("ffi_call_async(): IMPLEMENT ME!");
+
+  if (args.Length() != 5) {
+    return THROW_ERROR_EXCEPTION("ffi_call_async() requires 5 arguments!");
+  }
+
+  AsyncCallParams *p = new AsyncCallParams();
+  p->result = FFI_OK;
+
+  // store a persistent references to all the Buffers and the callback function
+  p->cif  = Persistent<Object>::New(args[0]->ToObject());
+  p->fn   = Persistent<Object>::New(args[1]->ToObject());
+  p->res  = Persistent<Object>::New(args[2]->ToObject());
+  p->argv = Persistent<Object>::New(args[3]->ToObject());
+
+  Local<Function> callback = Local<Function>::Cast(args[4]);
+  p->callback = Persistent<Function>::New(callback);
+
+  uv_work_t *req = new uv_work_t;
+  req->data = p;
+
+  uv_queue_work(uv_default_loop(), req,
+      FFI::AsyncFFICall,
+      FFI::FinishAsyncFFICall);
+
+  return Undefined();
+}
+
+/*
+ * Called on the thread pool.
+ */
+
+void FFI::AsyncFFICall(uv_work_t *req) {
+  AsyncCallParams *p = (AsyncCallParams *)req->data;
+
+  char *cif  = Buffer::Data(p->cif);
+  char *fn   = Buffer::Data(p->fn);
+  char *res  = Buffer::Data(p->res);
+  char *argv = Buffer::Data(p->argv);
+
+#if __OBJC__ || __OBJC2__
+    @try {
+#endif
+      ffi_call(
+          (ffi_cif *)cif,
+          FFI_FN(fn),
+          (void *)res,
+          (void **)argv
+        );
+#if __OBJC__ || __OBJC2__
+    } @catch (id ex) {
+      p->result = FFI_ASYNC_ERROR;
+      p->err = (char *)ex;
+    }
+#endif
+}
+
+/*
+ * Called after the AsyncFFICall function completes on the thread pool.
+ * This gets run on the main loop thread.
+ */
+
+void FFI::FinishAsyncFFICall(uv_work_t *req) {
+  HandleScope scope;
+
+  AsyncCallParams *p = (AsyncCallParams *)req->data;
+
+  Handle<Value> argv[] = { Null(), Null() };
+  if (p->result == FFI_OK) {
+    argv[1] = p->res;
+  } else {
+    // an Objective-C error was thrown
+    argv[0] = WrapPointer(p->err);
+  }
+
+  TryCatch try_catch;
+
+  // invoke the registered callback function
+  p->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+
+  // dispose of our persistent handles to the Buffers and callback function
+  p->cif.Dispose();
+  p->cif.Clear();
+  p->fn.Dispose();
+  p->fn.Clear();
+  p->res.Dispose();
+  p->res.Clear();
+  p->argv.Dispose();
+  p->argv.Clear();
+  p->callback.Dispose();
+  p->callback.Clear();
+
+  // free up our memory (allocated in FFICallAsync)
+  delete p;
+  delete req;
+
+  if (try_catch.HasCaught()) {
+    FatalException(try_catch);
+  }
 }
 
 void init(Handle<Object> target) {
@@ -234,6 +341,5 @@ void init(Handle<Object> target) {
   FFI::InitializeBindings(target);
   FFI::InitializeStaticFunctions(target);
   CallbackInfo::Initialize(target);
-  ForeignCaller::Initialize(target);
 }
 NODE_MODULE(ffi_bindings, init);

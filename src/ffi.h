@@ -23,6 +23,8 @@
 
 #define THROW_ERROR_EXCEPTION(x) ThrowException(Exception::Error(String::New(x)))
 
+#define FFI_ASYNC_ERROR (ffi_status)1
+
 using namespace v8;
 using namespace node;
 
@@ -32,13 +34,19 @@ using namespace node;
 
 Handle<Value> WrapPointer(char *);
 
+/*
+ * Class used to store stuff during async ffi_call() invokations.
+ */
+
 class AsyncCallParams {
   public:
-    ffi_cif *cif;
-    void (*ptr)(void);
-    void *res;
-    void **args;
-    Persistent<Object> emitter;
+    ffi_status result;
+    char *err;
+    Persistent<Object> cif;
+    Persistent<Object> fn;
+    Persistent<Object> res;
+    Persistent<Object> argv;
+    Persistent<Function> callback;
 };
 
 class FFI {
@@ -50,32 +58,12 @@ class FFI {
     static Handle<Value> FFIPrepCif(const Arguments& args);
     static Handle<Value> FFICall(const Arguments& args);
     static Handle<Value> FFICallAsync(const Arguments& args);
-    static Handle<Value> Strtoul(const Arguments& args);
-};
-
-class ForeignCaller : public ObjectWrap {
-  public:
-    ForeignCaller();
-    ~ForeignCaller();
-    static void Initialize(Handle<Object> Target);
-
-  protected:
-    static Handle<Value> New(const Arguments& args);
-    static Handle<Value> Exec(const Arguments& args);
     static void AsyncFFICall(uv_work_t *req);
     static void FinishAsyncFFICall(uv_work_t *req);
 
-    ffi_cif *m_cif;
-    void (*m_fn)(void);
-    void *m_res;
-    void **m_fnargs;
-
-    bool m_async;
-
-  private:
-    static Persistent<FunctionTemplate> foreign_caller_template;
-    static Handle<FunctionTemplate> MakeTemplate();
+    static Handle<Value> Strtoul(const Arguments& args);
 };
+
 
 class ThreadedCallbackInvokation;
 

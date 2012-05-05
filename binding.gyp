@@ -6,7 +6,6 @@
           'src/ffi.cc'
         , 'src/callback_info.cc'
         , 'src/threaded_callback_invokation.cc'
-        , 'src/foreign_caller.cc'
       ],
       'include_dirs': [
           'deps/libffi/include'
