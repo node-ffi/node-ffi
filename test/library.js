@@ -61,7 +61,7 @@ describe('Library', function () {
         'strcpy': [ 'pointer', [ 'pointer', 'string' ] ]
     }).strcpy
     strcpy(buf, ZEROS_128)
-    expect(buf.getCString()).to.equal(ZEROS_128)
+    expect(buf.readCString()).to.equal(ZEROS_128)
   })
 
   it('should work with "strcpy" and a 2k length string', function () {
@@ -71,7 +71,7 @@ describe('Library', function () {
         'strcpy': [ 'pointer', [ 'pointer', 'string' ] ]
     }).strcpy
     strcpy(buf, ZEROS_2K)
-    expect(buf.getCString()).to.equal(ZEROS_2K)
+    expect(buf.readCString()).to.equal(ZEROS_2K)
   })
 
   if (process.platform == 'win32') {
