@@ -115,7 +115,8 @@ describe('Library', function () {
       var libm = new Library(lib, {
           'ceil': [ 'double', [ 'double' ], { async: true } ]
       })
-      libm.ceil(1.1).on('success', function (res) {
+      libm.ceil(1.1, function (err, res) {
+        expect(err).to.equal(null)
         expect(res).to.equal(2)
         done()
       })

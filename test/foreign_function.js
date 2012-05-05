@@ -27,9 +27,10 @@ describe('ForeignFunction', function () {
     it('should call the static "abs" bindings asynchronously', function (done) {
       var abs = ffi.ForeignFunction.build(
                     ffi.Bindings.StaticFunctions.abs
-                  , 'int32', [ 'int32' ], true)
+                  , 'int32', [ 'int32' ])
       expect(abs).to.be.a('function')
-      abs(-1234).on('success', function (res) {
+      abs.async(-1234, function (err, res) {
+        expect(err).to.equal(null)
         expect(res).to.equal(1234)
         done()
       })
