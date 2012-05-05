@@ -25,15 +25,15 @@ if (ffi.Bindings.HAS_OBJC) {
       }).to.throwException()
     })
 
-    it('should throw a Pointer instance when an exception happens', function () {
+    it('should throw a Buffer instance when an exception happens', function () {
       var sel_retain = objcLib.sel_registerName('retain')
       try {
         objcLib.objc_msgSend(pool, sel_retain)
         expect(false).to.be(true)
       } catch (e) {
-        expect(ffi.Pointer.isPointer(e)).to.be(true)
+        expect(Buffer.isBuffer(e)).to.be(true)
         expect(e.isNull()).to.be(false)
-        expect(e.address).to.be.greaterThan(0)
+        expect(e.address()).to.be.greaterThan(0)
       }
     })
 
