@@ -301,10 +301,8 @@ void FFI::FinishAsyncFFICall(uv_work_t *req) {
 
   AsyncCallParams *p = (AsyncCallParams *)req->data;
 
-  Handle<Value> argv[] = { Null(), Null() };
-  if (p->result == FFI_OK) {
-    argv[1] = p->res;
-  } else {
+  Handle<Value> argv[] = { Null() };
+  if (p->result != FFI_OK) {
     // an Objective-C error was thrown
     argv[0] = WrapPointer(p->err);
   }
@@ -312,7 +310,7 @@ void FFI::FinishAsyncFFICall(uv_work_t *req) {
   TryCatch try_catch;
 
   // invoke the registered callback function
-  p->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+  p->callback->Call(Context::GetCurrent()->Global(), 1, argv);
 
   // dispose of our persistent handles to the Buffers and callback function
   p->cif.Dispose();
