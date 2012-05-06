@@ -8,10 +8,11 @@ std::queue<ThreadedCallbackInvokation *> CallbackInfo::g_queue;
 uv_async_t CallbackInfo::g_async;
 
 
-CallbackInfo::CallbackInfo(Handle<Function> func, void *closure, void *code) {
+CallbackInfo::CallbackInfo(Handle<Function> func, void *closure, void *code, int argc) {
   m_function = Persistent<Function>::New(func);
   m_closure = closure;
   this->code = code;
+  this->argc = argc;
 }
 
 CallbackInfo::~CallbackInfo() {
@@ -23,8 +24,8 @@ void CallbackInfo::DispatchToV8(CallbackInfo *self, void *retval, void **paramet
   HandleScope scope;
 
   Handle<Value> argv[2];
-  argv[0] = WrapPointer((char *)retval);
-  argv[1] = WrapPointer((char *)parameters);
+  argv[0] = WrapPointer((char *)retval, sizeof(char *));
+  argv[1] = WrapPointer((char *)parameters, sizeof(char *) * self->argc);
 
   TryCatch try_catch;
 
@@ -72,14 +73,16 @@ void CallbackInfo::Initialize(Handle<Object> target) {
 Handle<Value> CallbackInfo::New(const Arguments& args) {
   HandleScope scope;
 
-  if (args.Length() < 2) {
+  if (args.Length() < 3) {
     return ThrowException(String::New("Not enough arguments."));
   }
 
   // Args: cif pointer, JS function
   // TODO: Check args
   ffi_cif *cif = (ffi_cif *)Buffer::Data(args[0]->ToObject());
-  Local<Function> callback = Local<Function>::Cast(args[1]);
+  int argc = args[1]->Int32Value();
+  Local<Function> callback = Local<Function>::Cast(args[2]);
+
   ffi_closure *closure;
   ffi_status status;
   void *code;
@@ -90,7 +93,7 @@ Handle<Value> CallbackInfo::New(const Arguments& args) {
     return ThrowException(String::New("ffi_closure_alloc() Returned Error"));
   }
 
-  CallbackInfo *self = new CallbackInfo(callback, closure, code);
+  CallbackInfo *self = new CallbackInfo(callback, closure, code, argc);
 
   status = ffi_prep_closure_loc(
     closure,

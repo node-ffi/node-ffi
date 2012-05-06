@@ -12,8 +12,12 @@ void wrap_pointer_cb(char *data, void *hint) {
 
 Handle<Value> WrapPointer(char *ptr) {
   size_t size = 0;
+  return WrapPointer(ptr, size);
+}
+
+Handle<Value> WrapPointer(char *ptr, size_t length) {
   void *user_data = NULL;
-  Buffer *buf = Buffer::New(ptr, size, wrap_pointer_cb, user_data);
+  Buffer *buf = Buffer::New(ptr, length, wrap_pointer_cb, user_data);
   return buf->handle_;
 }
 

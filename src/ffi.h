@@ -33,6 +33,7 @@ using namespace node;
  */
 
 Handle<Value> WrapPointer(char *);
+Handle<Value> WrapPointer(char *, size_t length);
 
 /*
  * Class used to store stuff during async ffi_call() invokations.
@@ -69,7 +70,7 @@ class ThreadedCallbackInvokation;
 
 class CallbackInfo : public ObjectWrap {
   public:
-    CallbackInfo(Handle<Function> func, void *closure, void *code);
+    CallbackInfo(Handle<Function> func, void *closure, void *code, int argc);
     ~CallbackInfo();
     static void Initialize(Handle<Object> Target);
     Handle<Value> GetPointerObject();
@@ -94,6 +95,7 @@ class CallbackInfo : public ObjectWrap {
     void                    *code;
     Persistent<Function>    m_function;
     Handle<Object>          m_this;
+    int                     argc;
 };
 
 class ThreadedCallbackInvokation {
