@@ -14,9 +14,7 @@ describe('Callback', function () {
   })
 
   it('should be invokable', function () {
-    console.error('afsd')
     var callback = ffi.Callback('int32', [ 'int32' ], function (val) {
-      console.error('inside callback!!!')
       return Math.abs(val)
     })
     var func = ffi.ForeignFunction(callback, 'int32', [ 'int32' ])
