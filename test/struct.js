@@ -121,6 +121,7 @@ describe('Struct', function () {
     // TODO: build struct examples statically as part of the build and expose
     // via the bindings interface.
 
+    /*
     var test1 = ffi.Struct([
         ['int32', 'a']
       , ['int32', 'b']
@@ -206,6 +207,7 @@ describe('Struct', function () {
     } else {
       throw new Error("Bad platform pointer size: %d bytes", ffi.Bindings.POINTER_SIZE)
     }
+    */
 
   })
 

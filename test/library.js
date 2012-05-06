@@ -1,9 +1,12 @@
 
 var expect = require('expect.js')
+  , ref = require('ref')
   , ffi = require('../')
   , Library = ffi.Library
 
 describe('Library', function () {
+
+  var charPtr = ref.refType(ref.types.char)
 
   afterEach(gc)
 
@@ -18,13 +21,13 @@ describe('Library', function () {
 
   it('should accept `null` as a first argument', function () {
     var thisFuncs = new Library(null, {
-      'printf': [ 'void', [ 'string' ] ]
+      'printf': [ 'void', [ charPtr ] ]
     })
     var test = thisFuncs.printf instanceof Function
     expect(test).to.be(true)
   })
 
-  it('should accept a lib name as a first argument', function () {
+  it('should accept a lib name as the first argument', function () {
     var lib = process.platform == 'win32' ? 'msvcrt' : 'libm'
     var libm = new Library(lib, {
         'ceil': [ 'double', [ 'double' ] ]
@@ -58,7 +61,7 @@ describe('Library', function () {
     var ZEROS_128 = Array(128 + 1).join('0')
     var buf = new Buffer(256)
     var strcpy = new Library(null, {
-        'strcpy': [ 'pointer', [ 'pointer', 'string' ] ]
+        'strcpy': [ charPtr, [ charPtr, 'string' ] ]
     }).strcpy
     strcpy(buf, ZEROS_128)
     expect(buf.readCString()).to.equal(ZEROS_128)
@@ -68,7 +71,7 @@ describe('Library', function () {
     var ZEROS_2K = Array(2e3 + 1).join('0')
     var buf = new Buffer(4096)
     var strcpy = new Library(null, {
-        'strcpy': [ 'pointer', [ 'pointer', 'string' ] ]
+        'strcpy': [ charPtr, [ charPtr, 'string' ] ]
     }).strcpy
     strcpy(buf, ZEROS_2K)
     expect(buf.readCString()).to.equal(ZEROS_2K)
@@ -78,10 +81,10 @@ describe('Library', function () {
 
     it('should work with "GetTimeOfDay" and a "FILETIME" Struct pointer',
     function () {
-      var FILETIME = new ffi.Struct([
+      var FILETIME = new ffi.Struct(
           ['uint32', 'dwLowDateTime']
         , ['uint32', 'dwHighDateTime']
-      ])
+      )
       var l = new Library('kernel32', {
           'GetSystemTimeAsFileTime': [ 'void', [ 'pointer' ]]
       })
@@ -94,10 +97,10 @@ describe('Library', function () {
 
     it('should work with "gettimeofday" and a "timeval" Struct pointer',
     function () {
-      var timeval = new ffi.Struct([
+      var timeval = new ffi.Struct(
           ['long','tv_sec']
         , ['long','tv_usec']
-      ])
+      )
       var l = new Library(null, {
           'gettimeofday': ['int', ['pointer', 'pointer']]
       })

@@ -1,6 +1,15 @@
 
 var expect = require('expect.js')
+  , ref = require('ref')
   , ffi = require('../')
+  , voidPtr = ref.refType(ref.types.void)
+
+// these are "opaque" pointer types, so we only care about the memory addess,
+// and not the contents (which are internal to Apple). Therefore we can typedef
+// these opaque types to `void *` and it's essentially the same thing.
+var id = voidPtr
+  , SEL = voidPtr
+  , Class = voidPtr
 
 if (ffi.Bindings.HAS_OBJC) {
 
@@ -9,11 +18,12 @@ if (ffi.Bindings.HAS_OBJC) {
     afterEach(gc)
 
     var objcLib = new ffi.Library('libobjc', {
-        'objc_msgSend': [ 'pointer', [ 'pointer', 'pointer' ] ]
-      , 'objc_getClass': [ 'pointer', [ 'string' ] ]
-      , 'sel_registerName': [ 'pointer', [ 'string' ] ]
+        'objc_msgSend': [ id, [ id, SEL ] ]
+      , 'objc_getClass': [ Class, [ 'string' ] ]
+      , 'sel_registerName': [ SEL, [ 'string' ] ]
     })
 
+    // create an NSAutoreleasePool instance
     var NSAutoreleasePool = objcLib.objc_getClass('NSAutoreleasePool')
       , sel_new = objcLib.sel_registerName('new')
       , pool = objcLib.objc_msgSend(NSAutoreleasePool, sel_new)

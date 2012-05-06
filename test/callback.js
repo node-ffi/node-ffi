@@ -1,28 +1,26 @@
 
-var expect = require('expect.js')
+var assert = require('assert')
   , ffi = require('../')
-  , Pointer = ffi.Pointer
-  , Callback = ffi.Callback
 
 describe('Callback', function () {
 
   afterEach(gc)
 
   it('should create a C function pointer for a JS function', function () {
-    var callback = new Callback(['int32', ['int32']], function (val) {
+    var callback = ffi.Callback('int32', [ 'int32' ], function (val) {
       return Math.abs(val)
     })
-    var pointer = callback.getPointer()
-    expect(Pointer.isPointer(pointer)).to.be(true)
+    assert(Buffer.isBuffer(callback))
   })
 
   it('should be invokable', function () {
-    var callback = new Callback(['int32', ['int32']], function (val) {
+    console.error('afsd')
+    var callback = ffi.Callback('int32', [ 'int32' ], function (val) {
+      console.error('inside callback!!!')
       return Math.abs(val)
     })
-    var pointer = callback.getPointer()
-      , func = ffi.ForeignFunction.build(pointer, 'int32', ['int32'])
-    expect(func(-1234)).to.equal(1234)
+    var func = ffi.ForeignFunction(callback, 'int32', [ 'int32' ])
+    assert.equal(1234, func(-1234))
   })
 
 })
