@@ -11,12 +11,19 @@ describe('Callback', function () {
     assert(Buffer.isBuffer(callback))
   })
 
-  it('should be invokable', function () {
-    var callback = ffi.Callback('int', [ 'int' ], function (val) {
-      return Math.abs(val)
-    })
-    var func = ffi.ForeignFunction(callback, 'int', [ 'int' ])
+  it('should be invokable by an ffi\'d ForeignFunction', function () {
+    var funcPtr = ffi.Callback('int', [ 'int' ], Math.abs)
+    var func = ffi.ForeignFunction(funcPtr, 'int', [ 'int' ])
     assert.equal(1234, func(-1234))
+  })
+
+  it('should be invokable asynchronously by an ffi\'d ForeignFunction', function () {
+    var funcPtr = ffi.Callback('int', [ 'int' ], Math.abs)
+    var func = ffi.ForeignFunction(funcPtr, 'int', [ 'int' ])
+    func.async(-9999, function (err, res) {
+      assert.equal(null, err)
+      assert.equal(9999, res)
+    })
   })
 
 })
