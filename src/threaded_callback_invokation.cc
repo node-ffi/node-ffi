@@ -1,6 +1,6 @@
 #include "ffi.h"
 
-ThreadedCallbackInvokation::ThreadedCallbackInvokation(CallbackInfo *cbinfo, void *retval, void **parameters) {
+ThreadedCallbackInvokation::ThreadedCallbackInvokation(callback_info *cbinfo, void *retval, void **parameters) {
   m_cbinfo = cbinfo;
   m_retval = retval;
   m_parameters = parameters;

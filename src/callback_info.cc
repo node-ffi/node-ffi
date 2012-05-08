@@ -1,35 +1,47 @@
+
+// Reference:
+//   http://www.bufferoverflow.ch/cgi-bin/dwww/usr/share/doc/libffi5/html/The-Closure-API.html
+
 #include <node_buffer.h>
 #include "ffi.h"
 
-Persistent<FunctionTemplate> CallbackInfo::callback_template;
-pthread_t CallbackInfo::g_mainthread;
-pthread_mutex_t CallbackInfo::g_queue_mutex;
+pthread_t          CallbackInfo::g_mainthread;
+pthread_mutex_t    CallbackInfo::g_queue_mutex;
 std::queue<ThreadedCallbackInvokation *> CallbackInfo::g_queue;
-uv_async_t CallbackInfo::g_async;
+uv_async_t         CallbackInfo::g_async;
 
+/*
+ * Called when the `ffi_closure *` pointer (actually the "code" pointer) get's
+ * GC'd on the JavaScript side. In this case we have to unwrap the
+ * `callback_info *` struct, dispose of the JS function Persistent reference,
+ * then finally free the struct.
+ */
 
-CallbackInfo::CallbackInfo(Handle<Function> func, void *closure, void *code, int argc) {
-  m_function = Persistent<Function>::New(func);
-  m_closure = closure;
-  this->code = code;
-  this->argc = argc;
+void closure_pointer_cb(char *data, void *hint) {
+  fprintf(stderr, "closure_pointer_cb\n");
+  callback_info *info = reinterpret_cast<callback_info *>(hint);
+  // dispose of the Persistent function reference
+  info->function.Dispose();
+  info->function.Clear();
+  // now we can free the closure data
+  ffi_closure_free(info);
 }
 
-CallbackInfo::~CallbackInfo() {
-  ffi_closure_free(m_closure);
-  m_function.Dispose();
-}
+/*
+ * Invokes the JS callback function.
+ */
 
-void CallbackInfo::DispatchToV8(CallbackInfo *self, void *retval, void **parameters) {
+void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters) {
   HandleScope scope;
 
   Handle<Value> argv[2];
-  argv[0] = WrapPointer((char *)retval, sizeof(char *));
-  argv[1] = WrapPointer((char *)parameters, sizeof(char *) * self->argc);
+  argv[0] = WrapPointer((char *)retval, info->resultSize);
+  argv[1] = WrapPointer((char *)parameters, sizeof(char *) * info->argc);
 
   TryCatch try_catch;
 
-  self->m_function->Call(self->m_this, 2, argv);
+  // invoke the registered callback function
+  info->function->Call(Context::GetCurrent()->Global(), 2, argv);
 
   if (try_catch.HasCaught()) {
     FatalException(try_catch);
@@ -50,91 +62,77 @@ void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
   pthread_mutex_unlock(&g_queue_mutex);
 }
 
-void CallbackInfo::Initialize(Handle<Object> target) {
+/*
+ * Creates an `ffi_closure *` pointer around the given JS function. Returns the
+ * executable C function pointer as a node Buffer instance.
+ */
+
+Handle<Value> CallbackInfo::Callback(const Arguments& args) {
   HandleScope scope;
 
-  if (callback_template.IsEmpty()) {
-    callback_template = Persistent<FunctionTemplate>::New(MakeTemplate());
-  }
-
-  Handle<FunctionTemplate> t = callback_template;
-
-  target->Set(String::NewSymbol("CallbackInfo"), t->GetFunction());
-
-  // initialize our threaded invokation stuff
-  g_mainthread = pthread_self();
-  uv_async_init(uv_default_loop(), &g_async, CallbackInfo::WatcherCallback);
-  pthread_mutex_init(&g_queue_mutex, NULL);
-
-  // allow the event loop to exit while this is running
-  uv_unref(uv_default_loop());
-}
-
-Handle<Value> CallbackInfo::New(const Arguments& args) {
-  HandleScope scope;
-
-  if (args.Length() < 3) {
+  if (args.Length() != 4) {
     return ThrowException(String::New("Not enough arguments."));
   }
 
   // Args: cif pointer, JS function
   // TODO: Check args
   ffi_cif *cif = (ffi_cif *)Buffer::Data(args[0]->ToObject());
-  int argc = args[1]->Int32Value();
-  Local<Function> callback = Local<Function>::Cast(args[2]);
+  size_t resultSize = args[1]->Int32Value();
+  int argc = args[2]->Int32Value();
+  Local<Function> callback = Local<Function>::Cast(args[3]);
 
-  ffi_closure *closure;
+  callback_info *info;
   ffi_status status;
   void *code;
 
-  closure = (ffi_closure *)ffi_closure_alloc(sizeof(ffi_closure), &code);
+  info = reinterpret_cast<callback_info *>(ffi_closure_alloc(sizeof(callback_info), &code));
 
-  if (!closure) {
+  if (!info) {
     return ThrowException(String::New("ffi_closure_alloc() Returned Error"));
   }
 
-  CallbackInfo *self = new CallbackInfo(callback, closure, code, argc);
+  info->resultSize = resultSize;
+  info->argc = argc;
+  info->function = Persistent<Function>::New(callback);
+
+  // store a reference to the callback function pointer
+  // (not sure if this is actually needed...)
+  info->code = code;
+
+  //CallbackInfo *self = new CallbackInfo(callback, closure, code, argc);
 
   status = ffi_prep_closure_loc(
-    closure,
+    (ffi_closure *)info,
     cif,
     Invoke,
-    (void *)self,
+    (void *)info,
     code
   );
 
   if (status != FFI_OK) {
-    delete self;
+    ffi_closure_free(info);
+    // TODO: return the error code
     return ThrowException(String::New("ffi_prep_closure() Returned Error"));
   }
 
-  self->Wrap(args.This());
-  self->m_this = args.This();
-
-  return scope.Close(args.This());
+  Buffer *buf = Buffer::New((char *)code, sizeof(void *), closure_pointer_cb, info);
+  return scope.Close(buf->handle_);
 }
 
-Handle<FunctionTemplate> CallbackInfo::MakeTemplate() {
-  HandleScope scope;
-
-  Handle<FunctionTemplate> t = FunctionTemplate::New(New);
-
-  Local<ObjectTemplate> inst = t->InstanceTemplate();
-  inst->SetInternalFieldCount(1);
-  inst->SetAccessor(String::NewSymbol("pointer"), GetPointer);
-
-  return scope.Close(t);
-}
+/*
+ * This is the function that gets called when the C function pointer gets
+ * executed.
+ */
 
 void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data) {
-  CallbackInfo *self = (CallbackInfo *)user_data;
+  callback_info *info = reinterpret_cast<callback_info *>(user_data);
 
   // are we executing from another thread?
   if (pthread_equal(pthread_self(), g_mainthread)) {
-    DispatchToV8(self, retval, parameters);
+    DispatchToV8(info, retval, parameters);
   } else {
     // create a temporary storage area for our invokation parameters
-    ThreadedCallbackInvokation *inv = new ThreadedCallbackInvokation(self, retval, parameters);
+    ThreadedCallbackInvokation *inv = new ThreadedCallbackInvokation(info, retval, parameters);
 
     // push it to the queue -- threadsafe
     pthread_mutex_lock(&g_queue_mutex);
@@ -151,10 +149,20 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
   }
 }
 
-Handle<Value> CallbackInfo::GetPointer(Local<String> name, const AccessorInfo& info) {
+/*
+ * Init stuff.
+ */
+
+void CallbackInfo::Initialize(Handle<Object> target) {
   HandleScope scope;
 
-  CallbackInfo *self = ObjectWrap::Unwrap<CallbackInfo>(info.Holder());
-  Handle<Value> ptr = WrapPointer((char *)self->m_closure);
-  return scope.Close(ptr);
+  NODE_SET_METHOD(target, "Callback", Callback);
+
+  // initialize our threaded invokation stuff
+  g_mainthread = pthread_self();
+  uv_async_init(uv_default_loop(), &g_async, CallbackInfo::WatcherCallback);
+  pthread_mutex_init(&g_queue_mutex, NULL);
+
+  // allow the event loop to exit while this is running
+  uv_unref(uv_default_loop());
 }

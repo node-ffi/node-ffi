@@ -48,10 +48,11 @@ void FFI::InitializeStaticFunctions(Handle<Object> target) {
 
 void FFI::InitializeBindings(Handle<Object> target) {
 
-  target->Set(String::NewSymbol("ffi_prep_cif"), FunctionTemplate::New(FFIPrepCif)->GetFunction());
-  target->Set(String::NewSymbol("ffi_call"), FunctionTemplate::New(FFICall)->GetFunction());
-  target->Set(String::NewSymbol("ffi_call_async"), FunctionTemplate::New(FFICallAsync)->GetFunction());
-  target->Set(String::NewSymbol("strtoul"), FunctionTemplate::New(Strtoul)->GetFunction());
+  // main function exports
+  NODE_SET_METHOD(target, "ffi_prep_cif", FFIPrepCif);
+  NODE_SET_METHOD(target, "ffi_call", FFICall);
+  NODE_SET_METHOD(target, "ffi_call_async", FFICallAsync);
+  NODE_SET_METHOD(target, "strtoul", Strtoul);
 
   // `ffi_status` enum values
   SET_ENUM_VALUE(FFI_OK);
@@ -108,7 +109,7 @@ void FFI::InitializeBindings(Handle<Object> target) {
   ftmap->Set(String::NewSymbol("float"),    WrapPointer((char *)&ffi_type_float));
   ftmap->Set(String::NewSymbol("double"),   WrapPointer((char *)&ffi_type_double));
   ftmap->Set(String::NewSymbol("pointer"),  WrapPointer((char *)&ffi_type_pointer));
-
+  // NOTE: "long" and "ulong" get handled in JS-land
   // Let libffi handle "long long"
   ftmap->Set(String::NewSymbol("ulonglong"), WrapPointer((char *)&ffi_type_ulong));
   ftmap->Set(String::NewSymbol("longlong"),  WrapPointer((char *)&ffi_type_slong));
@@ -164,7 +165,7 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args) {
   ffi_abi abi;
 
   if (args.Length() != 5) {
-    return THROW_ERROR_EXCEPTION("prepCif() requires 5 arguments!");
+    return THROW_ERROR_EXCEPTION("ffi_prep_cif() requires 5 arguments!");
   }
 
   Handle<Value> cif_buf = args[0];

@@ -66,41 +66,45 @@ class FFI {
 };
 
 
+/*
+ * One of these structs gets created for each `ffi.Callback()` invokation in
+ * JavaScript-land. It contains all the necessary information when invoking the
+ * pointer to proxy back to JS-land properly. It gets created by
+ * `ffi_closure_alloc()`, and free'd in the closure_pointer_cb function.
+ */
+
+typedef struct _callback_info {
+  ffi_closure closure;           // the actual `ffi_closure` instance get inlined
+  void *code;                    // the executable function pointer
+  Persistent<Function> function; // JS callback function the closure represents
+  // these two are required for creating proper sized WrapPointer buffer instances
+  int argc;                      // the number of arguments this function expects
+  size_t resultSize;             // the size of the result pointer
+} callback_info;
+
 class ThreadedCallbackInvokation;
 
-class CallbackInfo : public ObjectWrap {
+class CallbackInfo {
   public:
-    CallbackInfo(Handle<Function> func, void *closure, void *code, int argc);
-    ~CallbackInfo();
     static void Initialize(Handle<Object> Target);
-    Handle<Value> GetPointerObject();
     static void WatcherCallback(uv_async_t *w, int revents);
 
   protected:
-    static void DispatchToV8(CallbackInfo *self, void *retval, void **parameters);
-    static Handle<Value> New(const Arguments& args);
-    static Handle<Value> GetPointer(Local<String> name, const AccessorInfo& info);
+    static void DispatchToV8(callback_info *self, void *retval, void **parameters);
     static void Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data);
+    static Handle<Value> Callback(const Arguments& args);
 
   private:
-    static Persistent<FunctionTemplate> callback_template;
-    static Handle<FunctionTemplate> MakeTemplate();
-
-    static pthread_t        g_mainthread;
-    static pthread_mutex_t  g_queue_mutex;
+    static pthread_t          g_mainthread;
+    static pthread_mutex_t    g_queue_mutex;
     static std::queue<ThreadedCallbackInvokation *> g_queue;
     static uv_async_t         g_async;
-
-    void                    *m_closure;
-    void                    *code;
-    Persistent<Function>    m_function;
-    Handle<Object>          m_this;
-    int                     argc;
 };
+
 
 class ThreadedCallbackInvokation {
   public:
-    ThreadedCallbackInvokation(CallbackInfo *cbinfo, void *retval, void **parameters);
+    ThreadedCallbackInvokation(callback_info *cbinfo, void *retval, void **parameters);
     ~ThreadedCallbackInvokation();
 
     void SignalDoneExecuting();
@@ -108,7 +112,7 @@ class ThreadedCallbackInvokation {
 
     void *m_retval;
     void **m_parameters;
-    CallbackInfo *m_cbinfo;
+    callback_info *m_cbinfo;
 
   private:
     pthread_cond_t m_cond;
