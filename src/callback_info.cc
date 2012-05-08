@@ -18,7 +18,6 @@ uv_async_t         CallbackInfo::g_async;
  */
 
 void closure_pointer_cb(char *data, void *hint) {
-  fprintf(stderr, "closure_pointer_cb\n");
   callback_info *info = reinterpret_cast<callback_info *>(hint);
   // dispose of the Persistent function reference
   info->function.Dispose();
