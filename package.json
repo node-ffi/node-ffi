@@ -12,6 +12,7 @@
     "bindings": "*"
   , "debug": "*"
   , "ref": "*"
+  , "ref-struct": "*"
   }
 , "devDependencies": {
     "expect.js": "*"
