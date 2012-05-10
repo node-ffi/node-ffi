@@ -1,6 +1,8 @@
 
 var expect = require('expect.js')
+  , assert = require('assert')
   , ref = require('ref')
+  , Struct = require('ref-struct')
   , ffi = require('../')
   , Library = ffi.Library
 
@@ -81,32 +83,34 @@ describe('Library', function () {
 
     it('should work with "GetTimeOfDay" and a "FILETIME" Struct pointer',
     function () {
-      var FILETIME = new ffi.Struct(
-          ['uint32', 'dwLowDateTime']
-        , ['uint32', 'dwHighDateTime']
-      )
+      var FILETIME = new Struct({
+          'dwLowDateTime': ref.types.uint32
+        , 'dwHighDateTime': ref.types.uint32
+      })
       var l = new Library('kernel32', {
           'GetSystemTimeAsFileTime': [ 'void', [ 'pointer' ]]
       })
       var ft = new FILETIME()
       l.GetSystemTimeAsFileTime(ft.ref())
-      // TODO: Add an expect() clause here...
+      // TODO: Add an assert clause here...
     })
 
   } else {
 
     it('should work with "gettimeofday" and a "timeval" Struct pointer',
     function () {
-      var timeval = new ffi.Struct(
-          ['long','tv_sec']
-        , ['long','tv_usec']
-      )
+      var timeval = new Struct({
+          'tv_sec': ref.types.long
+        , 'tv_usec': ref.types.long
+      })
+      var timevalPtr = ref.refType(timeval)
+      var timezonePtr = ref.refType(ref.types.void)
       var l = new Library(null, {
-          'gettimeofday': ['int', ['pointer', 'pointer']]
+          'gettimeofday': [ref.types.int, [timevalPtr, timezonePtr]]
       })
       var tv = new timeval()
       l.gettimeofday(tv.ref(), null)
-      expect(tv.tv_sec == Math.floor(Date.now() / 1000)).to.be(true)
+      assert.equal(Math.floor(Date.now() / 1000), tv.tv_sec)
     })
 
   }
