@@ -15,7 +15,12 @@ describe('ffi_cif', function () {
   it('should throw an Error when given an invalid ABI argument', function () {
     assert.throws(function () {
       ffi.CIF(ref.types.void, [], -1)
-    }, /FFI_BAD_ABI/)
+    }, function (err) {
+      assert(err.message.indexOf('FFI_BAD_ABI') !== -1)
+      assert.equal('FFI_BAD_ABI', err.code)
+      assert.equal(ffi.Bindings.FFI_BAD_ABI, err.errno)
+      return true
+    })
   })
 
 })
