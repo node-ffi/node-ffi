@@ -19,6 +19,12 @@ describe('Callback', function () {
     assert.equal(1234, func(-1234))
   })
 
+  it('should work with a "void" return type', function () {
+    var funcPtr = ffi.Callback('void', [ ], function (val) { })
+    var func = ffi.ForeignFunction(funcPtr, 'void', [ ])
+    assert.strictEqual(null, func())
+  })
+
   describe('async', function () {
 
     it('should be invokable asynchronously by an ffi\'d ForeignFunction', function () {
