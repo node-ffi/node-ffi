@@ -16,7 +16,7 @@
   }
 , "devDependencies": {
     "expect.js": "*"
-  , "mocha": ">= 0.10.x"
+  , "mocha": "*"
   }
 , "scripts": {
     "test": "mocha -gc --reporter spec"
