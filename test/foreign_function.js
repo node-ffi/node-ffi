@@ -50,6 +50,15 @@ describe('ForeignFunction', function () {
     assert.equal(100, rtn)
   })
 
+  it('should call the static "area_box_ptr" bindings', function () {
+    var boxPtr = ref.refType(box)
+    var area_box = ffi.ForeignFunction(bindings.area_box_ptr, ref.types.int, [ boxPtr ])
+    var b = new box({ width: 5, height: 20 })
+    var rtn = area_box(b.ref())
+    assert.equal('number', typeof rtn)
+    assert.equal(100, rtn)
+  })
+
   describe('async', function () {
 
     it('should call the static "abs" bindings asynchronously', function (done) {
