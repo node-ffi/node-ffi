@@ -1,5 +1,6 @@
 
 var expect = require('expect.js')
+  , assert = require('assert')
   , ref = require('ref')
   , Struct = require('ref-struct')
   , ffi = require('../')
