@@ -59,6 +59,14 @@ describe('ForeignFunction', function () {
     assert.equal(100, rtn)
   })
 
+  it('should call the static "create_box" bindings', function () {
+    var create_box = ffi.ForeignFunction(bindings.create_box, box, [ 'int', 'int' ])
+    var rtn = create_box(1, 2)
+    assert(rtn instanceof box)
+    assert.equal(1, rtn.width)
+    assert.equal(2, rtn.height)
+  })
+
   describe('async', function () {
 
     it('should call the static "abs" bindings asynchronously', function (done) {
@@ -75,4 +83,5 @@ describe('ForeignFunction', function () {
     })
 
   })
+
 })

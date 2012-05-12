@@ -45,6 +45,15 @@ int area_box_ptr(box *input) {
 }
 
 /*
+ * Creates a box and returns it by value.
+ */
+
+box create_box(int width, int height) {
+  box rtn = { width, height };
+  return rtn;
+}
+
+/*
  * Hard-coded `strtoul` binding, for the benchmarks.
  *
  * args[0] - the string number to convert to a real Number
@@ -99,6 +108,7 @@ void Initialize(Handle<Object> target) {
   target->Set(String::NewSymbol("double_box"), WrapPointer((char *)double_box));
   target->Set(String::NewSymbol("area_box"), WrapPointer((char *)area_box));
   target->Set(String::NewSymbol("area_box_ptr"), WrapPointer((char *)area_box_ptr));
+  target->Set(String::NewSymbol("create_box"), WrapPointer((char *)create_box));
 }
 
 } // anonymous namespace
