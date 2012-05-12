@@ -26,13 +26,6 @@ Handle<Value> WrapPointer(char *ptr, size_t length) {
 void FFI::InitializeStaticFunctions(Handle<Object> target) {
   Local<Object> o = Object::New();
 
-  // atoi and abs here for testing purposes
-  o->Set(String::NewSymbol("atoi"), WrapPointer((char *)atoi));
-
-  // Windows has multiple `abs` signatures, so we need to manually disambiguate
-  int (*absPtr)(int)(abs);
-  o->Set(String::NewSymbol("abs"),  WrapPointer((char *)absPtr));
-
   // dl functions used by the DynamicLibrary JS class
   o->Set(String::NewSymbol("dlopen"),  WrapPointer((char *)dlopen));
   o->Set(String::NewSymbol("dlclose"), WrapPointer((char *)dlclose));
@@ -52,7 +45,6 @@ void FFI::InitializeBindings(Handle<Object> target) {
   NODE_SET_METHOD(target, "ffi_prep_cif", FFIPrepCif);
   NODE_SET_METHOD(target, "ffi_call", FFICall);
   NODE_SET_METHOD(target, "ffi_call_async", FFICallAsync);
-  NODE_SET_METHOD(target, "strtoul", Strtoul);
 
   // `ffi_status` enum values
   SET_ENUM_VALUE(FFI_OK);
@@ -115,32 +107,6 @@ void FFI::InitializeBindings(Handle<Object> target) {
   ftmap->Set(String::NewSymbol("longlong"),  WrapPointer((char *)&ffi_type_slong));
 
   target->Set(String::NewSymbol("FFI_TYPES"), ftmap);
-}
-
-/*
- * Hard-coded `strtoul` binding, for the benchmarks.
- *
- * args[0] - the string number to convert to a real Number
- * args[1] - a "buffer" instance to write into (the "endptr")
- * args[2] - the base (0 means autodetect)
- */
-
-Handle<Value> FFI::Strtoul(const Arguments &args) {
-  HandleScope scope;
-  char buf[128];
-  int base;
-  char **endptr;
-
-  args[0]->ToString()->WriteUtf8(buf);
-
-  Local<Value> endptr_arg = args[0];
-  endptr = (char **)Buffer::Data(endptr_arg.As<Object>());
-
-  base = args[2]->Int32Value();
-
-  unsigned long val = strtoul(buf, endptr, base);
-
-  return scope.Close(Integer::NewFromUnsigned(val));
 }
 
 /*
