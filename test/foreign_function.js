@@ -67,6 +67,20 @@ describe('ForeignFunction', function () {
     assert.equal(2, rtn.height)
   })
 
+  it('should call the static "add_boxes" bindings', function () {
+    var count = 3
+    var boxes = new Buffer(box.size * count)
+    box.set(boxes, box.size * 0, { width: 1, height: 10 })
+    box.set(boxes, box.size * 1, { width: 2, height: 20 })
+    box.set(boxes, box.size * 2, { width: 3, height: 30 })
+    var boxPtr = ref.refType(box)
+    var add_boxes = ffi.ForeignFunction(bindings.add_boxes, box, [ boxPtr, 'int' ])
+    var rtn = add_boxes(boxes, count)
+    assert(rtn instanceof box)
+    assert.equal(6, rtn.width)
+    assert.equal(60, rtn.height)
+  })
+
   describe('async', function () {
 
     it('should call the static "abs" bindings asynchronously', function (done) {

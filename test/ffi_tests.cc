@@ -54,6 +54,21 @@ box create_box(int width, int height) {
 }
 
 /*
+ * Creates a box that has the sum of the width and height for its own values.
+ */
+
+box add_boxes(box boxes[], int num) {
+  box rtn = { 0, 0 };
+  box cur;
+  for (int i = 0; i < num; i++) {
+    cur = boxes[i];
+    rtn.width += cur.width;
+    rtn.height += cur.height;
+  }
+  return rtn;
+}
+
+/*
  * Hard-coded `strtoul` binding, for the benchmarks.
  *
  * args[0] - the string number to convert to a real Number
@@ -109,6 +124,7 @@ void Initialize(Handle<Object> target) {
   target->Set(String::NewSymbol("area_box"), WrapPointer((char *)area_box));
   target->Set(String::NewSymbol("area_box_ptr"), WrapPointer((char *)area_box_ptr));
   target->Set(String::NewSymbol("create_box"), WrapPointer((char *)create_box));
+  target->Set(String::NewSymbol("add_boxes"), WrapPointer((char *)add_boxes));
 }
 
 } // anonymous namespace
