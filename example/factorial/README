@@ -1,12 +1,8 @@
 On compile `factorial.dylib` on OS X:
 
-``` bash
-$ g++ -dynamiclib -undefined suppress -flat_namespace factorial.c -o factorial.dylib
-```
+    $ g++ -dynamiclib -undefined suppress -flat_namespace factorial.c -o factorial.dylib
 
 To run the example:
 
-```
-$ node factorial.js 35
-Your output: 6399018521010896896
-```
+    $ node factorial.js 35
+    Your output: 6399018521010896896
