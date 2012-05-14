@@ -1,6 +1,10 @@
-On compile `factorial.dylib` on OS X:
+To compile `libfactorial.dylib` on OS X:
 
     $ gcc -dynamiclib -undefined suppress -flat_namespace factorial.c -o libfactorial.dylib
+
+To compile `libfactorial.so` on Linux/Solaris/etc.:
+
+    $ gcc -shared -fpic factorial.c -o libfactorial.so
 
 To run the example:
 
