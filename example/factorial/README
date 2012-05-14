@@ -1,7 +1,12 @@
-If you've already got node installed, this can be used:
+On compile `factorial.dylib` on OS X:
 
-    $ node-waf configure
-    $ node-waf build
-    ...
-    $ node factorial.js 35
-    Your output: 6399018521010896896
+``` bash
+$ g++ -dynamiclib -undefined suppress -flat_namespace factorial.c -o factorial.dylib
+```
+
+To run the example:
+
+```
+$ node factorial.js 35
+Your output: 6399018521010896896
+```
