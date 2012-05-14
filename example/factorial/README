@@ -1,6 +1,6 @@
 On compile `factorial.dylib` on OS X:
 
-    $ g++ -dynamiclib -undefined suppress -flat_namespace factorial.c -o factorial.dylib
+    $ gcc -dynamiclib -undefined suppress -flat_namespace factorial.c -o libfactorial.dylib
 
 To run the example:
 
