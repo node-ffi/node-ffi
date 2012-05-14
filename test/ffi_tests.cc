@@ -23,8 +23,25 @@ typedef struct box {
 
 box double_box(box input) {
   box rtn;
-  rtn.width = input.width * 2;
-  rtn.height = input.height * 2;
+  // modify the input box, ensure on the JS side that it's not altered
+  input.width *= 2;
+  input.height *= 2;
+  rtn.width = input.width;
+  rtn.height = input.height;
+  return rtn;
+}
+
+/*
+ * Accepts a box struct pointer, and returns a struct by value.
+ */
+
+box double_box_ptr(box *input) {
+  box rtn;
+  // modify the input box, ensure on the JS side that IT IS altered
+  input->width *= 2;
+  input->height *= 2;
+  rtn.width = input->width;
+  rtn.height = input->height;
   return rtn;
 }
 
@@ -121,6 +138,7 @@ void Initialize(Handle<Object> target) {
 
   // also need to test these custom functions
   target->Set(String::NewSymbol("double_box"), WrapPointer((char *)double_box));
+  target->Set(String::NewSymbol("double_box_ptr"), WrapPointer((char *)double_box_ptr));
   target->Set(String::NewSymbol("area_box"), WrapPointer((char *)area_box));
   target->Set(String::NewSymbol("area_box_ptr"), WrapPointer((char *)area_box_ptr));
   target->Set(String::NewSymbol("create_box"), WrapPointer((char *)create_box));

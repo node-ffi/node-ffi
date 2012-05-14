@@ -37,9 +37,31 @@ describe('ForeignFunction', function () {
     b.width = 4
     b.height = 5
     var out = double_box(b)
+    // double_box writes to its input "box" struct, so make sure that the one we
+    // passed in remains unaffected (since we passed it in by value, not pointer)
+    assert.equal(4, b.width)
+    assert.equal(5, b.height)
     assert(out instanceof box)
     assert.equal(8, out.width)
     assert.equal(10, out.height)
+    assert.notEqual(b.ref().address(), out.ref().address())
+  })
+
+  it('should call the static "double_box_ptr" bindings', function () {
+    var boxPtr = ref.refType(box)
+    var double_box_ptr = ffi.ForeignFunction(bindings.double_box_ptr, box, [ boxPtr ])
+    var b = new box
+    b.width = 4
+    b.height = 5
+    var out = double_box_ptr(b.ref())
+    // double_box_ptr writes to its input "box" struct, so make sure that the one
+    // we passed in has it's values changed (since we passed it in by pointer)
+    assert.equal(8, b.width)
+    assert.equal(10, b.height)
+    assert(out instanceof box)
+    assert.equal(8, out.width)
+    assert.equal(10, out.height)
+    assert.notEqual(b.ref().address(), out.ref().address())
   })
 
   it('should call the static "area_box" bindings', function () {
