@@ -7,6 +7,8 @@
 #include <dlfcn.h>
 #include <pthread.h>
 
+/* define FFI_BUILDING before including ffi.h to workaround a libffi bug on Windows */
+#define FFI_BUILDING
 #include <ffi.h>
 
 #include <uv.h>
