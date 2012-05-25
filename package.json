@@ -1,4 +1,4 @@
-{ "name": "node-ffi"
+{ "name": "ffi"
 , "version": "1.0.0-alpha"
 , "authors": [
     "Rick Branson"
