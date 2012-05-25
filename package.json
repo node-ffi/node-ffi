@@ -1,8 +1,8 @@
 { "name": "node-ffi"
 , "version": "0.5.3"
-, "author": "Rick Branson"
-, "contributors": [
-    "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
+, "authors": [
+    "Rick Branson"
+  , "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
   ]
 , "description": "A foreign function interface (FFI) for Node.js"
 , "homepage": "http://github.com/rbranson/node-ffi"
