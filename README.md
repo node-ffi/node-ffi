@@ -34,8 +34,6 @@ current.atoi('1234'); // 1234
 $ npm install ffi
 ```
 
-Most popular operating systems have a pre-compiled binary that comes along with node-ffi, so most of the time you will not need to compile anything! (Unless of course you want to, then see below).
-
 # SOURCE INSTALL / MANUAL COMPILATION
 
 To compile from source it's easiest to use
