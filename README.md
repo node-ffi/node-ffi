@@ -11,14 +11,14 @@ It also simplifies the augmentation of node.js with C code as it takes care of h
 # EXAMPLE
 
 ``` js
-var ffi = require("node-ffi");
+var ffi = require('node-ffi');
 
-var libm = new ffi.Library("libm", { "ceil": [ "double", [ "double" ] ] });
+var libm = ffi.Library('libm', { 'ceil': [ 'double', [ 'double' ] ] });
 libm.ceil(1.5); // 2
 
 // You can also access just functions in the current process by passing a null
-var current = new ffi.Library(null, { "atoi": [ "int32", [ "string" ] ] });
-current.atoi("1234"); // 1234
+var current = ffi.Library(null, { 'atoi': [ 'int32', [ 'string' ] ] });
+current.atoi('1234'); // 1234
 ```
 
 # REQUIREMENTS
