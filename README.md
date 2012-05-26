@@ -11,7 +11,7 @@ It also simplifies the augmentation of node.js with C code as it takes care of h
 # EXAMPLE
 
 ``` js
-var ffi = require('node-ffi');
+var ffi = require('ffi');
 
 var libm = ffi.Library('libm', { 'ceil': [ 'double', [ 'double' ] ] });
 libm.ceil(1.5); // 2
