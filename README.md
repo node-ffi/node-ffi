@@ -62,7 +62,7 @@ Types
 -----
 
 The types that you specify in function declarations correspond to ref's types
-system. So see that for a reference if you are unfamiliar.
+system. So [see that](https://github.com/TooTallNate/ref#built-in-types) for a reference if you are unfamiliar.
 
 
 V8 and 64-bit Types
