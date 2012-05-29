@@ -1,3 +1,4 @@
+#include <node_version.h>
 #include "ffi.h"
 
 Persistent<FunctionTemplate> CallbackInfo::callback_template;
@@ -65,7 +66,11 @@ void CallbackInfo::Initialize(Handle<Object> target) {
   pthread_mutex_init(&g_queue_mutex, NULL);
 
   // allow the event loop to exit while this is running
+#if NODE_VERSION_AT_LEAST(0, 7, 9)
+  uv_unref((uv_handle_t *)&g_async);
+#else
   uv_unref(uv_default_loop());
+#endif
 }
 
 Handle<Value> CallbackInfo::New(const Arguments& args) {
@@ -129,6 +134,13 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
   if (pthread_equal(pthread_self(), g_mainthread)) {
     DispatchToV8(self, retval, parameters);
   } else {
+    // hold the event loop open while this is executing
+#if NODE_VERSION_AT_LEAST(0, 7, 9)
+    uv_ref((uv_handle_t *)&g_async);
+#else
+    uv_ref(uv_default_loop());
+#endif
+
     // create a temporary storage area for our invokation parameters
     ThreadedCallbackInvokation *inv = new ThreadedCallbackInvokation(self, retval, parameters);
 
@@ -143,6 +155,11 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
     // wait for signal from calling thread
     inv->WaitForExecution();
 
+#if NODE_VERSION_AT_LEAST(0, 7, 9)
+    uv_unref((uv_handle_t *)&g_async);
+#else
+    uv_unref(uv_default_loop());
+#endif
     delete inv;
   }
 }
