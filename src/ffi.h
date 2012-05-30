@@ -55,6 +55,7 @@ class FFI {
 
   protected:
     static Handle<Value> FFIPrepCif(const Arguments& args);
+    static Handle<Value> FFIPrepCifVar(const Arguments& args);
     static Handle<Value> FFICall(const Arguments& args);
     static Handle<Value> FFICallAsync(const Arguments& args);
     static void AsyncFFICall(uv_work_t *req);

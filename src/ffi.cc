@@ -43,6 +43,7 @@ void FFI::InitializeBindings(Handle<Object> target) {
 
   // main function exports
   NODE_SET_METHOD(target, "ffi_prep_cif", FFIPrepCif);
+  NODE_SET_METHOD(target, "ffi_prep_cif_var", FFIPrepCifVar);
   NODE_SET_METHOD(target, "ffi_call", FFICall);
   NODE_SET_METHOD(target, "ffi_call_async", FFICallAsync);
 
@@ -149,6 +150,55 @@ Handle<Value> FFI::FFIPrepCif(const Arguments& args) {
       (ffi_cif *)cif,
       abi,
       nargs,
+      (ffi_type *)rtype,
+      (ffi_type **)atypes);
+
+  return scope.Close(Integer::NewFromUnsigned(status));
+}
+
+/*
+ * Function that creates and returns an `ffi_cif` pointer from the given return
+ * value type and argument types.
+ *
+ * args[0] - the CIF buffer
+ * args[1] - the number of fixed args
+ * args[2] - the number of total args
+ * args[3] - the "return type" pointer
+ * args[4] - the "arguments types array" pointer
+ * args[5] - the ABI to use
+ *
+ * returns the ffi_status result from ffi_prep_cif_var()
+ */
+
+Handle<Value> FFI::FFIPrepCifVar(const Arguments& args) {
+  HandleScope scope;
+
+  unsigned int fargs, targs;
+  char *rtype, *atypes, *cif;
+  ffi_status status;
+  ffi_abi abi;
+
+  if (args.Length() != 6) {
+    return THROW_ERROR_EXCEPTION("ffi_prep_cif() requires 5 arguments!");
+  }
+
+  Handle<Value> cif_buf = args[0];
+  if (!Buffer::HasInstance(cif_buf)) {
+    return THROW_ERROR_EXCEPTION("prepCifVar(): Buffer required as first arg");
+  }
+
+  cif = Buffer::Data(cif_buf.As<Object>());
+  fargs = args[1]->Uint32Value();
+  targs = args[2]->Uint32Value();
+  rtype = Buffer::Data(args[3]->ToObject());
+  atypes = Buffer::Data(args[4]->ToObject());
+  abi = (ffi_abi)args[5]->Uint32Value();
+
+  status = ffi_prep_cif_var(
+      (ffi_cif *)cif,
+      abi,
+      fargs,
+      targs,
       (ffi_type *)rtype,
       (ffi_type **)atypes);
 
