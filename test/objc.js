@@ -11,7 +11,7 @@ var id = voidPtr
   , SEL = voidPtr
   , Class = voidPtr
 
-if (ffi.Bindings.HAS_OBJC) {
+if (ffi.HAS_OBJC) {
 
   describe('@try / @catch', function () {
 

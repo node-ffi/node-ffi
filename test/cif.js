@@ -25,7 +25,7 @@ describe('ffi_cif', function () {
     }, function (err) {
       assert(err.message.indexOf('FFI_BAD_TYPEDEF') !== -1)
       assert.equal('FFI_BAD_TYPEDEF', err.code)
-      assert.equal(ffi.Bindings.FFI_BAD_TYPEDEF, err.errno)
+      assert.equal(ffi.FFI_BAD_TYPEDEF, err.errno)
       return true
     })
   })
@@ -36,7 +36,7 @@ describe('ffi_cif', function () {
     }, function (err) {
       assert(err.message.indexOf('FFI_BAD_ABI') !== -1)
       assert.equal('FFI_BAD_ABI', err.code)
-      assert.equal(ffi.Bindings.FFI_BAD_ABI, err.errno)
+      assert.equal(ffi.FFI_BAD_ABI, err.errno)
       return true
     })
   })
