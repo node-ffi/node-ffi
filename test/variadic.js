@@ -4,7 +4,7 @@ var assert = require('assert')
   , ffi = require('../')
   , snprintfPtr = require('./build/Release/ffi_tests').snprintf
 
-describe('varargs', function () {
+describe('variadic arguments', function () {
 
   afterEach(gc)
 
@@ -20,6 +20,9 @@ describe('varargs', function () {
 
     snprintfGen('double')(buf, buf.length, '%10.2f', 3.14)
     assert.equal(buf.readCString(), '      3.14')
+
+    snprintfGen(ref.types.Utf8String)(buf, buf.length, ' %s ', 'test')
+    assert.equal(buf.readCString(), ' test ')
   })
 
 })
