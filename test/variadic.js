@@ -2,6 +2,7 @@
 var assert = require('assert')
   , ref = require('ref')
   , ffi = require('../')
+  , snprintfPtr = require('./build/Release/ffi_tests').snprintf
 
 describe('varargs', function () {
 
@@ -9,7 +10,6 @@ describe('varargs', function () {
 
   it('should work with vararg C functions', function () {
     var buf = new Buffer(100)
-    var snprintfPtr = ffi.DynamicLibrary().get('snprintf')
     var snprintfGen = ffi.VariadicForeignFunction(snprintfPtr, 'int', [ 'pointer', 'size_t', 'string' ])
 
     snprintfGen()(buf, buf.length, 'hello world!')
