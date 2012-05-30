@@ -2,8 +2,6 @@
 var assert = require('assert')
   , ref = require('ref')
   , ffi = require('../')
-  , errno = ffi.errno
-  , charPtr = ref.refType(ref.types.char)
 
 describe('varargs', function () {
 
