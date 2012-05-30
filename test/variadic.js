@@ -25,4 +25,13 @@ describe('variadic arguments', function () {
     assert.equal(buf.readCString(), ' test ')
   })
 
+  it('should return the same Function instance when the same arguments are used', function () {
+    var snprintfGen = ffi.VariadicForeignFunction(snprintfPtr, 'int', [ 'pointer', 'size_t', 'string' ])
+
+    var one = snprintfGen('int')
+    var two = snprintfGen(ref.types.int)
+
+    assert.strictEqual(one, two)
+  })
+
 })
