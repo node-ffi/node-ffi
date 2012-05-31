@@ -90,6 +90,17 @@ box add_boxes(box boxes[], int num) {
 }
 
 /*
+ * Accepts and returns an `Object` type from `ref`.
+ * Does this crazy shit actually work!?!
+ */
+
+Handle<Object> js_object(Handle<Object> val) {
+  HandleScope scope;
+  val->Set(String::NewSymbol("c"), Number::New(3));
+  return val;
+}
+
+/*
  * Hard-coded `strtoul` binding, for the benchmarks.
  *
  * args[0] - the string number to convert to a real Number
@@ -150,6 +161,7 @@ void Initialize(Handle<Object> target) {
   target->Set(String::NewSymbol("area_box_ptr"), WrapPointer((char *)area_box_ptr));
   target->Set(String::NewSymbol("create_box"), WrapPointer((char *)create_box));
   target->Set(String::NewSymbol("add_boxes"), WrapPointer((char *)add_boxes));
+  target->Set(String::NewSymbol("js_object"), WrapPointer((char *)js_object));
 }
 
 } // anonymous namespace

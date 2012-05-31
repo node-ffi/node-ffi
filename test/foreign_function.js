@@ -103,6 +103,15 @@ describe('ForeignFunction', function () {
     assert.equal(60, rtn.height)
   })
 
+  it('should call the static "js_object" bindings', function () {
+    var js_object = ffi.ForeignFunction(bindings.js_object, 'Object', [ 'Object' ])
+    var obj = {}
+    assert.strictEqual(undefined, obj.c)
+    var rtn = js_object(obj)
+    assert.strictEqual(3, obj.c)
+    assert.strictEqual(rtn, obj)
+  })
+
   describe('async', function () {
 
     it('should call the static "abs" bindings asynchronously', function (done) {
