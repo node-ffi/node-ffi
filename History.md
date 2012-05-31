@@ -1,4 +1,13 @@
 
+1.0.0 / 2012-05-31
+==================
+
+  - add a `VariadicForeignFunction` function for vararg C functions
+  - various cleanup
+  - don't export the native bindings (`ffi.Bindings` is gone)
+  - use the `ref()` function when available, then fall back to `ref.alloc()`
+  - a few more tests
+
 1.0.0-alpha1 / 2012-05-29
 =========================
 

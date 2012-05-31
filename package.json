@@ -1,5 +1,5 @@
 { "name": "ffi"
-, "version": "1.0.0-alpha1"
+, "version": "1.0.0"
 , "authors": [
     "Rick Branson"
   , "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
