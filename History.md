@@ -1,4 +1,9 @@
 
+1.0.1 / 2012-06-13
+==================
+
+ - refactor the variadic function generator to allow for an overridden "returnType"
+
 1.0.0 / 2012-05-31
 ==================
 
