@@ -51,12 +51,16 @@
           'inputs': ['<!@(sh libffi-config.sh)'],
           'outputs': [''],
           'conditions': [
-            ['OS!="win"', {
+            ['OS=="win"', {
+             'action': [
+                'echo', 'test'
+              ]
+            }, {
               'action': [
                 # run libffi `make`
                 'sh', 'libffi-build.sh'
-              ]
-            }]
+             ]
+           }]
           ]
         }
       ]
