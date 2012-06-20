@@ -32,8 +32,8 @@ Requirements
 ------------
 
  * Linux, OS X, Windows, or Solaris.
- * `libffi` comes bundled with node-ffi, it does not need to be installed on your system.
- * The current version is tested to run on node 0.6.x and 0.7.x.
+ * `libffi` comes bundled with node-ffi; it does *not* need to be installed on your system.
+ * The current version is tested to run on node v0.6.x and v0.7.x.
 
 
 Installation
@@ -42,6 +42,10 @@ Installation
 ``` bash
 $ npm install ffi
 ```
+
+__Note:__ When installing on Windows, you'll need to invoke `npm install ffi` from
+within a [Mozilla Build](https://wiki.mozilla.org/MozillaBuild) ([direct
+link](http://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe)) command window.
 
 Source Install / Manual Compilation
 -----------------------------------
