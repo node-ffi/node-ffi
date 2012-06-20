@@ -50,9 +50,13 @@
           # a hack to run libffi ./configure during `node-gyp configure`
           'inputs': ['<!@(sh libffi-config.sh)'],
           'outputs': [''],
-          'action': [
-            # run libffi `make`
-            'sh', 'libffi-build.sh'
+          'conditions': [
+            ['OS!="win"', {
+              'action': [
+                # run libffi `make`
+                'sh', 'libffi-build.sh'
+              ]
+            }]
           ]
         }
       ]
