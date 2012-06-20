@@ -1,5 +1,7 @@
+#!/bin/sh
+
 cd deps/libffi
-if [ "$OSTYPE" == "msys" ]; then
+if [ "x$OSTYPE" = "xmsys" ]; then
   export CC="`pwd`/msvcc.sh"
   export LD="link"
   export CPP="cl -nologo -EP"
@@ -7,7 +9,7 @@ if [ "$OSTYPE" == "msys" ]; then
 fi
 make clean distclean >node_ffi_configure.out 2>&1
 sh configure --enable-static --disable-shared --disable-builddir --with-pic >>node_ffi_configure.out 2>&1
-if [ "$OSTYPE" == "msys" ]; then
+if [ "x$OSTYPE" = "xmsys" ]; then
   # need to invoke "make" immediately on windows (instead of during `build`)
   make
 fi
