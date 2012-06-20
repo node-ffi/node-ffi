@@ -2,16 +2,16 @@
 1.0.1 / 2012-06-13
 ==================
 
- - refactor the variadic function generator to allow for an overridden "returnType"
+ - Refactor the variadic function generator to allow for an overridden "returnType"
 
 1.0.0 / 2012-05-31
 ==================
 
-  - add a `VariadicForeignFunction` function for vararg C functions
-  - various cleanup
-  - don't export the native bindings (`ffi.Bindings` is gone)
-  - use the `ref()` function when available, then fall back to `ref.alloc()`
-  - a few more tests
+  - Add a `VariadicForeignFunction` function for vararg C functions
+  - Various cleanup
+  - Don't export the native bindings (`ffi.Bindings` is gone)
+  - Use the `ref()` function when available, then fall back to `ref.alloc()`
+  - Add a few more tests
 
 1.0.0-alpha1 / 2012-05-29
 =========================
