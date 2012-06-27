@@ -4,11 +4,18 @@ node-ffi
 
 ## Attention node-ffi users! v1.0 has been released! See the [API changes page][v1apichanges].
 
-`node-ffi` is a Node.js addon for loading and calling dynamic libraries using pure JavaScript. It can be used to create bindings to native libraries without writing any C++ code.
+`node-ffi` is a Node.js addon for loading and calling dynamic libraries using
+pure JavaScript. It can be used to create bindings to native libraries without
+writing any C++ code.
 
-It also simplifies the augmentation of node.js with C code as it takes care of handling the translation of types across JavaScript and C, which can add reams of boilerplate code to your otherwise simple C. See the `example/factorial` for an example of this use case.
+It also simplifies the augmentation of node.js with C code as it takes care of
+handling the translation of types across JavaScript and C, which can add reams
+of boilerplate code to your otherwise simple C. See the `example/factorial`
+for an example of this use case.
 
-**WARNING**: node-ffi assumes you know what you're doing. You can pretty easily create situations where you will segfault the interpreter and unless you've got C debugger skills, you probably won't know what's going on.
+**WARNING**: node-ffi assumes you know what you're doing. You can pretty easily
+create situations where you will segfault the interpreter and unless you've got
+C debugger skills, you probably won't know what's going on.
 
 
 Example
