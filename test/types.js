@@ -1,7 +1,7 @@
 
 var assert = require('assert')
   , ref = require('ref')
-  , ffi = require('../')
+  , Types = require('../lib/types')
 
 describe('types', function () {
 
@@ -10,7 +10,7 @@ describe('types', function () {
     Object.keys(ref.types).forEach(function (name) {
       it('should match a valid `ffi_type` for "' + name + '"', function () {
         var type = ref.types[name]
-        var ffi_type = ffi.ffiType(type)
+        var ffi_type = Types.ffiType(type)
         assert(Buffer.isBuffer(ffi_type))
       })
     })

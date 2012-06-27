@@ -3,7 +3,7 @@ var expect = require('expect.js')
   , assert = require('assert')
   , ref = require('ref')
   , Struct = require('ref-struct')
-  , ffi = require('../')
+  , ForeignFunction = require('../lib/foreign_function')
   , bindings = require('./build/Release/ffi_tests')
 
 describe('ForeignFunction', function () {
@@ -18,20 +18,20 @@ describe('ForeignFunction', function () {
 
   it('should call the static "abs" bindings', function () {
     var _abs = bindings.abs
-    var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
+    var abs = ForeignFunction(_abs, 'int', [ 'int' ])
     expect(abs).to.be.a('function')
     expect(abs(-1234)).to.equal(1234)
   })
 
   it('should call the static "atoi" bindings', function () {
     var _atoi = bindings.atoi
-    var atoi = ffi.ForeignFunction(_atoi, 'int', [ 'string' ])
+    var atoi = ForeignFunction(_atoi, 'int', [ 'string' ])
     expect(atoi).to.be.a('function')
     expect(atoi('1234')).to.equal(1234)
   })
 
   it('should call the static "double_box" bindings', function () {
-    var double_box = ffi.ForeignFunction(bindings.double_box, box, [ box ])
+    var double_box = ForeignFunction(bindings.double_box, box, [ box ])
     var b = new box
     assert(b instanceof box)
     b.width = 4
@@ -49,7 +49,7 @@ describe('ForeignFunction', function () {
 
   it('should call the static "double_box_ptr" bindings', function () {
     var boxPtr = ref.refType(box)
-    var double_box_ptr = ffi.ForeignFunction(bindings.double_box_ptr, box, [ boxPtr ])
+    var double_box_ptr = ForeignFunction(bindings.double_box_ptr, box, [ boxPtr ])
     var b = new box
     b.width = 4
     b.height = 5
@@ -65,7 +65,7 @@ describe('ForeignFunction', function () {
   })
 
   it('should call the static "area_box" bindings', function () {
-    var area_box = ffi.ForeignFunction(bindings.area_box, ref.types.int, [ box ])
+    var area_box = ForeignFunction(bindings.area_box, ref.types.int, [ box ])
     var b = new box({ width: 5, height: 20 })
     var rtn = area_box(b)
     assert.equal('number', typeof rtn)
@@ -74,7 +74,7 @@ describe('ForeignFunction', function () {
 
   it('should call the static "area_box_ptr" bindings', function () {
     var boxPtr = ref.refType(box)
-    var area_box = ffi.ForeignFunction(bindings.area_box_ptr, ref.types.int, [ boxPtr ])
+    var area_box = ForeignFunction(bindings.area_box_ptr, ref.types.int, [ boxPtr ])
     var b = new box({ width: 5, height: 20 })
     var rtn = area_box(b.ref())
     assert.equal('number', typeof rtn)
@@ -82,7 +82,7 @@ describe('ForeignFunction', function () {
   })
 
   it('should call the static "create_box" bindings', function () {
-    var create_box = ffi.ForeignFunction(bindings.create_box, box, [ 'int', 'int' ])
+    var create_box = ForeignFunction(bindings.create_box, box, [ 'int', 'int' ])
     var rtn = create_box(1, 2)
     assert(rtn instanceof box)
     assert.equal(1, rtn.width)
@@ -96,7 +96,7 @@ describe('ForeignFunction', function () {
     box.set(boxes, box.size * 1, { width: 2, height: 20 })
     box.set(boxes, box.size * 2, { width: 3, height: 30 })
     var boxPtr = ref.refType(box)
-    var add_boxes = ffi.ForeignFunction(bindings.add_boxes, box, [ boxPtr, 'int' ])
+    var add_boxes = ForeignFunction(bindings.add_boxes, box, [ boxPtr, 'int' ])
     var rtn = add_boxes(boxes, count)
     assert(rtn instanceof box)
     assert.equal(6, rtn.width)
@@ -107,7 +107,7 @@ describe('ForeignFunction', function () {
 
     it('should call the static "abs" bindings asynchronously', function (done) {
       var _abs = bindings.abs
-      var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
+      var abs = ForeignFunction(_abs, 'int', [ 'int' ])
       expect(abs).to.be.a('function')
 
       // invoke asynchronously
