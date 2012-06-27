@@ -1,8 +1,7 @@
 
 var expect = require('expect.js')
   , ref = require('ref')
-  , bindings = require('../lib/bindings')
-  , Library = require('../lib/library')
+  , ffi = require('../')
   , voidPtr = ref.refType(ref.types.void)
 
 // these are "opaque" pointer types, so we only care about the memory addess,
@@ -12,13 +11,13 @@ var id = voidPtr
   , SEL = voidPtr
   , Class = voidPtr
 
-if (bindings.HAS_OBJC) {
+if (ffi.HAS_OBJC) {
 
   describe('@try / @catch', function () {
 
     afterEach(gc)
 
-    var objcLib = new Library('libobjc', {
+    var objcLib = new ffi.Library('libobjc', {
         'objc_msgSend': [ id, [ id, SEL ] ]
       , 'objc_getClass': [ Class, [ 'string' ] ]
       , 'sel_registerName': [ SEL, [ 'string' ] ]

@@ -3,16 +3,8 @@ var expect = require('expect.js')
   , assert = require('assert')
   , ref = require('ref')
   , Struct = require('ref-struct')
-  , Library = require('../lib/library')
-  , LIB_EXT = {
-        'linux':  '.so'
-      , 'linux2': '.so'
-      , 'sunos':  '.so'
-      , 'solaris':'.so'
-      , 'darwin': '.dylib'
-      , 'mac':    '.dylib'
-      , 'win32':  '.dll'
-    }[process.platform]
+  , ffi = require('../')
+  , Library = ffi.Library
 
 describe('Library', function () {
 
@@ -50,7 +42,7 @@ describe('Library', function () {
   it('should accept a lib name with file extension', function() {
     var lib = process.platform == 'win32'
       ? 'msvcrt.dll'
-      : 'libm' + LIB_EXT
+      : 'libm' + ffi.LIB_EXT
     var libm = new Library(lib, {
       'ceil': [ 'double', ['double'] ]
     })

@@ -1,8 +1,8 @@
 
 var assert = require('assert')
   , ref = require('ref')
-  , errno = require('../lib/errno')
-  , Library = require('../lib/library')
+  , ffi = require('../')
+  , errno = ffi.errno
   , charPtr = ref.refType(ref.types.char)
 
 describe('errno()', function () {
@@ -15,7 +15,7 @@ describe('errno()', function () {
 
   it('should set the errno with out-of-range "strtoul" value', function () {
     var lib = process.platform == 'win32' ? 'msvcrt' : 'libc'
-    var strtoul = new Library(lib, {
+    var strtoul = new ffi.Library(lib, {
       'strtoul': [ 'ulong', [ 'string', charPtr, 'int' ] ]
     }).strtoul
     var before = errno()
