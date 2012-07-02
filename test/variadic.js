@@ -21,7 +21,7 @@ describe('variadic arguments', function () {
     snprintfGen('double')(buf, buf.length, '%10.2f', 3.14)
     assert.equal(buf.readCString(), '      3.14')
 
-    snprintfGen(ref.types.Utf8String)(buf, buf.length, ' %s ', 'test')
+    snprintfGen('string')(buf, buf.length, ' %s ', 'test')
     assert.equal(buf.readCString(), ' test ')
   })
 
