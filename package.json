@@ -19,7 +19,7 @@
   , "mocha": "*"
   }
 , "scripts": {
-    "test": "cd test && node-gyp rebuild && mocha -gc --reporter spec *.js"
+    "test": "node-gyp rebuild --directory test && mocha -gc --reporter spec"
   }
 , "repository": {
     "type": "git"
