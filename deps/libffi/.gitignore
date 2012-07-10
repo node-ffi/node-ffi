@@ -4,6 +4,9 @@
 *.lo
 .dirstamp
 *.la
+*.pdb
+*.obj
+*.asm
 Makefile
 config.log
 config.status
@@ -17,3 +20,4 @@ stamp-h1
 libffi*gz
 autom4te.cache
 node_ffi_configure.out
+node_ffi_build.out
