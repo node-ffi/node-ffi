@@ -2,6 +2,10 @@
 
 cd deps/libffi
 if [ "x$OSTYPE" = "xmsys" ]; then
+  if [ "x$MOZILLABUILA" = "x" ]; then
+    echo "FATAL: node-ffi must be installed from within a MozillaBuild window" >&2
+    exit 1
+  fi
   export CC="`pwd`/msvcc.sh"
   export LD="link"
   export CPP="cl -nologo -EP"
