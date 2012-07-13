@@ -1,4 +1,12 @@
 
+1.0.3 / 2012-07-9
+=================
+
+ - refactor the README
+ - fix deprecation warning for using the `Utf8String` type (renamed to `CString`)
+ - remove circular `require()` calls (Justin Freitag)
+ - use the node-gyp `--directory` flag for `npm test` command
+
 1.0.2 / 2012-06-20
 ==================
 
