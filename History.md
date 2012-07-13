@@ -1,4 +1,9 @@
 
+1.0.4 / 2012-07-12
+==================
+
+ - exit early when not compiling from within a MozillaBuild window on Windows
+
 1.0.3 / 2012-07-9
 =================
 
