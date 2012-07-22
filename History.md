@@ -1,4 +1,9 @@
 
+1.0.6 / 2012-07-22
+==================
+
+ - VariadicForeignFunction: apply a tweak to prevent false positives on ffi id's
+
 1.0.5 / 2012-07-22
 ==================
 
