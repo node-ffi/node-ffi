@@ -1,4 +1,12 @@
 
+1.0.5 / 2012-07-22
+==================
+
+ - DynamicLibrary: use 'string' instead of "char *"
+ - DynamicLibrary: set the "name" property of the returned Buffer when get() is called
+ - test: add some "DynamicLibrary" tests
+ - VariadicForeignFunction: quick hack fix for the key caching name collision
+
 1.0.4 / 2012-07-12
 ==================
 
