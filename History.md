@@ -1,4 +1,10 @@
 
+1.0.7 / 2012-08-03
+==================
+
+ - export `FFI_FIRST_ABI`
+ - export abi_enum values for ARM processors (100% tests passing on Raspberry Pi!)
+
 1.0.6 / 2012-07-22
 ==================
 
