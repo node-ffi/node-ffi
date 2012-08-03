@@ -54,6 +54,7 @@ void FFI::InitializeBindings(Handle<Object> target) {
 
   // `ffi_abi` enum values
   SET_ENUM_VALUE(FFI_DEFAULT_ABI);
+  SET_ENUM_VALUE(FFI_FIRST_ABI);
   SET_ENUM_VALUE(FFI_LAST_ABI);
   /* ---- Intel x86 Win32 ---------- */
 #ifdef X86_WIN32
