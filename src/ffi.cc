@@ -56,8 +56,12 @@ void FFI::InitializeBindings(Handle<Object> target) {
   SET_ENUM_VALUE(FFI_DEFAULT_ABI);
   SET_ENUM_VALUE(FFI_FIRST_ABI);
   SET_ENUM_VALUE(FFI_LAST_ABI);
+  /* ---- ARM processors ---------- */
+#ifdef __arm__
+  SET_ENUM_VALUE(FFI_SYSV);
+  SET_ENUM_VALUE(FFI_VFP);
   /* ---- Intel x86 Win32 ---------- */
-#ifdef X86_WIN32
+#elif defined(X86_WIN32)
   SET_ENUM_VALUE(FFI_SYSV);
   SET_ENUM_VALUE(FFI_STDCALL);
   SET_ENUM_VALUE(FFI_THISCALL);
