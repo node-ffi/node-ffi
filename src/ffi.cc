@@ -90,8 +90,8 @@ void FFI::InitializeBindings(Handle<Object> target) {
 
   Local<Object> ftmap = Object::New();
   ftmap->Set(String::NewSymbol("void"),     WrapPointer((char *)&ffi_type_void));
-  ftmap->Set(String::NewSymbol("int8"),     WrapPointer((char *)&ffi_type_sint8));
   ftmap->Set(String::NewSymbol("uint8"),    WrapPointer((char *)&ffi_type_uint8));
+  ftmap->Set(String::NewSymbol("int8"),     WrapPointer((char *)&ffi_type_sint8));
   ftmap->Set(String::NewSymbol("uint16"),   WrapPointer((char *)&ffi_type_uint16));
   ftmap->Set(String::NewSymbol("int16"),    WrapPointer((char *)&ffi_type_sint16));
   ftmap->Set(String::NewSymbol("uint32"),   WrapPointer((char *)&ffi_type_uint32));
@@ -301,19 +301,19 @@ void FFI::AsyncFFICall(uv_work_t *req) {
   char *argv = Buffer::Data(p->argv);
 
 #if __OBJC__ || __OBJC2__
-    @try {
+  @try {
 #endif
-      ffi_call(
-          (ffi_cif *)cif,
-          FFI_FN(fn),
-          (void *)res,
-          (void **)argv
-        );
+    ffi_call(
+      (ffi_cif *)cif,
+      FFI_FN(fn),
+      (void *)res,
+      (void **)argv
+    );
 #if __OBJC__ || __OBJC2__
-    } @catch (id ex) {
-      p->result = FFI_ASYNC_ERROR;
-      p->err = (char *)ex;
-    }
+  } @catch (id ex) {
+    p->result = FFI_ASYNC_ERROR;
+    p->err = (char *)ex;
+  }
 #endif
 }
 
