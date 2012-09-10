@@ -6,7 +6,6 @@
 *.Makefile
 *.target.gyp.mk
 build
-out
 Release
 Debug
 node_modules
