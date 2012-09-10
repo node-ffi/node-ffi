@@ -59,8 +59,8 @@
               'action': [
                 # run libffi `make`
                 'sh', 'libffi-build.sh'
-             ]
-           }]
+              ]
+            }]
           ]
         }
       ]
