@@ -82,12 +82,23 @@
         ],
       },
       'conditions': [
-        ['OS=="mac"', {
+        ['target_arch=="arm"', {
+        }, { # ia32 or x64
           'sources': [
             'src/x86/ffi.c',
             'src/x86/ffi64.c',
+          ]
+        }],
+        ['OS=="mac"', {
+          'sources': [
             'src/x86/darwin.S',
             'src/x86/darwin64.S',
+          ]
+        }],
+        ['OS=="linux"', {
+          'sources': [
+            'src/x86/unix64.S',
+            'src/x86/sysv.S'
           ]
         }]
       ]
