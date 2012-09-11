@@ -104,7 +104,7 @@
             ['OS=="win"', {
               'conditions': [
                 ['target_arch=="ia32"', {
-                  'sources': [ 'src/x86/win32.S' ]
+                  'sources': [ 'src/x86/win32.S' ],
                   'sources!': [ 'src/x86/ffi64.c' ]
                 }, { # target_arch=="x64"
                   'sources': [ 'src/x86/win64.S' ]
