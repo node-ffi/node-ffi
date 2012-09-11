@@ -47,7 +47,31 @@
     ],
   },
 
-
+  # Compile .S files on Windows. Not sure why gyp doesn't do this automatically.
+  # This assembler "rule" block is from "gyp/test/assembly/src/assembly.gyp".
+  'conditions': [
+    ['OS=="win"', {
+      'target_defaults': {
+        'rules': [
+          {
+            'rule_name': 'assembler',
+            'msvs_cygwin_shell': 0,
+            'extension': 'S',
+            'inputs': [
+              'as.bat',
+            ],
+            'outputs': [
+              '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).obj',
+            ],
+            'action':
+              ['as.bat', 'lib1.c', '<(_outputs)'],
+            'message': 'Building assembly file <(RULE_INPUT_PATH)',
+            'process_outputs_as_sources': 1,
+          },
+        ],
+      },
+    }],
+  ],
 
   'targets': [
     {
