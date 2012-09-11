@@ -47,11 +47,17 @@
     ],
   },
 
-  # Compile .S files on Windows. Not sure why gyp doesn't do this automatically.
-  # This assembler "rule" block is from "gyp/test/assembly/src/assembly.gyp".
+  # Compile .asm files on Windows
   'conditions': [
     ['OS=="win"', {
       'target_defaults': {
+        'conditions': [
+          ['target_arch=="ia32"', {
+            'variables': { 'ml': ['ml', '/nologo', '/safeseh' ] }
+          }, {
+            'variables': { 'ml': ['ml64', '/nologo' ] }
+          }]
+        ],
         'rules': [
           {
             'rule_name': 'assembler',
@@ -64,7 +70,7 @@
               '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).obj',
             ],
             'action': [
-              'ml', '/nologo', '/safeseh', '/c', '/Fo<(_outputs)', '<(RULE_INPUT_PATH)'
+              '<@(ml)', '/c', '/Fo<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).obj', '<(RULE_INPUT_PATH)'
             ],
             'message': 'Building assembly file <(RULE_INPUT_PATH)',
             'process_outputs_as_sources': 1,
@@ -127,10 +133,11 @@
               ]
             }],
             ['OS=="win"', {
+              # the ffi64.c file is never compiled on Windows
+              'sources!': [ 'src/x86/ffi64.c' ],
               'conditions': [
                 ['target_arch=="ia32"', {
-                  'sources': [ 'src/x86/win32.asm' ],
-                  'sources!': [ 'src/x86/ffi64.c' ]
+                  'sources': [ 'src/x86/win32.asm' ]
                 }, { # target_arch=="x64"
                   'sources': [ 'src/x86/win64.asm' ]
                 }]
