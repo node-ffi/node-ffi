@@ -95,7 +95,7 @@
             'src/x86/darwin64.S',
           ]
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="solaris"', {
           'sources': [
             'src/x86/unix64.S',
             'src/x86/sysv.S'
