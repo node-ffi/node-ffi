@@ -83,24 +83,36 @@
       },
       'conditions': [
         ['target_arch=="arm"', {
+          'sources': [
+            'src/arm/ffi.c'
+          ],
+          'conditions': [
+            ['OS=="linux"', {
+              'sources': [
+                'src/arm/sysv.S'
+              ]
+            }]
+          ]
         }, { # ia32 or x64
           'sources': [
             'src/x86/ffi.c',
-            'src/x86/ffi64.c',
+            'src/x86/ffi64.c'
+          ],
+          'conditions': [
+            ['OS=="mac"', {
+              'sources': [
+                'src/x86/darwin.S',
+                'src/x86/darwin64.S'
+              ]
+            }],
+            ['OS=="linux" or OS=="solaris"', {
+              'sources': [
+                'src/x86/unix64.S',
+                'src/x86/sysv.S'
+              ]
+            }]
           ]
         }],
-        ['OS=="mac"', {
-          'sources': [
-            'src/x86/darwin.S',
-            'src/x86/darwin64.S',
-          ]
-        }],
-        ['OS=="linux" or OS=="solaris"', {
-          'sources': [
-            'src/x86/unix64.S',
-            'src/x86/sysv.S'
-          ]
-        }]
       ]
     },
 
