@@ -56,15 +56,16 @@
           {
             'rule_name': 'assembler',
             'msvs_cygwin_shell': 0,
-            'extension': 'S',
+            'extension': 'asm',
             'inputs': [
               'as.bat',
             ],
             'outputs': [
               '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).obj',
             ],
-            'action':
-              ['as.bat', 'lib1.c', '<(_outputs)'],
+            'action': [
+              'ml', '/nologo', '/safeseh', '/c', '/Fo<(_outputs)', '<(RULE_INPUT_PATH)'
+            ],
             'message': 'Building assembly file <(RULE_INPUT_PATH)',
             'process_outputs_as_sources': 1,
           },
@@ -128,10 +129,10 @@
             ['OS=="win"', {
               'conditions': [
                 ['target_arch=="ia32"', {
-                  'sources': [ 'src/x86/win32.S' ],
+                  'sources': [ 'src/x86/win32.asm' ],
                   'sources!': [ 'src/x86/ffi64.c' ]
                 }, { # target_arch=="x64"
-                  'sources': [ 'src/x86/win64.S' ]
+                  'sources': [ 'src/x86/win64.asm' ]
                 }]
               ]
             }],
