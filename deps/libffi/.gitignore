@@ -6,7 +6,6 @@
 *.la
 *.pdb
 *.obj
-*.asm
 Makefile
 config.log
 config.status
