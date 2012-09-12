@@ -1,4 +1,12 @@
 
+1.1.0 / 2012-09-11
+==================
+
+ - properly "gyp-ify" libffi
+   - added "libffi.gyp"
+   - no more "hacks" in binding.gyp
+   - no need for MozillaBuild on Windows anymore!
+
 1.0.7 / 2012-08-03
 ==================
 
