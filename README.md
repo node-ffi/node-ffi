@@ -2,8 +2,6 @@ node-ffi
 ========
 ### Node.js Foreign Function Interface [![Build Status](https://secure.travis-ci.org/rbranson/node-ffi.png)](http://travis-ci.org/rbranson/node-ffi)
 
-## Attention node-ffi users! v1.0 has been released! See the [API changes page][v1apichanges].
-
 `node-ffi` is a Node.js addon for loading and calling dynamic libraries using
 pure JavaScript. It can be used to create bindings to native libraries without
 writing any C++ code.
@@ -16,7 +14,6 @@ for an example of this use case.
 **WARNING**: node-ffi assumes you know what you're doing. You can pretty easily
 create situations where you will segfault the interpreter and unless you've got
 C debugger skills, you probably won't know what's going on.
-
 
 Example
 -------
@@ -38,7 +35,6 @@ current.atoi('1234'); // 1234
 
 For a more detailed introduction, see the [node-ffi tutorial page][tutorial].
 
-
 Requirements
 ------------
 
@@ -46,17 +42,12 @@ Requirements
  * `libffi` comes bundled with node-ffi; it does *not* need to be installed on your system.
  * The current version is tested to run on node v0.6, v0.7, and v0.8.
 
-
 Installation
 ------------
 
 ``` bash
 $ npm install ffi
 ```
-
-__Note:__ When installing on Windows, you'll need to invoke `npm install ffi` from
-within a [Mozilla Build](https://wiki.mozilla.org/MozillaBuild) ([direct
-link](http://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe)) command window.
 
 Source Install / Manual Compilation
 -----------------------------------
@@ -73,9 +64,8 @@ Now you can compile `node-ffi`:
 ``` bash
 $ git clone git://github.com/rbranson/node-ffi.git
 $ cd node-ffi
-$ node-gyp configure build
+$ node-gyp rebuild
 ```
-
 
 Types
 -----
@@ -83,7 +73,6 @@ Types
 The types that you specify in function declarations correspond to ref's types
 system. So [see its docs][ref-types] for
 a reference if you are unfamiliar.
-
 
 V8 and 64-bit Types
 -------------------
