@@ -45,6 +45,10 @@ Requirements
 Installation
 ------------
 
+Make sure you've installed all the [necessary build
+tools](https://github.com/TooTallNate/node-gyp#installation) for your platform,
+then invoke:
+
 ``` bash
 $ npm install ffi
 ```
