@@ -159,6 +159,13 @@
       'type': 'executable',
       'dependencies': [ 'ffi' ],
       'sources': [ 'test.c' ]
+    },
+
+    {
+      'target_name': 'closure-test',
+      'type': 'executable',
+      'dependencies': [ 'ffi' ],
+      'sources': [ 'closure.c' ]
     }
   ]
 }
