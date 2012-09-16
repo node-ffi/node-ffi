@@ -40,8 +40,15 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
 
   TryCatch try_catch;
 
-  // invoke the registered callback function
-  info->function->Call(Context::GetCurrent()->Global(), 2, argv);
+  if (*info->function == NULL) {
+    // throw an error instead of segfaulting.
+    // see: https://github.com/rbranson/node-ffi/issues/72
+    ThrowException(Exception::Error(
+          String::New("ffi fatal: callback has been garbage collected!")));
+  } else {
+    // invoke the registered callback function
+    info->function->Call(Context::GetCurrent()->Global(), 2, argv);
+  }
 
   if (try_catch.HasCaught()) {
     FatalException(try_catch);

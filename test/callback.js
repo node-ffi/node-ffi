@@ -91,6 +91,39 @@ describe('Callback', function () {
       }
     })
 
+    it('should throw an Error when inoked after the callback gets garbage collected', function (done) {
+      var cb = ffi.Callback('void', [ ], function () {})
+
+      // register the callback function
+      bindings.set_cb(cb)
+
+      // should be ok
+      bindings.call_cb()
+
+      // hijack the "uncaughtException" event for this test
+      var listeners = process.listeners('uncaughtException').slice()
+      process.removeAllListeners('uncaughtException')
+      process.once('uncaughtException', function (e) {
+        assert(/ffi/.test(e.message))
+        listeners.forEach(process.emit.bind(process, 'uncaughtException'))
+        done()
+      })
+
+      cb = null // KILL!!
+      gc()
+
+      // should throw an Error directly
+      try {
+        bindings.call_cb()
+        assert(false) // shouldn't get here
+      } catch (e) {
+        assert(/ffi/.test(e.message))
+      }
+
+      // should generate an "uncaughtException" asynchronously
+      bindings.call_cb_async()
+    })
+
   })
 
 })
