@@ -1,4 +1,10 @@
 
+1.1.1 / 2012-09-16
+==================
+
+ - libffi: define "FFI_MMAP_EXEC_WRIT" on OS X (#71)
+ - added a new test case that calls a callback function directly (#72)
+
 1.1.0 / 2012-09-11
 ==================
 
