@@ -162,8 +162,14 @@ void Initialize(Handle<Object> target) {
   target->Set(String::NewSymbol("abs"),  WrapPointer((char *)absPtr));
 
   // snprintf pointer; used in the varadic tests
+#ifdef _WIN32
+  // Windows has multiple `_snprintf_s` signatures, so we need to manually disambiguate
+  int (*snprintfPtr)(char*, size_t, size_t, const char*)(snprintf);
+  target->Set(String::NewSymbol("snprintf"),  WrapPointer((char *)snprintfPtr));
+#else
   target->Set(String::NewSymbol("snprintf"),  WrapPointer((char *)snprintf));
-
+#endif
+  
   // hard-coded `strtoul` binding, for the benchmarks
   NODE_SET_METHOD(target, "strtoul", Strtoul);
 
