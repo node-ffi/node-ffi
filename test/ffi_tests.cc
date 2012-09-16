@@ -3,10 +3,6 @@
 #include "node.h"
 #include "node_buffer.h"
 
-#ifdef _WIN32
-  #define snprintf _snprintf_s
-#endif
-
 using namespace v8;
 using namespace node;
 
@@ -179,8 +175,8 @@ void Initialize(Handle<Object> target) {
   int (*absPtr)(int)(abs);
   target->Set(String::NewSymbol("abs"),  WrapPointer((char *)absPtr));
 
-  // snprintf pointer; used in the varadic tests
-  target->Set(String::NewSymbol("snprintf"),  WrapPointer((char *)snprintf));
+  // sprintf pointer; used in the varadic tests
+  target->Set(String::NewSymbol("sprintf"),  WrapPointer((char *)sprintf));
 
   // hard-coded `strtoul` binding, for the benchmarks
   NODE_SET_METHOD(target, "strtoul", Strtoul);

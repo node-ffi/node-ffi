@@ -2,7 +2,7 @@
 var assert = require('assert')
   , ref = require('ref')
   , ffi = require('../')
-  , snprintfPtr = require('./build/Release/ffi_tests').snprintf
+  , sprintfPtr = require('./build/Release/ffi_tests').sprintf
 
 describe('variadic arguments', function () {
 
@@ -10,26 +10,26 @@ describe('variadic arguments', function () {
 
   it('should work with vararg C functions', function () {
     var buf = new Buffer(100)
-    var snprintfGen = ffi.VariadicForeignFunction(snprintfPtr, 'int', [ 'pointer', 'size_t', 'string' ])
+    var sprintfGen = ffi.VariadicForeignFunction(sprintfPtr, 'int', [ 'pointer', 'string' ])
 
-    snprintfGen()(buf, buf.length, 'hello world!')
+    sprintfGen()(buf, 'hello world!')
     assert.equal(buf.readCString(), 'hello world!')
 
-    snprintfGen('int')(buf, buf.length, '%d', 42)
+    sprintfGen('int')(buf, '%d', 42)
     assert.equal(buf.readCString(), '42')
 
-    snprintfGen('double')(buf, buf.length, '%10.2f', 3.14)
+    sprintfGen('double')(buf, '%10.2f', 3.14)
     assert.equal(buf.readCString(), '      3.14')
 
-    snprintfGen('string')(buf, buf.length, ' %s ', 'test')
+    sprintfGen('string')(buf, ' %s ', 'test')
     assert.equal(buf.readCString(), ' test ')
   })
 
   it('should return the same Function instance when the same arguments are used', function () {
-    var snprintfGen = ffi.VariadicForeignFunction(snprintfPtr, 'int', [ 'pointer', 'size_t', 'string' ])
+    var sprintfGen = ffi.VariadicForeignFunction(sprintfPtr, 'int', [ 'pointer', 'string' ])
 
-    var one = snprintfGen('int')
-    var two = snprintfGen(ref.types.int)
+    var one = sprintfGen('int')
+    var two = sprintfGen(ref.types.int)
 
     assert.strictEqual(one, two)
   })
