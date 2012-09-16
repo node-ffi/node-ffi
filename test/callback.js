@@ -50,7 +50,16 @@ describe('Callback', function () {
       bindings.call_cb()
       assert.equal(1, invokeCount)
 
-      process.nextTick(done)
+      setTimeout(function () {
+        gc() // collect the "cb" Buffer
+        setTimeout(finish, 500)
+      }, 500)
+
+      function finish () {
+        bindings.call_cb()
+        assert.equal(2, invokeCount)
+        done()
+      }
     })
 
   })
