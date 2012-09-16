@@ -116,6 +116,30 @@ Handle<Value> Strtoul(const Arguments &args) {
 }
 
 
+// experiments for #72
+typedef void (*cb)(void);
+
+static cb callback = NULL;
+
+Handle<Value> SetCb(const Arguments &args) {
+  HandleScope scope;
+  char *buf = Buffer::Data(args[0].As<Object>());
+  callback = (cb)buf;
+  return scope.Close(Undefined());
+}
+
+Handle<Value> CallCb(const Arguments &args) {
+  if (callback == NULL) {
+    return ThrowException(Exception::Error(String::New("you must call \"set_cb()\" first")));
+  } else {
+    callback();
+  }
+  return Undefined();
+}
+
+
+
+
 void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
 }
@@ -142,6 +166,9 @@ void Initialize(Handle<Object> target) {
 
   // hard-coded `strtoul` binding, for the benchmarks
   NODE_SET_METHOD(target, "strtoul", Strtoul);
+
+  NODE_SET_METHOD(target, "set_cb", SetCb);
+  NODE_SET_METHOD(target, "call_cb", CallCb);
 
   // also need to test these custom functions
   target->Set(String::NewSymbol("double_box"), WrapPointer((char *)double_box));

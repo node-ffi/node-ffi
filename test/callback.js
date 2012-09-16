@@ -3,6 +3,7 @@ var assert = require('assert')
   , ref = require('ref')
   , ffi = require('../')
   , int = ref.types.int
+  , bindings = require('bindings')({ module_root: __dirname, bindings: 'ffi_tests' })
 
 describe('Callback', function () {
 
@@ -27,13 +28,29 @@ describe('Callback', function () {
 
   describe('async', function () {
 
-    it('should be invokable asynchronously by an ffi\'d ForeignFunction', function () {
+    it('should be invokable asynchronously by an ffi\'d ForeignFunction', function (done) {
       var funcPtr = ffi.Callback(int, [ int ], Math.abs)
       var func = ffi.ForeignFunction(funcPtr, int, [ int ])
       func.async(-9999, function (err, res) {
         assert.equal(null, err)
         assert.equal(9999, res)
+        done()
       })
+    })
+
+    it('should work being invoked multiple times', function (done) {
+      var invokeCount = 0
+      var cb = ffi.Callback('void', [ ], function () {
+        invokeCount++
+      })
+
+      bindings.set_cb(cb)
+      assert.equal(0, invokeCount)
+
+      bindings.call_cb()
+      assert.equal(1, invokeCount)
+
+      process.nextTick(done)
     })
 
   })
