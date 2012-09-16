@@ -4,7 +4,7 @@ var expect = require('expect.js')
   , ref = require('ref')
   , Struct = require('ref-struct')
   , ffi = require('../')
-  , bindings = require('./build/Release/ffi_tests')
+  , bindings = require('bindings')({ module_root: __dirname, bindings: 'ffi_tests' })
 
 describe('ForeignFunction', function () {
 
