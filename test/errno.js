@@ -17,9 +17,7 @@ describe('errno()', function () {
     var strtoul = new ffi.Library(lib, {
       'strtoul': [ 'ulong', [ 'string', 'string', 'int' ] ]
     }).strtoul
-    var before = errno()
     strtoul('1234567890123456789012345678901234567890', null, 0)
-    assert.notEqual(before, errno())
     assert.equal(34, errno()) // errno == ERANGE
   })
 
