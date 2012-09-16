@@ -45,8 +45,11 @@ describe('Callback', function () {
       })
 
       bindings.set_cb(cb)
-      assert.equal(0, invokeCount)
 
+      // kill all references to "cb"
+      cb = null
+
+      assert.equal(0, invokeCount)
       bindings.call_cb()
       assert.equal(1, invokeCount)
 
