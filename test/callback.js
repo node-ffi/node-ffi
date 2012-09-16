@@ -38,29 +38,55 @@ describe('Callback', function () {
       })
     })
 
+    /**
+     * See https://github.com/rbranson/node-ffi/issues/72.
+     * This is a tough issue. If we pass the ffi_closure Buffer to some foreign
+     * C function, we really don't know *when* it's safe to dispose of the Buffer,
+     * so it's left up to the developer.
+     *
+     * In this case, we wrap the responsibility in a simple "kill()" function
+     * that, when called, destroys of its references to the ffi_closure Buffer.
+     */
+
     it('should work being invoked multiple times', function (done) {
       var invokeCount = 0
       var cb = ffi.Callback('void', [ ], function () {
         invokeCount++
       })
 
-      bindings.set_cb(cb)
+      var kill = (function (cb) {
+        // register the callback function
+        bindings.set_cb(cb)
+        return function () {
+          var c = cb
+          cb = null // kill
+          c = null // kill!!!
+        }
+      })(cb)
 
-      // kill all references to "cb"
+      // destroy the outer "cb". now "kill()" holds the "cb" reference
       cb = null
 
+      // invoke the callback a couple times
       assert.equal(0, invokeCount)
       bindings.call_cb()
       assert.equal(1, invokeCount)
+      bindings.call_cb()
+      assert.equal(2, invokeCount)
 
       setTimeout(function () {
-        gc() // collect the "cb" Buffer
-        setTimeout(finish, 500)
-      }, 500)
+        // invoke it once more for shits and giggles
+        bindings.call_cb()
+        assert.equal(3, invokeCount)
+
+        gc() // ensure the outer "cb" Buffer is collected
+        setTimeout(finish, 100)
+      }, 100)
 
       function finish () {
         bindings.call_cb()
-        assert.equal(2, invokeCount)
+        assert.equal(4, invokeCount)
+        kill()
         done()
       }
     })
