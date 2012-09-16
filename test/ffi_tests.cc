@@ -137,6 +137,24 @@ Handle<Value> CallCb(const Arguments &args) {
   return Undefined();
 }
 
+void AsyncCbCall(uv_work_t *req) {
+  callback();
+}
+
+void FinishAsyncCbCall(uv_work_t *req) {
+  // nothing
+  delete req;
+}
+
+Handle<Value> CallCbAsync(const Arguments &args) {
+  if (callback == NULL) {
+    return ThrowException(Exception::Error(String::New("you must call \"set_cb()\" first")));
+  } else {
+    uv_work_t *req = new uv_work_t;
+    uv_queue_work(uv_default_loop(), req, AsyncCbCall, FinishAsyncCbCall);
+  }
+  return Undefined();
+}
 
 
 
@@ -169,6 +187,7 @@ void Initialize(Handle<Object> target) {
 
   NODE_SET_METHOD(target, "set_cb", SetCb);
   NODE_SET_METHOD(target, "call_cb", CallCb);
+  NODE_SET_METHOD(target, "call_cb_async", CallCbAsync);
 
   // also need to test these custom functions
   target->Set(String::NewSymbol("double_box"), WrapPointer((char *)double_box));
