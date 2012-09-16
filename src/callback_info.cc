@@ -39,7 +39,15 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
   argv[1] = WrapPointer((char *)parameters, sizeof(char *) * info->argc);
 
   TryCatch try_catch;
-
+  
+  if (*info->function == NULL) {
+    // callback function has been gc'd, the call to info->function->Call
+    // will result in a segfault which cannot be avoided. It's the
+    // responsibility of the JavaScript callee to keep a reference to
+    // its callback around until it knows the foreign code is done with it.
+    fprintf(stderr, "FATAL ERROR - ffi callback has been garbage-collected\n");
+  }
+  
   // invoke the registered callback function
   info->function->Call(Context::GetCurrent()->Global(), 2, argv);
 
