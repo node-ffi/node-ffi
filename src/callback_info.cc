@@ -40,7 +40,7 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
 
   TryCatch try_catch;
 
-  if (*info->function == NULL) {
+  if (info->function.IsEmpty()) {
     // throw an error instead of segfaulting.
     // see: https://github.com/rbranson/node-ffi/issues/72
     ThrowException(Exception::Error(
