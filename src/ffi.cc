@@ -16,9 +16,10 @@ Handle<Value> WrapPointer(char *ptr) {
 }
 
 Handle<Value> WrapPointer(char *ptr, size_t length) {
+  HandleScope scope;
   void *user_data = NULL;
   Buffer *buf = Buffer::New(ptr, length, wrap_pointer_cb, user_data);
-  return buf->handle_;
+  return scope.Close(buf->handle_);
 }
 
 ///////////////
