@@ -1,4 +1,10 @@
 
+1.1.2 / 2012-09-16
+==================
+
+ - callback: throw an Error if the callback function has been garbage collected
+ - test: 100% tests passing on Windows!
+
 1.1.1 / 2012-09-16
 ==================
 
