@@ -2,7 +2,8 @@
 var assert = require('assert')
   , ref = require('ref')
   , ffi = require('../')
-  , sprintfPtr = require('./build/Release/ffi_tests').sprintf
+  , bindings = require('bindings')({ module_root: __dirname, bindings: 'ffi_tests' })
+  , sprintfPtr = bindings.sprintf
 
 describe('variadic arguments', function () {
 
