@@ -22,7 +22,7 @@ var func = ffi.ForeignFunction(funcPtr, 'int', [ 'int' ])
 
 function loop() {
   for (var i = 0; i < 100; i++) {
-    assert.equal(1234, func(-1234))
+    assert.equal(Math.abs(-i), func(-i))
   }
   process.nextTick(loop)
 }
