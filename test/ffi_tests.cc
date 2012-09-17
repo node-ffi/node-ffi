@@ -168,6 +168,13 @@ Handle<Object> WrapPointer(char *ptr) {
 void Initialize(Handle<Object> target) {
   HandleScope scope;
 
+#if WIN32
+  // initialize "floating point support" on Windows?!?!
+  // (this is some serious bullshit...)
+  // http://support.microsoft.com/kb/37507
+  float x = 2.3f;
+#endif
+
   // atoi and abs here for testing purposes
   target->Set(String::NewSymbol("atoi"), WrapPointer((char *)atoi));
 
