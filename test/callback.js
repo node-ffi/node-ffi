@@ -91,7 +91,7 @@ describe('Callback', function () {
       }
     })
 
-    it('should throw an Error when inoked after the callback gets garbage collected', function (done) {
+    it('should throw an Error when invoked after the callback gets garbage collected', function (done) {
       var cb = ffi.Callback('void', [ ], function () {})
 
       // register the callback function
