@@ -133,6 +133,9 @@
               ]
             }],
             ['OS=="win"', {
+              # the libffi dlmalloc.c file has a bunch of implicit conversion
+              # warnings, and the main ffi.c file contains one, so silence them
+              'msvs_disabled_warnings': [ 4267 ],
               # the ffi64.c file is never compiled on Windows
               'sources!': [ 'src/x86/ffi64.c' ],
               'conditions': [
