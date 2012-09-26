@@ -1,4 +1,14 @@
 
+1.1.3 / 2012-09-25
+==================
+
+ - callback: use `IsEmpty()` instead of an explicit NULL check
+ - test: use "bindings" to load the bindings for the variadic tests
+ - ffi: use HandleScope in WrapPointer() (fixes ffi calls in a tight loop, see #74)
+ - test: fix typo in test name
+ - libffi: disable the C4267 implicit conversion warnings on Windows
+ - libffi: remove "as.bat" from the gyp file
+
 1.1.2 / 2012-09-16
 ==================
 
