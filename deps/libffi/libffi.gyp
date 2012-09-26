@@ -64,7 +64,6 @@
             'msvs_cygwin_shell': 0,
             'extension': 'asm',
             'inputs': [
-              'as.bat',
             ],
             'outputs': [
               '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).obj',
