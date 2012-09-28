@@ -129,11 +129,17 @@ describe('ForeignFunction', function () {
     assert.equal(20, a.array.length)
     a.num = 69
     for (var i = 0; i < 20; i++) {
-      a.array[i] = i / 10;
+      a.array[i] = i / 3.14;
     }
 
     var b = array_in_struct(a)
     assert(b instanceof arst)
+    assert.equal(138, b.num)
+    assert.equal(20, b.array.length)
+    for (var i = 0; i < 20; i++) {
+      // Math.round() because of floating point rounding erros
+      assert.equal(i, Math.round(b.array[i]))
+    }
   })
 
   describe('async', function () {
