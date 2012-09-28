@@ -142,6 +142,13 @@ describe('ForeignFunction', function () {
     }
   })
 
+  it('should not call the "ref()" function of its arguments', function () {
+    var void_ptr_arg = ffi.ForeignFunction(bindings.abs, 'void *', [ 'void *' ])
+    var b = new Buffer(0)
+    b.ref = assert.bind(null, 0, '"ref()" should not be called')
+    void_ptr_arg(b)
+  })
+
   describe('async', function () {
 
     it('should call the static "abs" bindings asynchronously', function (done) {
