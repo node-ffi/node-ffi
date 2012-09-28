@@ -17,6 +17,7 @@
 , "devDependencies": {
     "expect.js": "*"
   , "mocha": "*"
+  , "ref-array": "*"
   }
 , "scripts": {
     "test": "node-gyp rebuild --directory test && mocha -gc --reporter spec"
