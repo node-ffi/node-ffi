@@ -110,7 +110,6 @@ struct arst {
 
 struct arst array_in_struct (struct arst input) {
   struct arst rtn;
-  printf("input.num: %d\n", input.num);
   rtn.num = input.num * 2;
   for (int i = 0; i < 20; i++) {
     rtn.array[i] = input.array[i] * 3.14;
