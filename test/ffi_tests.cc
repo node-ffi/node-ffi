@@ -86,6 +86,20 @@ box add_boxes(box boxes[], int num) {
 }
 
 /*
+ * Reads "ints" from the "input" array until a NULL pointer is found.
+ * Returns the number of elements in the array.
+ */
+
+int *int_array(int *input) {
+  int *array = input;
+  while (*array != -1){
+    *array = *array * 2;
+    array++;
+  }
+  return input;
+}
+
+/*
  * Hard-coded `strtoul` binding, for the benchmarks.
  *
  * args[0] - the string number to convert to a real Number
@@ -199,6 +213,7 @@ void Initialize(Handle<Object> target) {
   target->Set(String::NewSymbol("area_box_ptr"), WrapPointer((char *)area_box_ptr));
   target->Set(String::NewSymbol("create_box"), WrapPointer((char *)create_box));
   target->Set(String::NewSymbol("add_boxes"), WrapPointer((char *)add_boxes));
+  target->Set(String::NewSymbol("int_array"), WrapPointer((char *)int_array));
 }
 
 } // anonymous namespace

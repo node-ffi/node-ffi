@@ -2,6 +2,7 @@
 var expect = require('expect.js')
   , assert = require('assert')
   , ref = require('ref')
+  , Array = require('ref-array')
   , Struct = require('ref-struct')
   , ffi = require('../')
   , bindings = require('bindings')({ module_root: __dirname, bindings: 'ffi_tests' })
@@ -101,6 +102,20 @@ describe('ForeignFunction', function () {
     assert(rtn instanceof box)
     assert.equal(6, rtn.width)
     assert.equal(60, rtn.height)
+  })
+
+  it('should call the static "int_array" bindings', function () {
+    var IntArray = Array('int')
+    var int_array = ffi.ForeignFunction(bindings.int_array, IntArray, [ IntArray ])
+    var array = new IntArray([ 1, 2, 3, 4, 5, -1 ])
+    var out = int_array(array)
+    out.length = array.length
+    assert.equal(2, out[0])
+    assert.equal(4, out[1])
+    assert.equal(6, out[2])
+    assert.equal(8, out[3])
+    assert.equal(10, out[4])
+    assert.equal(-1, out[5])
   })
 
   describe('async', function () {
