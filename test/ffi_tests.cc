@@ -100,6 +100,25 @@ int *int_array(int *input) {
 }
 
 /*
+ * Tests for passing a Struct that contains Arrays inside of it.
+ */
+
+struct arst {
+  int num;
+  double array[20];
+};
+
+struct arst array_in_struct (struct arst input) {
+  struct arst rtn;
+  printf("input.num: %d\n", input.num);
+  rtn.num = input.num * 2;
+  for (int i = 0; i < 20; i++) {
+    rtn.array[i] = input.array[i] * 3.14;
+  }
+  return rtn;
+}
+
+/*
  * Hard-coded `strtoul` binding, for the benchmarks.
  *
  * args[0] - the string number to convert to a real Number
@@ -214,6 +233,7 @@ void Initialize(Handle<Object> target) {
   target->Set(String::NewSymbol("create_box"), WrapPointer((char *)create_box));
   target->Set(String::NewSymbol("add_boxes"), WrapPointer((char *)add_boxes));
   target->Set(String::NewSymbol("int_array"), WrapPointer((char *)int_array));
+  target->Set(String::NewSymbol("array_in_struct"), WrapPointer((char *)array_in_struct));
 }
 
 } // anonymous namespace

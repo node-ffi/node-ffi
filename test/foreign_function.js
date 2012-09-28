@@ -11,10 +11,15 @@ describe('ForeignFunction', function () {
 
   afterEach(gc)
 
-  // same struct as defined in ffi_tests.cc
+  // these structs are also defined in ffi_tests.cc
   var box = Struct({
       width: ref.types.int
     , height: ref.types.int
+  })
+
+  var arst = Struct({
+      num: 'int'
+    , array: Array('double', 20)
   })
 
   it('should call the static "abs" bindings', function () {
@@ -116,6 +121,19 @@ describe('ForeignFunction', function () {
     assert.equal(8, out[3])
     assert.equal(10, out[4])
     assert.equal(-1, out[5])
+  })
+
+  it('should call the static "array_in_struct" bindings', function () {
+    var array_in_struct = ffi.ForeignFunction(bindings.array_in_struct, arst, [ arst ])
+    var a = new arst
+    assert.equal(20, a.array.length)
+    a.num = 69
+    for (var i = 0; i < 20; i++) {
+      a.array[i] = i / 10;
+    }
+
+    var b = array_in_struct(a)
+    assert(b instanceof arst)
   })
 
   describe('async', function () {
