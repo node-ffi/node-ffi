@@ -26,6 +26,27 @@ describe('Callback', function () {
     assert.strictEqual(null, func())
   })
 
+  it('should throw an Error when invoked after the callback gets garbage collected', function () {
+    var cb = ffi.Callback('void', [ ], function () {})
+
+    // register the callback function
+    bindings.set_cb(cb)
+
+    // should be ok
+    bindings.call_cb()
+
+    cb = null // KILL!!
+    gc()
+
+    // should throw an Error synchronously
+    try {
+      bindings.call_cb()
+      assert(false) // shouldn't get here
+    } catch (e) {
+      assert(/ffi/.test(e.message))
+    }
+  })
+
   describe('async', function () {
 
     it('should be invokable asynchronously by an ffi\'d ForeignFunction', function (done) {
@@ -111,14 +132,6 @@ describe('Callback', function () {
 
       cb = null // KILL!!
       gc()
-
-      // should throw an Error directly
-      try {
-        bindings.call_cb()
-        assert(false) // shouldn't get here
-      } catch (e) {
-        assert(/ffi/.test(e.message))
-      }
 
       // should generate an "uncaughtException" asynchronously
       bindings.call_cb_async()
