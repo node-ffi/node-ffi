@@ -118,6 +118,16 @@ struct arst array_in_struct (struct arst input) {
 }
 
 /*
+ * Tests for C function pointers.
+ */
+
+typedef int (*my_callback)(int);
+
+my_callback callback_func (my_callback cb) {
+  return cb;
+}
+
+/*
  * Hard-coded `strtoul` binding, for the benchmarks.
  *
  * args[0] - the string number to convert to a real Number
@@ -233,6 +243,7 @@ void Initialize(Handle<Object> target) {
   target->Set(String::NewSymbol("add_boxes"), WrapPointer((char *)add_boxes));
   target->Set(String::NewSymbol("int_array"), WrapPointer((char *)int_array));
   target->Set(String::NewSymbol("array_in_struct"), WrapPointer((char *)array_in_struct));
+  target->Set(String::NewSymbol("callback_func"), WrapPointer((char *)callback_func));
 }
 
 } // anonymous namespace
