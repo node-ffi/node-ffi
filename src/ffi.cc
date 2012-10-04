@@ -38,7 +38,10 @@ void FFI::InitializeStaticFunctions(Handle<Object> target) {
 
 ///////////////
 
-#define SET_ENUM_VALUE(_value) target->Set(String::NewSymbol(#_value), Integer::New(_value), static_cast<PropertyAttribute>(ReadOnly|DontDelete))
+#define SET_ENUM_VALUE(_value) \
+  target->Set(String::NewSymbol(#_value), \
+              Integer::New((ssize_t)_value), \
+              static_cast<PropertyAttribute>(ReadOnly|DontDelete))
 
 void FFI::InitializeBindings(Handle<Object> target) {
 
@@ -77,6 +80,42 @@ void FFI::InitializeBindings(Handle<Object> target) {
   SET_ENUM_VALUE(FFI_UNIX64);
 #endif
 
+  /* flags for dlopen() */
+#ifdef RTLD_LAZY
+  SET_ENUM_VALUE(RTLD_LAZY);
+#endif
+#ifdef RTLD_NOW
+  SET_ENUM_VALUE(RTLD_NOW);
+#endif
+#ifdef RTLD_LOCAL
+  SET_ENUM_VALUE(RTLD_LOCAL);
+#endif
+#ifdef RTLD_GLOBAL
+  SET_ENUM_VALUE(RTLD_GLOBAL);
+#endif
+#ifdef RTLD_NOLOAD
+  SET_ENUM_VALUE(RTLD_NOLOAD);
+#endif
+#ifdef RTLD_NODELETE
+  SET_ENUM_VALUE(RTLD_NODELETE);
+#endif
+#ifdef RTLD_FIRST
+  SET_ENUM_VALUE(RTLD_FIRST);
+#endif
+
+  /* flags for dlsym() */
+#ifdef RTLD_NEXT
+  SET_ENUM_VALUE(RTLD_FIRST);
+#endif
+#ifdef RTLD_DEFAULT
+  SET_ENUM_VALUE(RTLD_DEFAULT);
+#endif
+#ifdef RTLD_SELF
+  SET_ENUM_VALUE(RTLD_SELF);
+#endif
+#ifdef RTLD_MAIN_ONLY
+  SET_ENUM_VALUE(RTLD_MAIN_ONLY);
+#endif
 
   target->Set(String::NewSymbol("FFI_ARG_SIZE"), Integer::New(sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
   target->Set(String::NewSymbol("FFI_SARG_SIZE"), Integer::New(sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
