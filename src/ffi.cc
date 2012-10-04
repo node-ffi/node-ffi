@@ -105,16 +105,16 @@ void FFI::InitializeBindings(Handle<Object> target) {
 
   /* flags for dlsym() */
 #ifdef RTLD_NEXT
-  SET_ENUM_VALUE(RTLD_FIRST);
+  target->Set(String::NewSymbol("RTLD_NEXT"), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_DEFAULT
-  SET_ENUM_VALUE(RTLD_DEFAULT);
+  target->Set(String::NewSymbol("RTLD_DEFAULT"), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_SELF
-  SET_ENUM_VALUE(RTLD_SELF);
+  target->Set(String::NewSymbol("RTLD_SELF"), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_MAIN_ONLY
-  SET_ENUM_VALUE(RTLD_MAIN_ONLY);
+  target->Set(String::NewSymbol("RTLD_MAIN_ONLY"), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 
   target->Set(String::NewSymbol("FFI_ARG_SIZE"), Integer::New(sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
