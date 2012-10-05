@@ -176,7 +176,8 @@ Handle<Value> CallCb(const Arguments &args) {
 }
 
 void AsyncCbCall(uv_work_t *req) {
-  callback();
+  cb c = (cb)req->data;
+  c();
 }
 
 void FinishAsyncCbCall(uv_work_t *req) {
@@ -189,6 +190,7 @@ Handle<Value> CallCbAsync(const Arguments &args) {
     return ThrowException(Exception::Error(String::New("you must call \"set_cb()\" first")));
   } else {
     uv_work_t *req = new uv_work_t;
+    req->data = (void *)callback;
     uv_queue_work(uv_default_loop(), req, AsyncCbCall, FinishAsyncCbCall);
   }
   return Undefined();
