@@ -145,8 +145,8 @@ describe('Callback', function () {
         assert.equal(3, invokeCount)
 
         gc() // ensure the outer "cb" Buffer is collected
-        setTimeout(finish, 100)
-      }, 100)
+        process.nextTick(finish)
+      }, 25)
 
       function finish () {
         bindings.call_cb()
