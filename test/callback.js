@@ -26,6 +26,30 @@ describe('Callback', function () {
     assert.strictEqual(null, func())
   })
 
+  it('should not call "set()" of a pointer type', function () {
+    var voidType = Object.create(ref.types.void);
+    voidType.get = function () {
+      throw new Error('"get()" should not be called');
+    }
+    voidType.set = function () {
+      throw new Error('"set()" should not be called');
+    }
+    var voidPtr = ref.refType(voidType)
+    var called = false
+    var cb = ffi.Callback(voidPtr, [ voidPtr ], function (ptr) {
+      called = true
+      assert.equal(0, ptr.address());
+      return ptr
+    });
+
+    var fn = ffi.ForeignFunction(cb, voidPtr, [ voidPtr ]);
+    assert(!called)
+    var nul = fn(ref.NULL);
+    assert(called)
+    assert(Buffer.isBuffer(nul))
+    assert.equal(0, nul.address())
+  })
+
   it('should throw an Error when invoked through a ForeignFunction and throws', function () {
     var cb = ffi.Callback('void', [ ], function () {
       throw new Error('callback threw')
