@@ -1,6 +1,5 @@
 
-var expect = require('expect.js')
-  , assert = require('assert')
+var assert = require('assert')
   , ref = require('ref')
   , Array = require('ref-array')
   , Struct = require('ref-struct')
@@ -25,15 +24,15 @@ describe('ForeignFunction', function () {
   it('should call the static "abs" bindings', function () {
     var _abs = bindings.abs
     var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
-    expect(abs).to.be.a('function')
-    expect(abs(-1234)).to.equal(1234)
+    assert.equal('function', typeof abs)
+    assert.equal(1234, abs(-1234))
   })
 
   it('should call the static "atoi" bindings', function () {
     var _atoi = bindings.atoi
     var atoi = ffi.ForeignFunction(_atoi, 'int', [ 'string' ])
-    expect(atoi).to.be.a('function')
-    expect(atoi('1234')).to.equal(1234)
+    assert.equal('function', typeof atoi)
+    assert.equal(1234, atoi('1234'))
   })
 
   it('should call the static "double_box" bindings', function () {
@@ -154,12 +153,12 @@ describe('ForeignFunction', function () {
     it('should call the static "abs" bindings asynchronously', function (done) {
       var _abs = bindings.abs
       var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
-      expect(abs).to.be.a('function')
+      assert.equal('function', typeof abs.async)
 
       // invoke asynchronously
       abs.async(-1234, function (err, res) {
-        expect(err).to.equal(null)
-        expect(res).to.equal(1234)
+        assert.equal(null, err)
+        assert.equal(1234, res)
         done()
       })
     })
