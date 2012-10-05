@@ -28,6 +28,14 @@ describe('ForeignFunction', function () {
     assert.equal(1234, abs(-1234))
   })
 
+  it('should throw an Error with a meaningful message when type\'s `set()` throws', function () {
+    var _abs = bindings.abs
+    var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
+    assert.throws(function () {
+      abs('a string?!?!')
+    }, /error setting argument 0/)
+  })
+
   it('should call the static "atoi" bindings', function () {
     var _atoi = bindings.atoi
     var atoi = ffi.ForeignFunction(_atoi, 'int', [ 'string' ])
@@ -161,6 +169,18 @@ describe('ForeignFunction', function () {
         assert.equal(1234, res)
         done()
       })
+    })
+
+    it('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
+      var _abs = bindings.abs
+      var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
+
+      abs.async('a string!?!?', function (err, res) {
+          assert(err)
+          assert(/error setting argument 0/.test(err.message))
+          assert.equal('undefined', typeof res)
+          done()
+      });
     })
 
   })
