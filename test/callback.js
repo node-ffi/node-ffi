@@ -26,6 +26,16 @@ describe('Callback', function () {
     assert.strictEqual(null, func())
   })
 
+  it('should throw an Error when invoked through a ForeignFunction and throws', function () {
+    var cb = ffi.Callback('void', [ ], function () {
+      throw new Error('callback threw')
+    })
+    var fn = ffi.ForeignFunction(cb, 'void', [ ])
+    assert.throws(function () {
+      fn()
+    }, /callback threw/)
+  })
+
   it('should throw an Error when invoked after the callback gets garbage collected', function () {
     var cb = ffi.Callback('void', [ ], function () {})
 

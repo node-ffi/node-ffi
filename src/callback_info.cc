@@ -31,7 +31,7 @@ void closure_pointer_cb(char *data, void *hint) {
  * Invokes the JS callback function.
  */
 
-void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters) {
+void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters, bool direct) {
   HandleScope scope;
 
   Handle<Value> argv[2];
@@ -52,7 +52,11 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
   }
 
   if (try_catch.HasCaught()) {
-    FatalException(try_catch);
+    if (direct) {
+      try_catch.ReThrow();
+    } else {
+      FatalException(try_catch);
+    }
   }
 }
 
@@ -63,7 +67,7 @@ void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
     ThreadedCallbackInvokation *inv = g_queue.front();
     g_queue.pop();
 
-    DispatchToV8(inv->m_cbinfo, inv->m_retval, inv->m_parameters);
+    DispatchToV8(inv->m_cbinfo, inv->m_retval, inv->m_parameters, false);
     inv->SignalDoneExecuting();
   }
 
@@ -137,7 +141,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
 
   // are we executing from another thread?
   if (pthread_equal(pthread_self(), g_mainthread)) {
-    DispatchToV8(info, retval, parameters);
+    DispatchToV8(info, retval, parameters, true);
   } else {
     // hold the event loop open while this is executing
 #if NODE_VERSION_AT_LEAST(0, 7, 9)
