@@ -36,6 +36,16 @@ describe('Callback', function () {
     }, /callback threw/)
   })
 
+  it('should throw an Error with a meaningful message when a type\'s "set()" throws', function () {
+    var cb = ffi.Callback('int', [ ], function () {
+      return 'a string!?!?'
+    })
+    var fn = ffi.ForeignFunction(cb, 'int', [ ])
+    assert.throws(function () {
+      fn()
+    }, /error setting return value/)
+  })
+
   it('should throw an Error when invoked after the callback gets garbage collected', function () {
     var cb = ffi.Callback('void', [ ], function () {})
 
