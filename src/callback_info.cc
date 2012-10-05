@@ -45,6 +45,7 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
     // see: https://github.com/rbranson/node-ffi/issues/72
     ThrowException(Exception::Error(
           String::New("ffi fatal: callback has been garbage collected!")));
+    return;
   } else {
     // invoke the registered callback function
     info->function->Call(Context::GetCurrent()->Global(), 2, argv);
