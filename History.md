@@ -1,4 +1,19 @@
 
+1.2.0 / 2012-10-13
+==================
+
+ - type: full support for "ref-array" arguments and return types
+ - type: add basic support for basic ref types without a `ffi_type` prop set
+ - don't call the "ref()" function on passed in arguments
+ - libffi: fix unused variable warnings
+ - add `Function` "type" for functions/callbacks that accept/return C Functions
+ - dynamic_library: use RTLD_LAZY by default
+ - export all the RTLD_* symbols from the native binding
+ - foreign_function: better error messages when a type's "set()" function throws
+ - callback: make catching callbacks that throw JS exceptions work as expected
+ - callback: more meaningful error message when a type's "set()" function throws
+ - callback: fix pointer return values
+
 1.1.3 / 2012-09-25
 ==================
 
