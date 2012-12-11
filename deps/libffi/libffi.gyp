@@ -7,6 +7,9 @@
 #   ./out/Debug/test
 
 {
+  'variables': {
+    'target_arch%': 'ia32', # built for a 32-bit CPU by default
+  },
   'target_defaults': {
     'default_configuration': 'Debug',
     'configurations': {
@@ -81,9 +84,6 @@
 
   'targets': [
     {
-      'variables': {
-        'target_arch%': 'ia32'
-      },
       'target_name': 'ffi',
       'product_prefix': 'lib',
       'type': 'static_library',
