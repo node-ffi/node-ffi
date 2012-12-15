@@ -310,10 +310,10 @@ Handle<Value> FFI::FFICallAsync(const Arguments& args) {
   p->result = FFI_OK;
 
   // store a persistent references to all the Buffers and the callback function
-  p->cif  = Persistent<Object>::New(args[0]->ToObject());
-  p->fn   = Persistent<Object>::New(args[1]->ToObject());
-  p->res  = Persistent<Object>::New(args[2]->ToObject());
-  p->argv = Persistent<Object>::New(args[3]->ToObject());
+  p->cif  = Buffer::Data(args[0]->ToObject());
+  p->fn   = Buffer::Data(args[1]->ToObject());
+  p->res  = Buffer::Data(args[2]->ToObject());
+  p->argv = Buffer::Data(args[3]->ToObject());
 
   Local<Function> callback = Local<Function>::Cast(args[4]);
   p->callback = Persistent<Function>::New(callback);
@@ -335,19 +335,14 @@ Handle<Value> FFI::FFICallAsync(const Arguments& args) {
 void FFI::AsyncFFICall(uv_work_t *req) {
   AsyncCallParams *p = (AsyncCallParams *)req->data;
 
-  char *cif  = Buffer::Data(p->cif);
-  char *fn   = Buffer::Data(p->fn);
-  char *res  = Buffer::Data(p->res);
-  char *argv = Buffer::Data(p->argv);
-
 #if __OBJC__ || __OBJC2__
   @try {
 #endif
     ffi_call(
-      (ffi_cif *)cif,
-      FFI_FN(fn),
-      (void *)res,
-      (void **)argv
+      (ffi_cif *)p->cif,
+      FFI_FN(p->fn),
+      (void *)p->res,
+      (void **)p->argv
     );
 #if __OBJC__ || __OBJC2__
   } @catch (id ex) {
@@ -378,15 +373,7 @@ void FFI::FinishAsyncFFICall(uv_work_t *req) {
   // invoke the registered callback function
   p->callback->Call(Context::GetCurrent()->Global(), 1, argv);
 
-  // dispose of our persistent handles to the Buffers and callback function
-  p->cif.Dispose();
-  p->cif.Clear();
-  p->fn.Dispose();
-  p->fn.Clear();
-  p->res.Dispose();
-  p->res.Clear();
-  p->argv.Dispose();
-  p->argv.Clear();
+  // dispose of our persistent handle to the callback function
   p->callback.Dispose();
   p->callback.Clear();
 

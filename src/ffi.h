@@ -41,10 +41,10 @@ class AsyncCallParams {
   public:
     ffi_status result;
     char *err;
-    Persistent<Object> cif;
-    Persistent<Object> fn;
-    Persistent<Object> res;
-    Persistent<Object> argv;
+    char *cif;
+    char *fn;
+    char *res;
+    char *argv;
     Persistent<Function> callback;
 };
 
