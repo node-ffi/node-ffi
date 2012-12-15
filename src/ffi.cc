@@ -323,7 +323,7 @@ Handle<Value> FFI::FFICallAsync(const Arguments& args) {
 
   uv_queue_work(uv_default_loop(), req,
       FFI::AsyncFFICall,
-      FFI::FinishAsyncFFICall);
+      (uv_after_work_cb)FFI::FinishAsyncFFICall);
 
   return Undefined();
 }
