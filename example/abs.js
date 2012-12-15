@@ -20,10 +20,10 @@ var ref = require('ref')
 var funcPtr = ffi.Callback('int', [ 'int' ], Math.abs)
 var func = ffi.ForeignFunction(funcPtr, 'int', [ 'int' ])
 
-function loop() {
+function loop () {
   for (var i = 0; i < 100; i++) {
     assert.equal(Math.abs(-i), func(-i))
   }
-  process.nextTick(loop)
+  (typeof setImmediate != 'undefined' ? setImmediate : process.nextTick)(loop)
 }
 loop()
