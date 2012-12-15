@@ -191,7 +191,7 @@ Handle<Value> CallCbAsync(const Arguments &args) {
   } else {
     uv_work_t *req = new uv_work_t;
     req->data = (void *)callback;
-    uv_queue_work(uv_default_loop(), req, AsyncCbCall, FinishAsyncCbCall);
+    uv_queue_work(uv_default_loop(), req, AsyncCbCall, (uv_after_work_cb)FinishAsyncCbCall);
   }
   return Undefined();
 }
