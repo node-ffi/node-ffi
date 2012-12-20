@@ -1,32 +1,35 @@
-{ "name": "ffi"
-, "version": "1.2.2"
-, "authors": [
-    "Rick Branson"
-  , "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
-  ]
-, "description": "A foreign function interface (FFI) for Node.js"
-, "homepage": "http://github.com/rbranson/node-ffi"
-, "engines": { "node": ">=0.6.0" }
-, "main": "./lib/ffi"
-, "dependencies": {
-    "bindings": "*"
-  , "debug": "*"
-  , "ref": "*"
-  , "ref-struct": "*"
-  }
-, "devDependencies": {
-    "expect.js": "*"
-  , "mocha": "*"
-  , "ref-array": "*"
-  }
-, "scripts": {
+{
+  "name": "ffi",
+  "version": "1.2.3",
+  "authors": [
+    "Rick Branson",
+    "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
+  ],
+  "description": "A foreign function interface (FFI) for Node.js",
+  "homepage": "http://github.com/rbranson/node-ffi",
+  "engines": {
+    "node": ">=0.6.0"
+  },
+  "main": "./lib/ffi",
+  "dependencies": {
+    "bindings": "*",
+    "debug": "*",
+    "ref": "*",
+    "ref-struct": "*"
+  },
+  "devDependencies": {
+    "expect.js": "*",
+    "mocha": "*",
+    "ref-array": "*"
+  },
+  "scripts": {
     "test": "node-gyp rebuild --directory test && mocha -gc --reporter spec"
-  }
-, "repository": {
-    "type": "git"
-  , "url": "http://github.com/rbranson/node-ffi.git"
-  }
-, "bugs": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/rbranson/node-ffi.git"
+  },
+  "bugs": {
     "url": "http://github.com/rbranson/node-ffi/issues"
   }
 }
