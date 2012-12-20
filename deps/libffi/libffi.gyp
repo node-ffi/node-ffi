@@ -145,7 +145,7 @@
                 }]
               ]
             }],
-            ['OS=="linux" or OS=="solaris"', {
+            ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
               'sources': [
                 'src/x86/unix64.S',
                 'src/x86/sysv.S'
