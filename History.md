@@ -1,4 +1,10 @@
 
+1.2.4 / 2013-02-18
+==================
+
+ - FreeBSD 32-bit support (Dave Osborne)
+ - libffi: don't build libffi as a "thin" archive (CentOS 5 support, #110)
+
 1.2.3 / 2012-12-20
 ==================
 
