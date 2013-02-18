@@ -87,6 +87,10 @@
       'target_name': 'ffi',
       'product_prefix': 'lib',
       'type': 'static_library',
+
+      # for CentOS 5 support: https://github.com/rbranson/node-ffi/issues/110
+      'standalone_static_library': 1,
+
       'sources': [
         'src/prep_cif.c',
         'src/types.c',
