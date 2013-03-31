@@ -78,7 +78,7 @@ Handle<Value> ForeignCaller::Exec(const Arguments& args) {
 
     uv_work_t *req = new uv_work_t;
     req->data = p;
-    uv_queue_work(uv_default_loop(), req, ForeignCaller::AsyncFFICall, ForeignCaller::FinishAsyncFFICall);
+    uv_queue_work(uv_default_loop(), req, ForeignCaller::AsyncFFICall, (uv_after_work_cb)ForeignCaller::FinishAsyncFFICall);
 
     return scope.Close(p->emitter);
   } else {
