@@ -1,4 +1,10 @@
 
+1.2.5 / 2013-04-06
+==================
+
+ - type: make detecting "long" and "ulong" ffi_types work
+ - travis: don't test node v0.7.x, test node v0.10.x
+
 1.2.4 / 2013-02-18
 ==================
 
