@@ -33,6 +33,15 @@ describe('types', function () {
       assert(Buffer.isBuffer(ffi_type))
     })
 
+    it('should match a valid `ffi_type` for `ulong` without a cached value', function () {
+      // simulate a ref type without a "ffi_type" property set
+      var type = Object.create(ref.types.ulong)
+      type.ffi_type = undefined
+
+      var ffi_type = ffi.ffiType(type)
+      assert(Buffer.isBuffer(ffi_type))
+    })
+
   })
 
 })
