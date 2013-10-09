@@ -1,4 +1,12 @@
 
+1.2.6 / 2013-10-08
+==================
+
+ - just a minor documentation typo fix (Jason May, #126)
+ - example: fix "factorial" example on Windows (#127)
+ - package: add "keywords" section
+ - callback: store a reference to the CIF struct on the ffi closure Buffer instance (#125)
+
 1.2.5 / 2013-04-06
 ==================
 
