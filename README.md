@@ -41,7 +41,7 @@ Requirements
 
  * Linux, OS X, Windows, or Solaris.
  * `libffi` comes bundled with node-ffi; it does *not* need to be installed on your system.
- * The current version is tested to run on node v0.6, v0.7, and v0.8.
+ * The current version is tested to run on node v0.6, v0.8, v0.9 and v0.10.
 
 Installation
 ------------
