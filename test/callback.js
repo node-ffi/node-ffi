@@ -181,7 +181,12 @@ describe('Callback', function () {
       process.removeAllListeners('uncaughtException')
       process.once('uncaughtException', function (e) {
         assert(/ffi/.test(e.message))
-        listeners.forEach(process.emit.bind(process, 'uncaughtException'))
+
+        // re-add Mocha's listeners
+        listeners.forEach(function (fn) {
+          process.on('uncaughtException', fn)
+        })
+
         done()
       })
 
