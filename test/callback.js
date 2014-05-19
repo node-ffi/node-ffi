@@ -151,7 +151,18 @@ describe('Callback', function () {
       function finish () {
         bindings.call_cb()
         assert.equal(4, invokeCount)
+
         kill()
+        gc() // now ensure the inner "cb" Buffer is collected
+
+        // should throw an Error synchronously
+        try {
+          bindings.call_cb()
+          assert(false) // shouldn't get here
+        } catch (e) {
+          assert(/ffi/.test(e.message))
+        }
+
         done()
       }
     })
