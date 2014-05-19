@@ -108,6 +108,7 @@ class CallbackInfo {
  *
  *   ^WaitForExecution() must always be called from the thread which owns the object
  */
+
 class ThreadedCallbackInvokation {
   public:
     ThreadedCallbackInvokation(callback_info *cbinfo, void *retval, void **parameters);
