@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "v8.h"
 #include "node.h"
 #include "node_buffer.h"
@@ -197,6 +198,13 @@ Handle<Value> CallCbAsync(const Arguments &args) {
 }
 
 
+// Race condition in threaded callback invocation testing, see #153
+void play_ping_pong (const char* (*callback) (const char*)) {
+  const char * response;
+  do {
+    response = callback("ping");
+  } while (strcmp(response, "pong") == 0);
+}
 
 void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
@@ -246,6 +254,7 @@ void Initialize(Handle<Object> target) {
   target->Set(String::NewSymbol("int_array"), WrapPointer((char *)int_array));
   target->Set(String::NewSymbol("array_in_struct"), WrapPointer((char *)array_in_struct));
   target->Set(String::NewSymbol("callback_func"), WrapPointer((char *)callback_func));
+  target->Set(String::NewSymbol("play_ping_pong"), WrapPointer((char *)play_ping_pong));
 }
 
 } // anonymous namespace
