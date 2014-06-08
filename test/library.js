@@ -1,6 +1,5 @@
 
-var expect = require('expect.js')
-  , assert = require('assert')
+var assert = require('assert')
   , ref = require('ref')
   , Struct = require('ref-struct')
   , ffi = require('../')
@@ -13,20 +12,19 @@ describe('Library', function () {
   afterEach(gc)
 
   it('should be a function', function () {
-    expect(Library).to.be.a('function')
+    assert(typeof Library === 'function');
   })
 
   it('should work with the `new` operator', function () {
     var l = new Library()
-    expect(l).to.be.an('object')
+    assert(typeof l === 'object');
   })
 
   it('should accept `null` as a first argument', function () {
     var thisFuncs = new Library(null, {
       'printf': [ 'void', [ charPtr ] ]
     })
-    var test = thisFuncs.printf instanceof Function
-    expect(test).to.be(true)
+    assert(typeof thisFuncs.printf === 'function');
   })
 
   it('should accept a lib name as the first argument', function () {
@@ -34,9 +32,8 @@ describe('Library', function () {
     var libm = new Library(lib, {
         'ceil': [ 'double', [ 'double' ] ]
     })
-    var test = libm.ceil instanceof Function
-    expect(test).to.be(true)
-    expect(libm.ceil(1.1)).to.equal(2)
+    assert(typeof libm.ceil === 'function');
+    assert(libm.ceil(1.1) === 2);
   })
 
   it('should accept a lib name with file extension', function() {
@@ -46,37 +43,39 @@ describe('Library', function () {
     var libm = new Library(lib, {
       'ceil': [ 'double', ['double'] ]
     })
-    var test = libm.ceil instanceof Function
-    expect(test).to.be(true)
-    expect(libm.ceil(100.9)).to.equal(101)
+    assert(typeof libm.ceil === 'function');
+    assert(libm.ceil(100.9) === 101);
   })
 
   it('should throw when an invalid function name is used', function () {
-    expect(function () {
+    try {
       new Library(null, {
           'doesnotexist__': [ 'void', [] ]
-      })
-    }).to.throwException()
+      });
+      assert(false); // unreachable
+    } catch (e) {
+      assert(e);
+    }
   })
 
   it('should work with "strcpy" and a 128 length string', function () {
-    var ZEROS_128 = Array(128 + 1).join('0')
-    var buf = new Buffer(256)
+    var ZEROS_128 = Array(128 + 1).join('0');
+    var buf = new Buffer(256);
     var strcpy = new Library(null, {
         'strcpy': [ charPtr, [ charPtr, 'string' ] ]
-    }).strcpy
-    strcpy(buf, ZEROS_128)
-    expect(buf.readCString()).to.equal(ZEROS_128)
+    }).strcpy;
+    strcpy(buf, ZEROS_128);
+    assert(buf.readCString() === ZEROS_128);
   })
 
   it('should work with "strcpy" and a 2k length string', function () {
-    var ZEROS_2K = Array(2e3 + 1).join('0')
-    var buf = new Buffer(4096)
+    var ZEROS_2K = Array(2e3 + 1).join('0');
+    var buf = new Buffer(4096);
     var strcpy = new Library(null, {
         'strcpy': [ charPtr, [ charPtr, 'string' ] ]
-    }).strcpy
-    strcpy(buf, ZEROS_2K)
-    expect(buf.readCString()).to.equal(ZEROS_2K)
+    }).strcpy;
+    strcpy(buf, ZEROS_2K);
+    assert(buf.readCString() === ZEROS_2K);
   })
 
   if (process.platform == 'win32') {
@@ -123,9 +122,9 @@ describe('Library', function () {
           'ceil': [ 'double', [ 'double' ], { async: true } ]
       })
       libm.ceil(1.1, function (err, res) {
-        expect(err).to.equal(null)
-        expect(res).to.equal(2)
-        done()
+        assert(err === null);
+        assert(res === 2);
+        done();
       })
     })
 
