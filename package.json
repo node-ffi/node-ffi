@@ -27,7 +27,6 @@
     "ref-struct": "*"
   },
   "devDependencies": {
-    "expect.js": "*",
     "mocha": "*",
     "ref-array": "*"
   },
