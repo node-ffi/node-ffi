@@ -13,7 +13,7 @@ $ gcc -shared -fpic factorial.c -o libfactorial.so
 To compile `libfactorial.dll` on Windows (http://stackoverflow.com/a/2220213):
 
 ``` bash
-$ cl.exe /D_USRDLL /D_WINDLL factorial.c /link /DLL /Felibfactorial.dll
+$ cl.exe /D_USRDLL /D_WINDLL factorial.c /link /DLL /OUT:libfactorial.dll
 ```
 
 To run the example:
