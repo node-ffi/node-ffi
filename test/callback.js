@@ -104,6 +104,25 @@ describe('Callback', function () {
     })
 
     /**
+    *   See https://github.com/rbranson/node-ffi/issues/153
+    */
+    it('multiple callback invocations from uv thread pool should be properly synchronized', function (done) {
+      this.timeout(10000)
+      var iterations = 30000
+      var cb = ffi.Callback('string', ['string'], function (val) {
+        if (val === "ping" && --iterations > 0) {
+	  return "pong"
+        }
+	return "end"
+      })
+      var pingPongFn = ffi.ForeignFunction(bindings.play_ping_pong, 'void', [ 'pointer' ])
+      pingPongFn.async(cb, function (err, ret) {
+        assert.equal(iterations, 0)
+	done()
+      })
+    })
+
+    /**
      * See https://github.com/rbranson/node-ffi/issues/72.
      * This is a tough issue. If we pass the ffi_closure Buffer to some foreign
      * C function, we really don't know *when* it's safe to dispose of the Buffer,
