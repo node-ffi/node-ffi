@@ -42,7 +42,7 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
   if (info->function->IsEmpty()) {
     // throw an error instead of segfaulting.
     // see: https://github.com/rbranson/node-ffi/issues/72
-    return NanThrowError("ffi fatal: callback has been garbage collected!");
+    NanThrowError("ffi fatal: callback has been garbage collected!");
   } else {
     // invoke the registered callback function
     info->function->Call(2, argv);
@@ -55,6 +55,20 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
       FatalException(try_catch);
     }
   }
+}
+
+void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
+  pthread_mutex_lock(&g_queue_mutex);
+
+  while (!g_queue.empty()) {
+    ThreadedCallbackInvokation *inv = g_queue.front();
+    g_queue.pop();
+
+    DispatchToV8(inv->m_cbinfo, inv->m_retval, inv->m_parameters, false);
+    inv->SignalDoneExecuting();
+  }
+
+  pthread_mutex_unlock(&g_queue_mutex);
 }
 
 void CallbackInfo::WatcherCallback(uv_async_t *w) {

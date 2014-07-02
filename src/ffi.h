@@ -86,6 +86,7 @@ class CallbackInfo {
   public:
     static void Initialize(Handle<Object> Target);
     static void WatcherCallback(uv_async_t *w);
+    static void WatcherCallback(uv_async_t *w, int revents);
 
   protected:
     static void DispatchToV8(callback_info *self, void *retval, void **parameters, bool direct);
