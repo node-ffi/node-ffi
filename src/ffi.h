@@ -14,12 +14,11 @@
 #include <uv.h>
 #include <node_object_wrap.h>
 #include <node.h>
+#include <nan.h>
 
 #if __OBJC__ || __OBJC2__
   #include <objc/objc.h>
 #endif
-
-#define THROW_ERROR_EXCEPTION(x) ThrowException(Exception::Error(String::New(x)))
 
 #define FFI_ASYNC_ERROR (ffi_status)1
 
@@ -45,7 +44,7 @@ class AsyncCallParams {
     char *fn;
     char *res;
     char *argv;
-    Persistent<Function> callback;
+    NanCallback *callback;
 };
 
 class FFI {
@@ -54,14 +53,14 @@ class FFI {
     static void InitializeBindings(Handle<Object> Target);
 
   protected:
-    static Handle<Value> FFIPrepCif(const Arguments& args);
-    static Handle<Value> FFIPrepCifVar(const Arguments& args);
-    static Handle<Value> FFICall(const Arguments& args);
-    static Handle<Value> FFICallAsync(const Arguments& args);
+    static NAN_METHOD(FFIPrepCif);
+    static NAN_METHOD(FFIPrepCifVar);
+    static NAN_METHOD(FFICall);
+    static NAN_METHOD(FFICallAsync);
     static void AsyncFFICall(uv_work_t *req);
     static void FinishAsyncFFICall(uv_work_t *req);
 
-    static Handle<Value> Strtoul(const Arguments& args);
+    static NAN_METHOD(Strtoul);
 };
 
 
@@ -75,7 +74,7 @@ class FFI {
 typedef struct _callback_info {
   ffi_closure closure;           // the actual `ffi_closure` instance get inlined
   void *code;                    // the executable function pointer
-  Persistent<Function> function; // JS callback function the closure represents
+  NanCallback *function; // JS callback function the closure represents
   // these two are required for creating proper sized WrapPointer buffer instances
   int argc;                      // the number of arguments this function expects
   size_t resultSize;             // the size of the result pointer
@@ -86,12 +85,12 @@ class ThreadedCallbackInvokation;
 class CallbackInfo {
   public:
     static void Initialize(Handle<Object> Target);
-    static void WatcherCallback(uv_async_t *w, int revents);
+    static void WatcherCallback(uv_async_t *w);
 
   protected:
     static void DispatchToV8(callback_info *self, void *retval, void **parameters, bool direct);
     static void Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data);
-    static Handle<Value> Callback(const Arguments& args);
+    static NAN_METHOD(Callback);
 
   private:
     static pthread_t          g_mainthread;

@@ -7,6 +7,9 @@
         , 'src/callback_info.cc'
         , 'src/threaded_callback_invokation.cc'
       ],
+      'include_dirs': [
+        '<!(node -e "require(\'nan\')")'
+      ],
       'dependencies': [
         'deps/libffi/libffi.gyp:ffi'
       ],

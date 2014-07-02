@@ -21,8 +21,9 @@
   },
   "main": "./lib/ffi",
   "dependencies": {
-    "bindings": "*",
+    "bindings": "^1.2.1",
     "debug": "*",
+    "nan": "^1.2.0",
     "ref": "*",
     "ref-struct": "*"
   },
