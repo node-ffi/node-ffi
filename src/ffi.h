@@ -29,8 +29,8 @@ using namespace node;
  * Converts an arbitrary pointer to a node Buffer with 0-length
  */
 
-Handle<Value> WrapPointer(char *);
-Handle<Value> WrapPointer(char *, size_t length);
+Handle<Object> WrapPointer(char *);
+Handle<Object> WrapPointer(char *, size_t length);
 
 /*
  * Class used to store stuff during async ffi_call() invokations.

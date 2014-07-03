@@ -10,12 +10,12 @@ void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
-Handle<Value> WrapPointer(char *ptr) {
+Handle<Object> WrapPointer(char *ptr) {
   size_t size = 0;
   return WrapPointer(ptr, size);
 }
 
-Handle<Value> WrapPointer(char *ptr, size_t length) {
+Handle<Object> WrapPointer(char *ptr, size_t length) {
   void *user_data = NULL;
   Local<Object> buf = NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data);
   return buf;
