@@ -1,4 +1,21 @@
 
+1.2.7 / 2014-07-06
+==================
+
+ * test: add test case for race condition in #153
+ * factorial: fix Windows build instructions
+ * example: turn factorial readme to Markdown
+ * example: add Windows libfactorial.dll compile command
+ * package: remove "expect.js" dev dependency
+ * test: remove final `expect.js` usage
+ * jshintrc: enable "laxbreak"
+ * travis: remove IRC notifications from Travis
+ * test: properly re-add Mocha's uncaught listeners
+ * test: add a try/catch test after the callback is GC'd
+ * src: fix race condition when callback is invoked from thread pool (@nikmikov, #154)
+ * change Node.js versions used on Travis CI for testing (@Mithgol, #151)
+ * use SVG to display Travis CI build testing status (@Mithgol, #149)
+
 1.2.6 / 2013-10-08
 ==================
 
