@@ -15,7 +15,7 @@
     "binding",
     "c"
   ],
-  "homepage": "http://github.com/rbranson/node-ffi",
+  "homepage": "http://github.com/node-ffi/node-ffi",
   "engines": {
     "node": ">=0.6.0"
   },
@@ -35,9 +35,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/rbranson/node-ffi.git"
+    "url": "http://github.com/node-ffi/node-ffi.git"
   },
   "bugs": {
-    "url": "http://github.com/rbranson/node-ffi/issues"
+    "url": "http://github.com/node-ffi/node-ffi/issues"
   }
 }
