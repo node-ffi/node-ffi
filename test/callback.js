@@ -80,7 +80,7 @@ describe('Callback', function () {
     bindings.call_cb()
 
     cb = null // KILL!!
-    //gc()
+    gc()
 
     // should throw an Error synchronously
     try {

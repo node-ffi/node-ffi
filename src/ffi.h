@@ -29,8 +29,8 @@ using namespace node;
  * Converts an arbitrary pointer to a node Buffer with 0-length
  */
 
-Handle<Object> WrapPointer(char *);
-Handle<Object> WrapPointer(char *, size_t length);
+Handle<Value> WrapPointer(char *);
+Handle<Value> WrapPointer(char *, size_t length);
 
 /*
  * Class used to store stuff during async ffi_call() invokations.
@@ -85,7 +85,6 @@ class ThreadedCallbackInvokation;
 class CallbackInfo {
   public:
     static void Initialize(Handle<Object> Target);
-    static void WatcherCallback(uv_async_t *w);
     static void WatcherCallback(uv_async_t *w, int revents);
 
   protected:

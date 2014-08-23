@@ -206,8 +206,7 @@ void wrap_pointer_cb(char *data, void *hint) {
 Handle<Object> WrapPointer(char *ptr) {
   void *user_data = NULL;
   size_t length = 0;
-  Local<Object> buf = NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data);
-  return buf;
+  return NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data);
 }
 
 void Initialize(Handle<Object> target) {

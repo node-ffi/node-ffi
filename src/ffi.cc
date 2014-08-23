@@ -10,15 +10,16 @@ void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
-Handle<Object> WrapPointer(char *ptr) {
+Handle<Value> WrapPointer(char *ptr) {
   size_t size = 0;
   return WrapPointer(ptr, size);
 }
 
-Handle<Object> WrapPointer(char *ptr, size_t length) {
+Handle<Value> WrapPointer(char *ptr, size_t length) {
+  NanEscapableScope();
   void *user_data = NULL;
-  Local<Object> buf = NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data);
-  return buf;
+  Local<Object> buf = NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data);  
+  return NanEscapeScope(buf);
 }
 
 ///////////////
@@ -281,7 +282,7 @@ NAN_METHOD(FFI::FFICall) {
         );
 #if __OBJC__ || __OBJC2__
     } @catch (id ex) {
-      return ThrowException(WrapPointer((char *)ex));
+      return NanThrowError(WrapPointer((char *)ex));
     }
 #endif
 

@@ -22,6 +22,7 @@ void closure_pointer_cb(char *data, void *hint) {
   callback_info *info = reinterpret_cast<callback_info *>(hint);
   // dispose of the Persistent function reference
   delete info->function;
+  info->function = NULL;
   // now we can free the closure data
   ffi_closure_free(info);
 }
@@ -39,10 +40,11 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
 
   TryCatch try_catch;
 
-  if (info->function->IsEmpty()) {
+  if (info->function == NULL) {
     // throw an error instead of segfaulting.
     // see: https://github.com/rbranson/node-ffi/issues/72
     NanThrowError("ffi fatal: callback has been garbage collected!");
+    return;
   } else {
     // invoke the registered callback function
     info->function->Call(2, argv);
@@ -58,20 +60,6 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
 }
 
 void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
-  pthread_mutex_lock(&g_queue_mutex);
-
-  while (!g_queue.empty()) {
-    ThreadedCallbackInvokation *inv = g_queue.front();
-    g_queue.pop();
-
-    DispatchToV8(inv->m_cbinfo, inv->m_retval, inv->m_parameters, false);
-    inv->SignalDoneExecuting();
-  }
-
-  pthread_mutex_unlock(&g_queue_mutex);
-}
-
-void CallbackInfo::WatcherCallback(uv_async_t *w) {
   pthread_mutex_lock(&g_queue_mutex);
 
   while (!g_queue.empty()) {
@@ -134,11 +122,10 @@ NAN_METHOD(CallbackInfo::Callback) {
 
   if (status != FFI_OK) {
     ffi_closure_free(info);
-    // TODO: return the error code
-    return NanThrowError("ffi_prep_closure() Returned Error");
+    return NanThrowError("ffi_prep_closure() Returned Error", status);
   }
-
-  Local<Object> buf = NanNewBufferHandle((char *)code, sizeof(void *), closure_pointer_cb, info);
+  
+  Local<Object> buf = NanNewBufferHandle((char *)code, sizeof(void *), closure_pointer_cb, info); 
   NanReturnValue(buf);
 }
 
@@ -195,7 +182,7 @@ void CallbackInfo::Initialize(Handle<Object> target) {
 
   // initialize our threaded invokation stuff
   g_mainthread = pthread_self();
-  uv_async_init(uv_default_loop(), &g_async, CallbackInfo::WatcherCallback);
+  uv_async_init(uv_default_loop(), &g_async, (uv_async_cb)CallbackInfo::WatcherCallback);
   pthread_mutex_init(&g_queue_mutex, NULL);
 
   // allow the event loop to exit while this is running
