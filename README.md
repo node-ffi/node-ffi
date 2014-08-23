@@ -1,7 +1,8 @@
 node-ffi
 ========
 ### Node.js Foreign Function Interface
-[![Build Status](https://travis-ci.org/rbranson/node-ffi.svg?branch=master)](https://travis-ci.org/rbranson/node-ffi)
+[![Build Status](https://travis-ci.org/node-ffi/node-ffi.svg?branch=master)](https://travis-ci.org/node-ffi/node-ffi)
+[![Build Status](https://ci.appveyor.com/api/projects/status/n81apam1igfw8491)](https://ci.appveyor.com/project/TooTallNate/node-ffi)
 
 `node-ffi` is a Node.js addon for loading and calling dynamic libraries using
 pure JavaScript. It can be used to create bindings to native libraries without
@@ -67,7 +68,7 @@ $ npm install -g node-gyp
 Now you can compile `node-ffi`:
 
 ``` bash
-$ git clone git://github.com/rbranson/node-ffi.git
+$ git clone git://github.com/node-ffi/node-ffi.git
 $ cd node-ffi
 $ node-gyp rebuild
 ```
@@ -102,6 +103,6 @@ License
 
 MIT License. See the `LICENSE` file.
 
-[v1apichanges]: https://github.com/rbranson/node-ffi/wiki/API-changes-from-v0.x-to-v1.x
-[tutorial]: https://github.com/rbranson/node-ffi/wiki/Node-FFI-Tutorial
+[v1apichanges]: https://github.com/node-ffi/node-ffi/wiki/API-changes-from-v0.x-to-v1.x
+[tutorial]: https://github.com/node-ffi/node-ffi/wiki/Node-FFI-Tutorial
 [ref-types]: https://github.com/TooTallNate/ref#built-in-types
