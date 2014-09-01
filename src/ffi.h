@@ -47,11 +47,11 @@ class AsyncCallParams {
 };
 
 class AsyncCallWorker : public NanAsyncWorker {
-  public:  
+  public:
     AsyncCallWorker(NanCallback *callback, AsyncCallParams* params)
-        : NanAsyncWorker(callback), params(params) {}
+        : NanAsyncWorker(callback), params(params) {};
     
-    ~AsyncCallWorker() {}
+    ~AsyncCallWorker() {};
     
     virtual void Execute();
     virtual void HandleOKCallback();
@@ -70,8 +70,6 @@ class FFI {
     static NAN_METHOD(FFIPrepCifVar);
     static NAN_METHOD(FFICall);
     static NAN_METHOD(FFICallAsync);
-    static void AsyncFFICall(uv_work_t *req);
-    static void FinishAsyncFFICall(uv_work_t *req);
 
     static NAN_METHOD(Strtoul);
 };
