@@ -89,6 +89,7 @@ describe('Callback', function () {
     } catch (e) {
       assert(/ffi/.test(e.message))
     }
+
   })
 
   describe('async', function () {
@@ -182,7 +183,6 @@ describe('Callback', function () {
         } catch (e) {
           assert(/ffi/.test(e.message))
         }
-
         done()
       }
     })
@@ -216,7 +216,6 @@ describe('Callback', function () {
       // should generate an "uncaughtException" asynchronously
       bindings.call_cb_async()
     })
-
   })
 
 })
