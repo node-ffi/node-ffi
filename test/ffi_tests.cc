@@ -211,10 +211,11 @@ void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
-Handle<Object> WrapPointer(char *ptr) {
+Local<Object> WrapPointer(char *ptr) {
   void *user_data = NULL;
   size_t length = 0;
-  return NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data);
+  Local<Object> buf = NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data);
+  return buf;
 }
 
 void Initialize(Handle<Object> target) {

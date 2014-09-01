@@ -29,8 +29,8 @@ using namespace node;
  * Converts an arbitrary pointer to a node Buffer with 0-length
  */
 
-Handle<Value> WrapPointer(char *);
-Handle<Value> WrapPointer(char *, size_t length);
+Local<Object> WrapPointer(char *);
+Local<Object> WrapPointer(char *, size_t length);
 
 /*
  * Class used to store stuff during async ffi_call() invokations.
@@ -44,7 +44,20 @@ class AsyncCallParams {
     char *fn;
     char *res;
     char *argv;
-    NanCallback *callback;
+};
+
+class AsyncCallWorker : public NanAsyncWorker {
+  public:
+    AsyncCallWorker(NanCallback *callback, AsyncCallParams* params)
+        : NanAsyncWorker(callback), params(params) {};
+    
+    ~AsyncCallWorker() {};
+    
+    virtual void Execute();
+    virtual void HandleOKCallback();
+    
+  private:
+    AsyncCallParams* params;
 };
 
 class FFI {
@@ -57,8 +70,6 @@ class FFI {
     static NAN_METHOD(FFIPrepCifVar);
     static NAN_METHOD(FFICall);
     static NAN_METHOD(FFICallAsync);
-    static void AsyncFFICall(uv_work_t *req);
-    static void FinishAsyncFFICall(uv_work_t *req);
 
     static NAN_METHOD(Strtoul);
 };
@@ -74,7 +85,7 @@ class FFI {
 typedef struct _callback_info {
   ffi_closure closure;           // the actual `ffi_closure` instance get inlined
   void *code;                    // the executable function pointer
-  NanCallback *function; // JS callback function the closure represents
+  Persistent<Function> function; // JS callback function the closure represents
   // these two are required for creating proper sized WrapPointer buffer instances
   int argc;                      // the number of arguments this function expects
   size_t resultSize;             // the size of the result pointer

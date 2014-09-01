@@ -10,16 +10,15 @@ void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
-Handle<Value> WrapPointer(char *ptr) {
+Local<Object> WrapPointer(char *ptr) {
   size_t size = 0;
   return WrapPointer(ptr, size);
 }
 
-Handle<Value> WrapPointer(char *ptr, size_t length) {
-  NanEscapableScope();
+Local<Object> WrapPointer(char *ptr, size_t length) {
   void *user_data = NULL;
   Local<Object> buf = NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data);  
-  return NanEscapeScope(buf);
+  return buf;
 }
 
 ///////////////
@@ -315,15 +314,8 @@ NAN_METHOD(FFI::FFICallAsync) {
   p->res  = Buffer::Data(args[2]->ToObject());
   p->argv = Buffer::Data(args[3]->ToObject());
 
-  Local<Function> callback = args[4].As<Function>();
-  p->callback = new NanCallback(callback);
-
-  uv_work_t *req = new uv_work_t;
-  req->data = p;
-
-  uv_queue_work(uv_default_loop(), req,
-      FFI::AsyncFFICall,
-      (uv_after_work_cb)FFI::FinishAsyncFFICall);
+  NanCallback *callback = new NanCallback(args[4].As<Function>());
+  NanAsyncQueueWorker(new AsyncCallWorker(callback, p));
 
   NanReturnUndefined();
 }
@@ -332,22 +324,20 @@ NAN_METHOD(FFI::FFICallAsync) {
  * Called on the thread pool.
  */
 
-void FFI::AsyncFFICall(uv_work_t *req) {
-  AsyncCallParams *p = (AsyncCallParams *)req->data;
-
+void AsyncCallWorker::Execute() {
 #if __OBJC__ || __OBJC2__
   @try {
 #endif
     ffi_call(
-      (ffi_cif *)p->cif,
-      FFI_FN(p->fn),
-      (void *)p->res,
-      (void **)p->argv
+      (ffi_cif *)params->cif,
+      FFI_FN(params->fn),
+      (void *)params->res,
+      (void **)params->argv
     );
 #if __OBJC__ || __OBJC2__
   } @catch (id ex) {
-    p->result = FFI_ASYNC_ERROR;
-    p->err = (char *)ex;
+    params->result = FFI_ASYNC_ERROR;
+    params->err = (char *)ex;
   }
 #endif
 }
@@ -357,28 +347,19 @@ void FFI::AsyncFFICall(uv_work_t *req) {
  * This gets run on the main loop thread.
  */
 
-void FFI::FinishAsyncFFICall(uv_work_t *req) {
+void AsyncCallWorker::HandleOKCallback() {
   NanScope();
-
-  AsyncCallParams *p = (AsyncCallParams *)req->data;
-
+  
   Handle<Value> argv[] = { NanNull() };
-  if (p->result != FFI_OK) {
+  if (params->result != FFI_OK) {
     // an Objective-C error was thrown
-    argv[0] = WrapPointer(p->err);
+    argv[0] = WrapPointer(params->err);
   }
 
   TryCatch try_catch;
 
   // invoke the registered callback function
-  p->callback->Call(1, argv);
-
-  // dispose of our persistent handle to the callback function
-  delete p->callback;
-
-  // free up our memory (allocated in FFICallAsync)
-  delete p;
-  delete req;
+  callback->Call(1, argv);
 
   if (try_catch.HasCaught()) {
     FatalException(try_catch);
