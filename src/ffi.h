@@ -85,7 +85,7 @@ class FFI {
 typedef struct _callback_info {
   ffi_closure closure;           // the actual `ffi_closure` instance get inlined
   void *code;                    // the executable function pointer
-  NanCallback *function; // JS callback function the closure represents
+  Persistent<Function> function; // JS callback function the closure represents
   // these two are required for creating proper sized WrapPointer buffer instances
   int argc;                      // the number of arguments this function expects
   size_t resultSize;             // the size of the result pointer
