@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "v8.h"
 #include "node.h"
 #include "node_buffer.h"
@@ -198,6 +199,13 @@ NAN_METHOD(CallCbAsync) {
 }
 
 
+// Race condition in threaded callback invocation testing, see #153
+void play_ping_pong (const char* (*callback) (const char*)) {
+  const char * response;
+  do {
+    response = callback("ping");
+  } while (strcmp(response, "pong") == 0);
+}
 
 void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
@@ -247,6 +255,7 @@ void Initialize(Handle<Object> target) {
   target->Set(NanNew("int_array"), WrapPointer((char *)int_array));
   target->Set(NanNew("array_in_struct"), WrapPointer((char *)array_in_struct));
   target->Set(NanNew("callback_func"), WrapPointer((char *)callback_func));
+  target->Set(NanNew("play_ping_pong"), WrapPointer((char *)play_ping_pong));  
 }
 
 } // anonymous namespace
