@@ -14,12 +14,13 @@
 #include <uv.h>
 #include <node_object_wrap.h>
 #include <node.h>
+#include <nan.h>
 
 #if __OBJC__ || __OBJC2__
   #include <objc/objc.h>
 #endif
 
-#define THROW_ERROR_EXCEPTION(x) ThrowException(Exception::Error(String::New(x)))
+#define THROW_ERROR_EXCEPTION(x) NanThrowError(x)
 
 #define FFI_ASYNC_ERROR (ffi_status)1
 
@@ -54,14 +55,14 @@ class FFI {
     static void InitializeBindings(Handle<Object> Target);
 
   protected:
-    static Handle<Value> FFIPrepCif(const Arguments& args);
-    static Handle<Value> FFIPrepCifVar(const Arguments& args);
-    static Handle<Value> FFICall(const Arguments& args);
-    static Handle<Value> FFICallAsync(const Arguments& args);
+    static NAN_METHOD(FFIPrepCif);
+    static NAN_METHOD(FFIPrepCifVar);
+    static NAN_METHOD(FFICall);
+    static NAN_METHOD(FFICallAsync);
     static void AsyncFFICall(uv_work_t *req);
     static void FinishAsyncFFICall(uv_work_t *req);
 
-    static Handle<Value> Strtoul(const Arguments& args);
+    static NAN_METHOD(Strtoul);
 };
 
 
@@ -91,7 +92,7 @@ class CallbackInfo {
   protected:
     static void DispatchToV8(callback_info *self, void *retval, void **parameters, bool direct);
     static void Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data);
-    static Handle<Value> Callback(const Arguments& args);
+    static NAN_METHOD(Callback);
 
   private:
     static pthread_t          g_mainthread;

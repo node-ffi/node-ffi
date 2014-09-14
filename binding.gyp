@@ -2,6 +2,9 @@
   'targets': [
     {
       'target_name': 'ffi_bindings',
+      'include_dirs': [
+        '<!(node -e \'require("nan")\')'
+      ],
       'sources': [
           'src/ffi.cc'
         , 'src/callback_info.cc'

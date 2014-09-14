@@ -21,8 +21,7 @@ uv_async_t         CallbackInfo::g_async;
 void closure_pointer_cb(char *data, void *hint) {
   callback_info *info = reinterpret_cast<callback_info *>(hint);
   // dispose of the Persistent function reference
-  info->function.Dispose();
-  info->function.Clear();
+  NanDisposePersistent(info->function);
   // now we can free the closure data
   ffi_closure_free(info);
 }
@@ -32,7 +31,7 @@ void closure_pointer_cb(char *data, void *hint) {
  */
 
 void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters, bool direct) {
-  HandleScope scope;
+  NanScope();
 
   Handle<Value> argv[2];
   argv[0] = WrapPointer((char *)retval, info->resultSize);
@@ -43,12 +42,11 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
   if (info->function.IsEmpty()) {
     // throw an error instead of segfaulting.
     // see: https://github.com/rbranson/node-ffi/issues/72
-    ThrowException(Exception::Error(
-          String::New("ffi fatal: callback has been garbage collected!")));
+    THROW_ERROR_EXCEPTION("ffi fatal: callback has been garbage collected!");
     return;
   } else {
     // invoke the registered callback function
-    info->function->Call(Context::GetCurrent()->Global(), 2, argv);
+    NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(info->function), 2, argv);
   }
 
   if (try_catch.HasCaught()) {
@@ -79,11 +77,11 @@ void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
  * executable C function pointer as a node Buffer instance.
  */
 
-Handle<Value> CallbackInfo::Callback(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(CallbackInfo::Callback) {
+  NanEscapableScope();
 
   if (args.Length() != 4) {
-    return ThrowException(String::New("Not enough arguments."));
+    return THROW_ERROR_EXCEPTION("Not enough arguments.");
   }
 
   // Args: cif pointer, JS function
@@ -100,12 +98,12 @@ Handle<Value> CallbackInfo::Callback(const Arguments& args) {
   info = reinterpret_cast<callback_info *>(ffi_closure_alloc(sizeof(callback_info), &code));
 
   if (!info) {
-    return ThrowException(String::New("ffi_closure_alloc() Returned Error"));
+    return THROW_ERROR_EXCEPTION("ffi_closure_alloc() Returned Error");
   }
 
   info->resultSize = resultSize;
   info->argc = argc;
-  info->function = Persistent<Function>::New(callback);
+  NanAssignPersistent(info->function, callback);
 
   // store a reference to the callback function pointer
   // (not sure if this is actually needed...)
@@ -124,11 +122,11 @@ Handle<Value> CallbackInfo::Callback(const Arguments& args) {
   if (status != FFI_OK) {
     ffi_closure_free(info);
     // TODO: return the error code
-    return ThrowException(String::New("ffi_prep_closure() Returned Error"));
+    return THROW_ERROR_EXCEPTION("ffi_prep_closure() Returned Error");
   }
 
-  Buffer *buf = Buffer::New((char *)code, sizeof(void *), closure_pointer_cb, info);
-  return scope.Close(buf->handle_);
+  Local<Object> buf = NanNewBufferHandle((char *)code, sizeof(void *), closure_pointer_cb, info);
+  NanReturnValue(buf);
 }
 
 /*
@@ -178,13 +176,13 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
  */
 
 void CallbackInfo::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   NODE_SET_METHOD(target, "Callback", Callback);
 
   // initialize our threaded invokation stuff
   g_mainthread = pthread_self();
-  uv_async_init(uv_default_loop(), &g_async, CallbackInfo::WatcherCallback);
+  uv_async_init(uv_default_loop(), &g_async, (uv_async_cb)CallbackInfo::WatcherCallback);
   pthread_mutex_init(&g_queue_mutex, NULL);
 
   // allow the event loop to exit while this is running
