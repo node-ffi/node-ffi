@@ -3,7 +3,7 @@
     {
       'target_name': 'ffi_bindings',
       'include_dirs': [
-        '<!(node -e \'require("nan")\')'
+        '<!(node -e "require(\'nan\')")'
       ],
       'sources': [
           'src/ffi.cc'
@@ -18,7 +18,19 @@
           'dependencies': [
               'deps/dlfcn-win32/dlfcn.gyp:dlfcn'
             , 'deps/pthreads-win32/pthread.gyp:pthread'
-          ]
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalOptions': [
+                '/FORCE:MULTIPLE'
+              ]
+            },
+            'VCCLCompilerTool': {
+              'AdditionalOptions': [
+                '/EHsc'
+              ]
+            }
+          }
         }],
         ['OS=="mac"', {
           'xcode_settings': {
