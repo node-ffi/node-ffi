@@ -94,7 +94,7 @@ class CallbackInfo {
     static NAN_METHOD(Callback);
 
   private:
-    static uv_thread_t        g_mainthread;
+    static unsigned long        g_mainthread;
     static uv_mutex_t         g_queue_mutex;
     static std::queue<ThreadedCallbackInvokation *> g_queue;
     static uv_async_t         g_async;

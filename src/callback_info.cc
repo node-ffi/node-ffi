@@ -6,7 +6,7 @@
 #include <node_version.h>
 #include "ffi.h"
 
-uv_thread_t        CallbackInfo::g_mainthread;
+unsigned long        CallbackInfo::g_mainthread;
 uv_mutex_t         CallbackInfo::g_queue_mutex;
 std::queue<ThreadedCallbackInvokation *> CallbackInfo::g_queue;
 uv_async_t         CallbackInfo::g_async;
@@ -15,11 +15,11 @@ uv_async_t         CallbackInfo::g_async;
  * pthread_equal implementation for libuv
  */
 
-int uv_equal(uv_thread_t t1, uv_thread_t t2) {
+int uv_equal(unsigned long t1, unsigned long t2) {
     int result;
-    
+
     result = (t1 == t2);
-    
+
     return (result);
 }
 
@@ -150,7 +150,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
   callback_info *info = reinterpret_cast<callback_info *>(user_data);
 
   // are we executing from another thread?
-  if (uv_equal(reinterpret_cast<uv_thread_t>(uv_thread_self()), g_mainthread)) {
+  if (uv_equal(uv_thread_self(), g_mainthread)) {
     DispatchToV8(info, retval, parameters, true);
   } else {
     // hold the event loop open while this is executing
@@ -193,7 +193,7 @@ void CallbackInfo::Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "Callback", Callback);
 
   // initialize our threaded invokation stuff
-  g_mainthread = reinterpret_cast<uv_thread_t>(uv_thread_self());
+  g_mainthread = uv_thread_self();
   uv_async_init(uv_default_loop(), &g_async, (uv_async_cb)CallbackInfo::WatcherCallback);
   uv_mutex_init(&g_queue_mutex);
 
