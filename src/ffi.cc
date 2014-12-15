@@ -42,7 +42,7 @@ void FFI::InitializeStaticFunctions(Handle<Object> target) {
 ///////////////
 
 #define SET_ENUM_VALUE(_value) \
-  target->Set(NanNew<String>(#_value), \
+  target->ForceSet(NanNew<String>(#_value), \
               NanNew<Integer>((ssize_t)_value), \
               static_cast<PropertyAttribute>(ReadOnly|DontDelete))
 
@@ -108,28 +108,28 @@ void FFI::InitializeBindings(Handle<Object> target) {
 
   /* flags for dlsym() */
 #ifdef RTLD_NEXT
-  target->Set(NanNew<String>("RTLD_NEXT"), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(NanNew<String>("RTLD_NEXT"), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_DEFAULT
-  target->Set(NanNew<String>("RTLD_DEFAULT"), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(NanNew<String>("RTLD_DEFAULT"), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_SELF
-  target->Set(NanNew<String>("RTLD_SELF"), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(NanNew<String>("RTLD_SELF"), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_MAIN_ONLY
-  target->Set(NanNew<String>("RTLD_MAIN_ONLY"), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(NanNew<String>("RTLD_MAIN_ONLY"), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 
-  target->Set(NanNew<String>("FFI_ARG_SIZE"), NanNew<Integer>(sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  target->Set(NanNew<String>("FFI_SARG_SIZE"), NanNew<Integer>(sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  target->Set(NanNew<String>("FFI_TYPE_SIZE"), NanNew<Integer>(sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  target->Set(NanNew<String>("FFI_CIF_SIZE"), NanNew<Integer>(sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(NanNew<String>("FFI_ARG_SIZE"), NanNew<Integer>(sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(NanNew<String>("FFI_SARG_SIZE"), NanNew<Integer>(sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(NanNew<String>("FFI_TYPE_SIZE"), NanNew<Integer>(sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(NanNew<String>("FFI_CIF_SIZE"), NanNew<Integer>(sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 
   bool hasObjc = false;
 #if __OBJC__ || __OBJC2__
   hasObjc = true;
 #endif
-  target->Set(NanNew<String>("HAS_OBJC"), NanNew<Boolean>(hasObjc), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(NanNew<String>("HAS_OBJC"), NanNew<Boolean>(hasObjc), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 
   Local<Object> ftmap = NanNew<Object>();
   ftmap->Set(NanNew<String>("void"),     WrapPointer((char *)&ffi_type_void));
