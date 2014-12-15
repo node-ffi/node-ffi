@@ -1,3 +1,4 @@
+#include <node.h>
 #include "ffi.h"
 
 ThreadedCallbackInvokation::ThreadedCallbackInvokation(callback_info *cbinfo, void *retval, void **parameters) {
