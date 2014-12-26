@@ -5,7 +5,6 @@
 #include <queue>
 
 #include <dlfcn.h>
-#include <pthread.h>
 
 /* define FFI_BUILDING before including ffi.h to workaround a libffi bug on Windows */
 #define FFI_BUILDING
@@ -97,8 +96,8 @@ class CallbackInfo {
     static NAN_METHOD(Callback);
 
   private:
-    static pthread_t          g_mainthread;
-    static pthread_mutex_t    g_queue_mutex;
+    static uv_thread_t          g_mainthread;
+    static uv_mutex_t    g_queue_mutex;
     static std::queue<ThreadedCallbackInvokation *> g_queue;
     static uv_async_t         g_async;
 };
@@ -125,6 +124,6 @@ class ThreadedCallbackInvokation {
     callback_info *m_cbinfo;
 
   private:
-    pthread_cond_t m_cond;
-    pthread_mutex_t m_mutex;
+    uv_cond_t m_cond;
+    uv_mutex_t m_mutex;
 };
