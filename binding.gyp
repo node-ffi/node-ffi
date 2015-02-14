@@ -17,7 +17,6 @@
         ['OS=="win"', {
           'dependencies': [
               'deps/dlfcn-win32/dlfcn.gyp:dlfcn'
-            , 'deps/pthreads-win32/pthread.gyp:pthread'
           ]
         }],
         ['OS=="mac"', {
