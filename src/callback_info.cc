@@ -1,7 +1,7 @@
 
 // Reference:
 //   http://www.bufferoverflow.ch/cgi-bin/dwww/usr/share/doc/libffi5/html/The-Closure-API.html
-
+#include <node.h>
 #include <node_buffer.h>
 #include <node_version.h>
 #include "ffi.h"
