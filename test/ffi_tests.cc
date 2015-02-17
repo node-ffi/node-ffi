@@ -152,7 +152,7 @@ NAN_METHOD(Strtoul) {
 
   unsigned long val = strtoul(buf, endptr, base);
 
-  NanReturnValue(NanNew<Integer>(val));
+  NanReturnValue(NanNew<Integer>((unit32_t)val));
 }
 
 
