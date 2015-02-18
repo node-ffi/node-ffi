@@ -5,7 +5,7 @@
 #include <queue>
 
 #include <dlfcn.h>
-#include <pthread.h>
+//#include <pthread.h> for win32 threading problems. are
 
 /* define FFI_BUILDING before including ffi.h to workaround a libffi bug on Windows */
 #define FFI_BUILDING
