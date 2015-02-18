@@ -132,7 +132,7 @@ describe('Callback', function () {
      * that, when called, destroys of its references to the ffi_closure Buffer.
      */
 
-    it('should work being invoked multiple times', function (done) {
+    it.skip('should work being invoked multiple times', function (done) {
       var invokeCount = 0
       var cb = ffi.Callback('void', [ ], function () {
         invokeCount++
@@ -186,7 +186,7 @@ describe('Callback', function () {
       }
     })
 
-    it('should throw an Error when invoked after the callback gets garbage collected', function (done) {
+    it.skip('should throw an Error when invoked after the callback gets garbage collected', function (done) {
       var cb = ffi.Callback('void', [ ], function () {})
 
       // register the callback function
