@@ -49,7 +49,7 @@ describe('Callback', function () {
     assert.equal(0, nul.address())
   })
 
-  it.skip('should throw an Error when invoked through a ForeignFunction and throws', function () {
+  it('should throw an Error when invoked through a ForeignFunction and throws', function () {
     var cb = ffi.Callback('void', [ ], function () {
       throw new Error('callback threw')
     })
@@ -59,7 +59,7 @@ describe('Callback', function () {
     }, /callback threw/)
   })
 
-  it.skip('should throw an Error with a meaningful message when a type\'s "set()" throws', function () {
+  it('should throw an Error with a meaningful message when a type\'s "set()" throws', function () {
     var cb = ffi.Callback('int', [ ], function () {
       return 'a string!?!?'
     })
