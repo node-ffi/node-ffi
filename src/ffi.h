@@ -125,6 +125,6 @@ class ThreadedCallbackInvokation {
     callback_info *m_cbinfo;
 
   private:
-    pthread_cond_t m_cond;
-    pthread_mutex_t m_mutex;
+    uv_cond_t m_cond;
+    uv_mutex_t m_mutex;
 };
