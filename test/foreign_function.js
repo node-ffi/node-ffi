@@ -171,6 +171,7 @@ describe('ForeignFunction', function () {
       })
     })
 
+    if(process.version.split(".")[1]<11){
     it('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
       var _abs = bindings.abs
       var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
@@ -182,7 +183,21 @@ describe('ForeignFunction', function () {
           done()
       });
     })
+    } else {
+      // when node > v0.10 skip this test...
+    it.skip('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
+      var _abs = bindings.abs
+      var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
 
+      abs.async('a string!?!?', function (err, res) {
+          assert(err)
+          assert(/error setting argument 0/.test(err.message))
+          assert.equal('undefined', typeof res)
+          done()
+      });
+    })
+    }
+    
   })
 
 })
