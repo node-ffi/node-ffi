@@ -20,13 +20,23 @@ describe('Library', function () {
     assert(typeof l === 'object');
   })
 
+  if(process.platform === 'linux' || process.platform === 'darwin') {
   it('should accept `null` as a first argument', function () {
     var thisFuncs = new Library(null, {
       'printf': [ 'void', [ charPtr ] ]
     })
     assert(typeof thisFuncs.printf === 'function');
   })
-
+  } else {
+    // when win32 skit ..
+  it.skip('should accept `null` as a first argument', function () {
+    var thisFuncs = new Library(null, {
+      'printf': [ 'void', [ charPtr ] ]
+    })
+    assert(typeof thisFuncs.printf === 'function');
+  })  
+  }
+  
   it('should accept a lib name as the first argument', function () {
     var lib = process.platform == 'win32' ? 'msvcrt' : 'libm'
     var libm = new Library(lib, {
@@ -57,7 +67,8 @@ describe('Library', function () {
       assert(e);
     }
   })
-
+  
+  if(process.platform === 'linux' || process.platform === 'darwin') {
   it('should work with "strcpy" and a 128 length string', function () {
     var ZEROS_128 = Array(128 + 1).join('0');
     var buf = new Buffer(256);
@@ -67,7 +78,19 @@ describe('Library', function () {
     strcpy(buf, ZEROS_128);
     assert(buf.readCString() === ZEROS_128);
   })
-
+  } else {
+  it.skip('should work with "strcpy" and a 128 length string', function () {
+    var ZEROS_128 = Array(128 + 1).join('0');
+    var buf = new Buffer(256);
+    var strcpy = new Library(null, {
+        'strcpy': [ charPtr, [ charPtr, 'string' ] ]
+    }).strcpy;
+    strcpy(buf, ZEROS_128);
+    assert(buf.readCString() === ZEROS_128);
+  })
+  }
+  
+  if(process.platform === 'linux' || process.platform === 'darwin') {
   it('should work with "strcpy" and a 2k length string', function () {
     var ZEROS_2K = Array(2e3 + 1).join('0');
     var buf = new Buffer(4096);
@@ -77,7 +100,17 @@ describe('Library', function () {
     strcpy(buf, ZEROS_2K);
     assert(buf.readCString() === ZEROS_2K);
   })
-
+  } else {
+  it.skip('should work with "strcpy" and a 2k length string', function () {
+    var ZEROS_2K = Array(2e3 + 1).join('0');
+    var buf = new Buffer(4096);
+    var strcpy = new Library(null, {
+        'strcpy': [ charPtr, [ charPtr, 'string' ] ]
+    }).strcpy;
+    strcpy(buf, ZEROS_2K);
+    assert(buf.readCString() === ZEROS_2K);
+  })
+  }
   if (process.platform == 'win32') {
 
     it('should work with "GetTimeOfDay" and a "FILETIME" Struct pointer',
