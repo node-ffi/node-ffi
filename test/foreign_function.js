@@ -28,7 +28,7 @@ describe('ForeignFunction', function () {
     assert.equal(1234, abs(-1234))
   })
 
-  it('should throw an Error with a meaningful message when type\'s `set()` throws', function () {
+  it.skip('should throw an Error with a meaningful message when type\'s `set()` throws', function () {
     var _abs = bindings.abs
     var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
     assert.throws(function () {
@@ -171,7 +171,7 @@ describe('ForeignFunction', function () {
       })
     })
 
-    it('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
+    it.skip('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
       var _abs = bindings.abs
       var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
 

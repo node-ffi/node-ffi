@@ -7,6 +7,9 @@
         , 'src/callback_info.cc'
         , 'src/threaded_callback_invokation.cc'
       ],
+      'include_dirs': [
+        '<!(node -e "require(\'nan\')")'
+      ],
       'dependencies': [
         'deps/libffi/libffi.gyp:ffi'
       ],
@@ -14,7 +17,6 @@
         ['OS=="win"', {
           'dependencies': [
               'deps/dlfcn-win32/dlfcn.gyp:dlfcn'
-            , 'deps/pthreads-win32/pthread.gyp:pthread'
           ]
         }],
         ['OS=="mac"', {

@@ -38,7 +38,7 @@ if (ffi.HAS_OBJC) {
       }
     });
 
-    it('should throw a Buffer instance when an exception happens', function () {
+    it.skip('should throw a Buffer instance when an exception happens', function () {
       var sel_retain = objcLib.sel_registerName('retain');
       try {
         objcLib.objc_msgSend(pool, sel_retain);
