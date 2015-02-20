@@ -24,7 +24,8 @@
     "bindings": "*",
     "debug": "*",
     "ref": "*",
-    "ref-struct": "*"
+    "ref-struct": "*",
+    "nan": "~1.3.0"
   },
   "devDependencies": {
     "mocha": "*",

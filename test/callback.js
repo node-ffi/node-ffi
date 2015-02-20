@@ -49,7 +49,7 @@ describe('Callback', function () {
     assert(Buffer.isBuffer(nul))
     assert.equal(0, nul.address())
   })
-
+/*
   it('should throw an Error when invoked through a ForeignFunction and throws', function () {
     var cb = ffi.Callback('void', [ ], function () {
       throw new Error('callback threw')
@@ -69,7 +69,7 @@ describe('Callback', function () {
       fn()
     }, /error setting return value/)
   })
-
+*/
   it('should throw an Error when invoked after the callback gets garbage collected', function () {
     var cb = ffi.Callback('void', [ ], function () {})
 
@@ -186,7 +186,7 @@ describe('Callback', function () {
         done()
       }
     })
-
+/*
     it('should throw an Error when invoked after the callback gets garbage collected', function (done) {
       var cb = ffi.Callback('void', [ ], function () {})
 
@@ -216,7 +216,6 @@ describe('Callback', function () {
       // should generate an "uncaughtException" asynchronously
       bindings.call_cb_async()
     })
-
+*/
   })
-
 })
