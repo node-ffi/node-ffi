@@ -60,10 +60,10 @@ describe('Callback', function () {
     }, /callback threw/)
   })
 
-  // Skipped, because this is a runtime bug; https://github.com/iojs/io.js/issues/1161
-  it.skip('should throw an Error with a meaningful message when a type\'s "set()" throws', function () {
+  it('should throw an Error with a meaningful message when a type\'s "set()" throws', function () {
     var cb = ffi.Callback('int', [], function () {
-      return 'a string!?!?'
+      // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
+      return 1111111111111111111111
     })
     var fn = ffi.ForeignFunction(cb, 'int', [])
     assert.throws(function () {
