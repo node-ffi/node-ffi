@@ -1,28 +1,29 @@
-
 var assert = require('assert')
   , ref = require('ref')
   , ffi = require('../')
   , int = ref.types.int
-  , bindings = require('bindings')({ module_root: __dirname, bindings: 'ffi_tests' })
+  , bindings = require('bindings')({module_root: __dirname, bindings: 'ffi_tests'})
 
 describe('Callback', function () {
 
   afterEach(gc)
 
   it('should create a C function pointer from a JS function', function () {
-    var callback = ffi.Callback('void', [ ], function (val) { })
+    var callback = ffi.Callback('void', [], function (val) {
+    })
     assert(Buffer.isBuffer(callback))
   })
 
   it('should be invokable by an ffi\'d ForeignFunction', function () {
-    var funcPtr = ffi.Callback(int, [ int ], Math.abs)
-    var func = ffi.ForeignFunction(funcPtr, int, [ int ])
+    var funcPtr = ffi.Callback(int, [int], Math.abs)
+    var func = ffi.ForeignFunction(funcPtr, int, [int])
     assert.equal(1234, func(-1234))
   })
 
   it('should work with a "void" return type', function () {
-    var funcPtr = ffi.Callback('void', [ ], function (val) { })
-    var func = ffi.ForeignFunction(funcPtr, 'void', [ ])
+    var funcPtr = ffi.Callback('void', [], function (val) {
+    })
+    var func = ffi.ForeignFunction(funcPtr, 'void', [])
     assert.strictEqual(null, func())
   })
 
@@ -36,13 +37,13 @@ describe('Callback', function () {
     }
     var voidPtr = ref.refType(voidType)
     var called = false
-    var cb = ffi.Callback(voidPtr, [ voidPtr ], function (ptr) {
+    var cb = ffi.Callback(voidPtr, [voidPtr], function (ptr) {
       called = true
       assert.equal(0, ptr.address())
       return ptr
     })
 
-    var fn = ffi.ForeignFunction(cb, voidPtr, [ voidPtr ])
+    var fn = ffi.ForeignFunction(cb, voidPtr, [voidPtr])
     assert(!called)
     var nul = fn(ref.NULL)
     assert(called)
@@ -51,27 +52,28 @@ describe('Callback', function () {
   })
 
   it('should throw an Error when invoked through a ForeignFunction and throws', function () {
-    var cb = ffi.Callback('void', [ ], function () {
+    var cb = ffi.Callback('void', [], function () {
       throw new Error('callback threw')
     })
-    var fn = ffi.ForeignFunction(cb, 'void', [ ])
+    var fn = ffi.ForeignFunction(cb, 'void', [])
     assert.throws(function () {
       fn()
     }, /callback threw/)
   })
 
   it('should throw an Error with a meaningful message when a type\'s "set()" throws', function () {
-    var cb = ffi.Callback('int', [ ], function () {
+    var cb = ffi.Callback('int', [], function () {
       return 'a string!?!?'
     })
-    var fn = ffi.ForeignFunction(cb, 'int', [ ])
+    var fn = ffi.ForeignFunction(cb, 'int', [])
     assert.throws(function () {
       fn()
     }, /error setting return value/)
   })
 
   it('should throw an Error when invoked after the callback gets garbage collected', function () {
-    var cb = ffi.Callback('void', [ ], function () {})
+    var cb = ffi.Callback('void', [], function () {
+    })
 
     // register the callback function
     bindings.set_cb(cb)
@@ -94,8 +96,8 @@ describe('Callback', function () {
   describe('async', function () {
 
     it('should be invokable asynchronously by an ffi\'d ForeignFunction', function (done) {
-      var funcPtr = ffi.Callback(int, [ int ], Math.abs)
-      var func = ffi.ForeignFunction(funcPtr, int, [ int ])
+      var funcPtr = ffi.Callback(int, [int], Math.abs)
+      var func = ffi.ForeignFunction(funcPtr, int, [int])
       func.async(-9999, function (err, res) {
         assert.equal(null, err)
         assert.equal(9999, res)
@@ -112,14 +114,14 @@ describe('Callback', function () {
       var iterations = 30000
       var cb = ffi.Callback('string', ['string'], function (val) {
         if (val === "ping" && --iterations > 0) {
-	  return "pong"
+          return "pong"
         }
-	return "end"
+        return "end"
       })
-      var pingPongFn = ffi.ForeignFunction(bindings.play_ping_pong, 'void', [ 'pointer' ])
+      var pingPongFn = ffi.ForeignFunction(bindings.play_ping_pong, 'void', ['pointer'])
       pingPongFn.async(cb, function (err, ret) {
         assert.equal(iterations, 0)
-	done()
+        done()
       })
     })
 
@@ -135,7 +137,7 @@ describe('Callback', function () {
 
     it('should work being invoked multiple times', function (done) {
       var invokeCount = 0
-      var cb = ffi.Callback('void', [ ], function () {
+      var cb = ffi.Callback('void', [], function () {
         invokeCount++
       })
 
@@ -168,7 +170,7 @@ describe('Callback', function () {
         process.nextTick(finish)
       }, 25)
 
-      function finish () {
+      function finish() {
         bindings.call_cb()
         assert.equal(4, invokeCount)
 
@@ -188,7 +190,8 @@ describe('Callback', function () {
     })
 
     it('should throw an Error when invoked after the callback gets garbage collected', function (done) {
-      var cb = ffi.Callback('void', [ ], function () {})
+      var cb = ffi.Callback('void', [], function () {
+      })
 
       // register the callback function
       bindings.set_cb(cb)
@@ -200,14 +203,19 @@ describe('Callback', function () {
       var listeners = process.listeners('uncaughtException').slice()
       process.removeAllListeners('uncaughtException')
       process.once('uncaughtException', function (e) {
-        assert(/ffi/.test(e.message))
+        try {
+          assert(/ffi/.test(e.message))
 
-        // re-add Mocha's listeners
-        listeners.forEach(function (fn) {
-          process.on('uncaughtException', fn)
-        })
+          // re-add Mocha's listeners
+          listeners.forEach(function (fn) {
+            process.on('uncaughtException', fn)
+          })
 
-        done()
+          done()
+        }
+        catch (e) {
+          done(e);
+        }
       })
 
       cb = null // KILL!!
