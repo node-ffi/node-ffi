@@ -28,7 +28,8 @@ describe('ForeignFunction', function () {
     assert.equal(1234, abs(-1234))
   })
 
-  it('should throw an Error with a meaningful message when type\'s `set()` throws', function () {
+	// Skipped, because this is a runtime bug; https://github.com/iojs/io.js/issues/1161
+  it.skip('should throw an Error with a meaningful message when type\'s `set()` throws', function () {
     var _abs = bindings.abs
     var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
     assert.throws(function () {
@@ -176,10 +177,15 @@ describe('ForeignFunction', function () {
       var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
 
       abs.async('a string!?!?', function (err, res) {
-          assert(err)
-          assert(/error setting argument 0/.test(err.message))
-          assert.equal('undefined', typeof res)
-          done()
+	      try {
+		      assert(err)
+		      assert(/error setting argument 0/.test(err.message))
+		      assert.equal('undefined', typeof res)
+		      done()
+	      }
+	      catch(e) {
+		      done(e)
+	      }
       });
     })
 
