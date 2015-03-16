@@ -45,30 +45,34 @@ void closure_pointer_cb(char *data, void *hint) {
  * Invokes the JS callback function.
  */
 
-void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters, bool direct) {
-  NanScope();
-
-  Handle<Value> argv[2];
-  argv[0] = WrapPointer((char *)retval, info->resultSize);
-  argv[1] = WrapPointer((char *)parameters, sizeof(char *) * info->argc);
-
-  TryCatch try_catch;
+void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters, bool dispatched) {
+  const char* errorMessage = "ffi fatal: callback has been garbage collected!";
 
   if (info->function == NULL) {
     // throw an error instead of segfaulting.
     // see: https://github.com/rbranson/node-ffi/issues/72
-    THROW_ERROR_EXCEPTION("ffi fatal: callback has been garbage collected!");
-    return;
+    if (dispatched) {
+        Handle<Value> errorFunctionArgv[1];
+        errorFunctionArgv[0] = NanNew<String>(errorMessage);
+        info->errorFunction->Call(1, errorFunctionArgv);
+    }
+    else {
+      NanThrowError(errorMessage);
+    }
   } else {
     // invoke the registered callback function
-    info->function->Call(2, argv);
-  }
-
-  if (try_catch.HasCaught()) {
-    if (direct) {
-      try_catch.ReThrow();
-    } else {
-      FatalException(try_catch);
+    Handle<Value> functionArgv[2];
+    functionArgv[0] = WrapPointer((char *)retval, info->resultSize);
+    functionArgv[1] = WrapPointer((char *)parameters, sizeof(char *) * info->argc);
+    Handle<Value> e = info->function->Call(2, functionArgv);
+    if (!e->IsUndefined()) {
+      if (dispatched) {
+        Handle<Value> errorFunctionArgv[1];
+        errorFunctionArgv[0] = e;
+        info->errorFunction->Call(1, errorFunctionArgv);
+      } else {
+        NanThrowError(e);
+      }
     }
   }
 }
@@ -80,7 +84,7 @@ void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
     ThreadedCallbackInvokation *inv = g_queue.front();
     g_queue.pop();
 
-    DispatchToV8(inv->m_cbinfo, inv->m_retval, inv->m_parameters, false);
+    DispatchToV8(inv->m_cbinfo, inv->m_retval, inv->m_parameters, true);
     inv->SignalDoneExecuting();
   }
 
@@ -95,7 +99,7 @@ void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
 NAN_METHOD(CallbackInfo::Callback) {
   NanScope();
 
-  if (args.Length() != 4) {
+  if (args.Length() != 5) {
     return THROW_ERROR_EXCEPTION("Not enough arguments.");
   }
 
@@ -104,7 +108,8 @@ NAN_METHOD(CallbackInfo::Callback) {
   ffi_cif *cif = (ffi_cif *)Buffer::Data(args[0]->ToObject());
   size_t resultSize = args[1]->Int32Value();
   int argc = args[2]->Int32Value();
-  Local<Function> callback = Local<Function>::Cast(args[3]);
+  Local<Function> errorReportCallback = Local<Function>::Cast(args[3]);
+  Local<Function> callback = Local<Function>::Cast(args[4]);
 
   callback_info *info;
   ffi_status status;
@@ -118,6 +123,7 @@ NAN_METHOD(CallbackInfo::Callback) {
 
   info->resultSize = resultSize;
   info->argc = argc;
+  info->errorFunction = new NanCallback(errorReportCallback);
   info->function = new NanCallback(callback);
 
   // store a reference to the callback function pointer
@@ -155,7 +161,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
   // are we executing from another thread?
   uv_thread_t self_thread = (uv_thread_t)uv_thread_self();
   if (uv_thread_equal(&self_thread, &g_mainthread)) {
-    DispatchToV8(info, retval, parameters, true);
+    DispatchToV8(info, retval, parameters);
   } else {
     // hold the event loop open while this is executing
 #if NODE_VERSION_AT_LEAST(0, 7, 9)
@@ -182,7 +188,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
     uv_unref((uv_handle_t *)&g_async);
 #else
     uv_unref(uv_default_loop());
-#endif
+#endif   
     delete inv;
   }
 }

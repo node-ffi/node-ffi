@@ -78,6 +78,7 @@ class FFI {
 typedef struct _callback_info {
   ffi_closure closure;           // the actual `ffi_closure` instance get inlined
   void *code;                    // the executable function pointer
+  NanCallback* errorFunction;    // JS callback function for reporting catched exceptions for the process' event loop
   NanCallback* function;         // JS callback function the closure represents
   // these two are required for creating proper sized WrapPointer buffer instances
   int argc;                      // the number of arguments this function expects
@@ -92,7 +93,7 @@ class CallbackInfo {
     static void WatcherCallback(uv_async_t *w, int revents);
 
   protected:
-    static void DispatchToV8(callback_info *self, void *retval, void **parameters, bool direct);
+    static void DispatchToV8(callback_info *self, void *retval, void **parameters, bool dispatched = false);
     static void Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data);
     static NAN_METHOD(Callback);
 

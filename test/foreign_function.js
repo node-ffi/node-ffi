@@ -28,11 +28,12 @@ describe('ForeignFunction', function () {
     assert.equal(1234, abs(-1234))
   })
 
-  it.skip('should throw an Error with a meaningful message when type\'s `set()` throws', function () {
+	it('should throw an Error with a meaningful message when type\'s `set()` throws', function () {
     var _abs = bindings.abs
     var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
     assert.throws(function () {
-      abs('a string?!?!')
+      // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
+      abs(11111111111111111111)
     }, /error setting argument 0/)
   })
 
@@ -171,33 +172,24 @@ describe('ForeignFunction', function () {
       })
     })
 
-    if(process.version.split(".")[1]<11){
-    it('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
+	  it('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
       var _abs = bindings.abs
       var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
 
-      abs.async('a string!?!?', function (err, res) {
-          assert(err)
-          assert(/error setting argument 0/.test(err.message))
-          assert.equal('undefined', typeof res)
-          done()
+      // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
+      abs.async(1111111111111111111111, function (err, res) {
+	      try {
+		      assert(err)
+		      assert(/error setting argument 0/.test(err.message))
+		      assert.equal('undefined', typeof res)
+		      done()
+	      }
+	      catch(e) {
+		      done(e)
+	      }
       });
     })
-    } else {
-      // when node > v0.10 skip this test...
-    it.skip('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
-      var _abs = bindings.abs
-      var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
 
-      abs.async('a string!?!?', function (err, res) {
-          assert(err)
-          assert(/error setting argument 0/.test(err.message))
-          assert.equal('undefined', typeof res)
-          done()
-      });
-    })
-    }
-    
   })
 
 })
