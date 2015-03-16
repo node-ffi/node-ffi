@@ -3,16 +3,16 @@
 # Test against these versions of Node.js.
 environment:
   matrix:
-    - nodejs_version: "0.8"
     - nodejs_version: "0.10"
     - nodejs_version: "0.11"
+    - nodejs_version: "0.12"
 
 # Install scripts. (runs after repo cloning)
 install:
   # Get the latest stable version of Node 0.STABLE.latest
   - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)
   # Typical npm stuff.
-  - npm install
+  - npm install --msvs_version=2013
 
 # Post-install test scripts.
 test_script:

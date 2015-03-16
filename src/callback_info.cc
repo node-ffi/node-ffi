@@ -1,13 +1,27 @@
-
+// https://raw.githubusercontent.com/ghostoy/node-ffi/master/src/callback_info.cc
 // Reference:
 //   http://www.bufferoverflow.ch/cgi-bin/dwww/usr/share/doc/libffi5/html/The-Closure-API.html
+
 #include <node.h>
 #include <node_buffer.h>
 #include <node_version.h>
 #include "ffi.h"
 
-pthread_t          CallbackInfo::g_mainthread;
-pthread_mutex_t    CallbackInfo::g_queue_mutex;
+#if !(NODE_VERSION_AT_LEAST(0, 11, 15))
+  #ifdef WIN32
+    int uv_thread_equal(const uv_thread_t* t1, const uv_thread_t* t2) {
+      return *t1 == *t2;
+    }
+  #else
+    #include <pthread.h>
+    int uv_thread_equal(const uv_thread_t* t1, const uv_thread_t* t2) {
+      return pthread_equal(*t1, *t2);
+    }
+  #endif
+#endif
+
+uv_thread_t          CallbackInfo::g_mainthread;
+uv_mutex_t    CallbackInfo::g_queue_mutex;
 std::queue<ThreadedCallbackInvokation *> CallbackInfo::g_queue;
 uv_async_t         CallbackInfo::g_async;
 
@@ -60,7 +74,7 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
 }
 
 void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
-  pthread_mutex_lock(&g_queue_mutex);
+  uv_mutex_lock(&g_queue_mutex);
 
   while (!g_queue.empty()) {
     ThreadedCallbackInvokation *inv = g_queue.front();
@@ -70,7 +84,7 @@ void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
     inv->SignalDoneExecuting();
   }
 
-  pthread_mutex_unlock(&g_queue_mutex);
+  uv_mutex_unlock(&g_queue_mutex);
 }
 
 /*
@@ -139,7 +153,8 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
   callback_info *info = reinterpret_cast<callback_info *>(user_data);
 
   // are we executing from another thread?
-  if (pthread_equal(pthread_self(), g_mainthread)) {
+  uv_thread_t self_thread = (uv_thread_t)uv_thread_self();
+  if (uv_thread_equal(&self_thread, &g_mainthread)) {
     DispatchToV8(info, retval, parameters, true);
   } else {
     // hold the event loop open while this is executing
@@ -153,9 +168,9 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
     ThreadedCallbackInvokation *inv = new ThreadedCallbackInvokation(info, retval, parameters);
 
     // push it to the queue -- threadsafe
-    pthread_mutex_lock(&g_queue_mutex);
+    uv_mutex_lock(&g_queue_mutex);
     g_queue.push(inv);
-    pthread_mutex_unlock(&g_queue_mutex);
+    uv_mutex_unlock(&g_queue_mutex);
 
     // send a message to our main thread to wake up the WatchCallback loop
     uv_async_send(&g_async);
@@ -182,9 +197,9 @@ void CallbackInfo::Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "Callback", Callback);
 
   // initialize our threaded invokation stuff
-  g_mainthread = pthread_self();
+  g_mainthread = (uv_thread_t)uv_thread_self();
   uv_async_init(uv_default_loop(), &g_async, (uv_async_cb) CallbackInfo::WatcherCallback);
-  pthread_mutex_init(&g_queue_mutex, NULL);
+  uv_mutex_init(&g_queue_mutex);
 
   // allow the event loop to exit while this is running
 #if NODE_VERSION_AT_LEAST(0, 7, 9)
