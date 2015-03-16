@@ -52,23 +52,16 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
   argv[0] = WrapPointer((char *)retval, info->resultSize);
   argv[1] = WrapPointer((char *)parameters, sizeof(char *) * info->argc);
 
-  TryCatch try_catch;
-
   if (info->function == NULL) {
     // throw an error instead of segfaulting.
     // see: https://github.com/rbranson/node-ffi/issues/72
-    THROW_ERROR_EXCEPTION("ffi fatal: callback has been garbage collected!");
-    return;
+    NanThrowError("ffi fatal: callback has been garbage collected!");
   } else {
     // invoke the registered callback function
-    info->function->Call(2, argv);
-  }
-
-  if (try_catch.HasCaught()) {
-    if (direct) {
-      try_catch.ReThrow();
-    } else {
-      FatalException(try_catch);
+    Handle<Value> e;
+    e = info->function->Call(2, argv);
+    if (!e->IsUndefined()) {
+      NanThrowError(e);
     }
   }
 }
