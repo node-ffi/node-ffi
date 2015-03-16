@@ -92,7 +92,7 @@ class CallbackInfo {
     static void WatcherCallback(uv_async_t *w, int revents);
 
   protected:
-    static void DispatchToV8(callback_info *self, void *retval, void **parameters, bool direct);
+    static void DispatchToV8(callback_info *self, void *retval, void **parameters);
     static void Invoke(ffi_cif *cif, void *retval, void **parameters, void *user_data);
     static NAN_METHOD(Callback);
 

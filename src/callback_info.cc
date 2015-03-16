@@ -45,7 +45,7 @@ void closure_pointer_cb(char *data, void *hint) {
  * Invokes the JS callback function.
  */
 
-void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters, bool direct) {
+void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters) {
   NanScope();
 
   Handle<Value> argv[2];
@@ -73,7 +73,7 @@ void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
     ThreadedCallbackInvokation *inv = g_queue.front();
     g_queue.pop();
 
-    DispatchToV8(inv->m_cbinfo, inv->m_retval, inv->m_parameters, false);
+    DispatchToV8(inv->m_cbinfo, inv->m_retval, inv->m_parameters);
     inv->SignalDoneExecuting();
   }
 
@@ -148,7 +148,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
   // are we executing from another thread?
   uv_thread_t self_thread = (uv_thread_t)uv_thread_self();
   if (uv_thread_equal(&self_thread, &g_mainthread)) {
-    DispatchToV8(info, retval, parameters, true);
+    DispatchToV8(info, retval, parameters);
   } else {
     // hold the event loop open while this is executing
 #if NODE_VERSION_AT_LEAST(0, 7, 9)
@@ -175,7 +175,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
     uv_unref((uv_handle_t *)&g_async);
 #else
     uv_unref(uv_default_loop());
-#endif
+#endif   
     delete inv;
   }
 }

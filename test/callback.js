@@ -189,7 +189,7 @@ describe('Callback', function () {
     })
 
     it('should throw an Error when invoked after the callback gets garbage collected', function (done) {
-      var cb = ffi.Callback('void', [], function () { })
+      var cb = ffi.Callback('void', [], function (e) { })
 
       // register the callback function
       bindings.set_cb(cb)
@@ -201,7 +201,6 @@ describe('Callback', function () {
       var listeners = process.listeners('uncaughtException').slice()
       process.removeAllListeners('uncaughtException')
       process.once('uncaughtException', function (e) {
-
         var err
         try {
           assert(/ffi/.test(e.message))
