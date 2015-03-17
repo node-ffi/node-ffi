@@ -39,18 +39,18 @@ describe('Library', function () {
   it('should accept a lib name as the first argument', function () {
     var lib = process.platform == 'win32' ? 'msvcrt' : 'libm'
     var libm = new Library(lib, {
-        'ceil': [ 'double', [ 'double' ] ]
+      'ceil': [ 'double', [ 'double' ] ]
     })
     assert(typeof libm.ceil === 'function');
     assert(libm.ceil(1.1) === 2);
   })
 
-  it('should accept a lib name with file extension', function() {
+  it('should accept a lib name with file extension', function () {
     var lib = process.platform == 'win32'
       ? 'msvcrt.dll'
       : 'libm' + ffi.LIB_EXT
     var libm = new Library(lib, {
-      'ceil': [ 'double', ['double'] ]
+      'ceil': [ 'double', [ 'double' ] ]
     })
     assert(typeof libm.ceil === 'function');
     assert(libm.ceil(100.9) === 101);
@@ -59,7 +59,7 @@ describe('Library', function () {
   it('should throw when an invalid function name is used', function () {
     try {
       new Library(null, {
-          'doesnotexist__': [ 'void', [] ]
+        'doesnotexist__': [ 'void', [] ]
       });
       assert(false); // unreachable
     } catch (e) {
@@ -73,7 +73,7 @@ describe('Library', function () {
       function () {
         // In Windows there is no C stdlib in the exports, so we test libuv there
         var thisFuncs = new Library(null, {
-          'uv_get_total_memory': [ 'uint64', [ ] ]
+          'uv_get_total_memory': [ 'uint64', [] ]
         })
         var mem = thisFuncs.uv_get_total_memory()
         assert(mem)
@@ -81,18 +81,18 @@ describe('Library', function () {
       })
 
     it('should work with "GetTimeOfDay" and a "FILETIME" Struct pointer',
-    function () {
-      var FILETIME = new Struct({
+      function () {
+        var FILETIME = new Struct({
           'dwLowDateTime': ref.types.uint32
-        , 'dwHighDateTime': ref.types.uint32
+          , 'dwHighDateTime': ref.types.uint32
+        })
+        var l = new Library('kernel32', {
+          'GetSystemTimeAsFileTime': [ 'void', [ 'pointer' ] ]
+        })
+        var ft = new FILETIME()
+        l.GetSystemTimeAsFileTime(ft.ref())
+        // TODO: Add an assert clause here...
       })
-      var l = new Library('kernel32', {
-          'GetSystemTimeAsFileTime': [ 'void', [ 'pointer' ]]
-      })
-      var ft = new FILETIME()
-      l.GetSystemTimeAsFileTime(ft.ref())
-      // TODO: Add an assert clause here...
-    })
 
   } else {
 
@@ -117,20 +117,20 @@ describe('Library', function () {
     })
 
     it('should work with "gettimeofday" and a "timeval" Struct pointer',
-    function () {
-      var timeval = new Struct({
+      function () {
+        var timeval = new Struct({
           'tv_sec': ref.types.long
-        , 'tv_usec': ref.types.long
+          , 'tv_usec': ref.types.long
+        })
+        var timevalPtr = ref.refType(timeval)
+        var timezonePtr = ref.refType(ref.types.void)
+        var l = new Library(null, {
+          'gettimeofday': [ ref.types.int, [ timevalPtr, timezonePtr ] ]
+        })
+        var tv = new timeval()
+        l.gettimeofday(tv.ref(), null)
+        assert.equal(Math.floor(Date.now() / 1000), tv.tv_sec)
       })
-      var timevalPtr = ref.refType(timeval)
-      var timezonePtr = ref.refType(ref.types.void)
-      var l = new Library(null, {
-          'gettimeofday': [ref.types.int, [timevalPtr, timezonePtr]]
-      })
-      var tv = new timeval()
-      l.gettimeofday(tv.ref(), null)
-      assert.equal(Math.floor(Date.now() / 1000), tv.tv_sec)
-    })
 
   }
 
@@ -139,7 +139,7 @@ describe('Library', function () {
     it('should call a function asynchronously', function (done) {
       var lib = process.platform == 'win32' ? 'msvcrt' : 'libm'
       var libm = new Library(lib, {
-          'ceil': [ 'double', [ 'double' ], { async: true } ]
+        'ceil': [ 'double', [ 'double' ], { async: true } ]
       })
       libm.ceil(1.1, function (err, res) {
         assert(err === null);
