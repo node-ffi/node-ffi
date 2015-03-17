@@ -9,6 +9,7 @@ npm intall ffi-io --save
 
 **Credits:**
 
+- [https://github.com/tootallnate]: ffi package supporting Node 0.10.*
 - [kjunichi](https://github.com/kjunichi): NAN update, pthread to libuv switch
 - [unbornchikken](https://github.com/unbornchikken): Error handling reworked, unit tests fixes
 
