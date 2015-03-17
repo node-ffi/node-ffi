@@ -1,11 +1,13 @@
 {
-  "name": "ffi",
-  "version": "1.2.7",
+  "name": "ffi-io",
+  "version": "1.0.0",
   "authors": [
     "Rick Branson",
-    "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
+    "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)",
+    "kjunichi",
+    "unbornchikken"
   ],
-  "description": "A foreign function interface (FFI) for Node.js",
+  "description": "A foreign function interface (FFI) for Node.js - ffi-io: A fork of ffi module adding io.js and Node.js 0.12 support.",
   "keywords": [
     "foreign",
     "function",
@@ -15,9 +17,10 @@
     "binding",
     "c"
   ],
-  "homepage": "http://github.com/node-ffi/node-ffi",
+  "homepage": "http://github.com/unbornchikken/node-ffi",
   "engines": {
-    "node": ">=0.6.0"
+    "node": ">=0.10.0",
+    "iojs": ">=1.0.0"
   },
   "main": "./lib/ffi",
   "dependencies": {
@@ -36,9 +39,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/node-ffi/node-ffi.git"
+    "url": "http://github.com/unbornchikken/node-ffi.git"
   },
   "bugs": {
-    "url": "http://github.com/node-ffi/node-ffi/issues"
+    "url": "http://github.com/unbornchikken/node-ffi/issues"
   }
 }
