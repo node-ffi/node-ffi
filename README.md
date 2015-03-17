@@ -4,7 +4,7 @@
 **Installation:**
 
 ```
-npm intall ffi-io --save
+npm install ffi-io --save
 ```
 
 **Credits:**
