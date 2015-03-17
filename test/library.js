@@ -8,6 +8,7 @@ var assert = require('assert')
 describe('Library', function () {
 
   var charPtr = ref.refType(ref.types.char)
+  var sizeTPtr = ref.refType(ref.types.size_t)
 
   afterEach(gc)
 
@@ -21,10 +22,18 @@ describe('Library', function () {
   })
 
   it('should accept `null` as a first argument', function () {
-    var thisFuncs = new Library(null, {
-      'printf': [ 'void', [ charPtr ] ]
-    })
-    assert(typeof thisFuncs.printf === 'function');
+    if (process.platform == 'win32') {
+      // In Windows there is no C stdlib in the exports, so we test libuv there
+      var thisFuncs = new Library(null, {
+        'uv_cwd': [ 'int', [ charPtr, sizeTPtr ] ]
+      })
+      assert(typeof thisFuncs.uv_cwd === 'function');
+    } else {
+      var thisFuncs = new Library(null, {
+        'printf': [ 'void', [ charPtr ] ]
+      })
+      assert(typeof thisFuncs.printf === 'function');
+    }
   })
   
   it('should accept a lib name as the first argument', function () {
@@ -57,28 +66,19 @@ describe('Library', function () {
       assert(e);
     }
   })
-  
-  it('should work with "strcpy" and a 128 length string', function () {
-    var ZEROS_128 = Array(128 + 1).join('0');
-    var buf = new Buffer(256);
-    var strcpy = new Library(null, {
-        'strcpy': [ charPtr, [ charPtr, 'string' ] ]
-    }).strcpy;
-    strcpy(buf, ZEROS_128);
-    assert(buf.readCString() === ZEROS_128);
-  })
-  
-  it('should work with "strcpy" and a 2k length string', function () {
-    var ZEROS_2K = Array(2e3 + 1).join('0');
-    var buf = new Buffer(4096);
-    var strcpy = new Library(null, {
-        'strcpy': [ charPtr, [ charPtr, 'string' ] ]
-    }).strcpy;
-    strcpy(buf, ZEROS_2K);
-    assert(buf.readCString() === ZEROS_2K);
-  })
 
   if (process.platform == 'win32') {
+
+    it('should get cwd by using lib_uv',
+      function () {
+        // In Windows there is no C stdlib in the exports, so we test libuv there
+        var thisFuncs = new Library(null, {
+          'uv_get_total_memory': [ 'uint64', [ ] ]
+        })
+        var mem = thisFuncs.uv_get_total_memory()
+        assert(mem)
+        assert(typeof mem === 'number')
+      })
 
     it('should work with "GetTimeOfDay" and a "FILETIME" Struct pointer',
     function () {
@@ -95,6 +95,26 @@ describe('Library', function () {
     })
 
   } else {
+
+    it('should work with "strcpy" and a 128 length string', function () {
+      var ZEROS_128 = Array(128 + 1).join('0');
+      var buf = new Buffer(256);
+      var strcpy = new Library(null, {
+        'strcpy': [ charPtr, [ charPtr, 'string' ] ]
+      }).strcpy;
+      strcpy(buf, ZEROS_128);
+      assert(buf.readCString() === ZEROS_128);
+    })
+
+    it('should work with "strcpy" and a 2k length string', function () {
+      var ZEROS_2K = Array(2e3 + 1).join('0');
+      var buf = new Buffer(4096);
+      var strcpy = new Library(null, {
+        'strcpy': [ charPtr, [ charPtr, 'string' ] ]
+      }).strcpy;
+      strcpy(buf, ZEROS_2K);
+      assert(buf.readCString() === ZEROS_2K);
+    })
 
     it('should work with "gettimeofday" and a "timeval" Struct pointer',
     function () {
