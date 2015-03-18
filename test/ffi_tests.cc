@@ -3,6 +3,7 @@
 #include "v8.h"
 #include "node.h"
 #include "node_buffer.h"
+#include <nan.h>
 
 using namespace v8;
 using namespace node;
@@ -136,8 +137,8 @@ my_callback callback_func (my_callback cb) {
  * args[2] - the base (0 means autodetect)
  */
 
-Handle<Value> Strtoul(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Strtoul) {
+  NanScope();
   char buf[128];
   int base;
   char **endptr;
@@ -151,7 +152,7 @@ Handle<Value> Strtoul(const Arguments &args) {
 
   unsigned long val = strtoul(buf, endptr, base);
 
-  return scope.Close(Integer::NewFromUnsigned(val));
+  NanReturnValue(NanNew<Integer>((uint32_t)val));
 }
 
 
@@ -160,20 +161,20 @@ typedef void (*cb)(void);
 
 static cb callback = NULL;
 
-Handle<Value> SetCb(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(SetCb) {
+  NanScope();
   char *buf = Buffer::Data(args[0].As<Object>());
   callback = (cb)buf;
-  return scope.Close(Undefined());
+  NanReturnUndefined();
 }
 
-Handle<Value> CallCb(const Arguments &args) {
+NAN_METHOD(CallCb) {
   if (callback == NULL) {
-    return ThrowException(Exception::Error(String::New("you must call \"set_cb()\" first")));
+    return NanThrowError("you must call \"set_cb()\" first");
   } else {
     callback();
   }
-  return Undefined();
+  NanReturnUndefined();
 }
 
 void AsyncCbCall(uv_work_t *req) {
@@ -186,15 +187,15 @@ void FinishAsyncCbCall(uv_work_t *req) {
   delete req;
 }
 
-Handle<Value> CallCbAsync(const Arguments &args) {
+NAN_METHOD(CallCbAsync) {
   if (callback == NULL) {
-    return ThrowException(Exception::Error(String::New("you must call \"set_cb()\" first")));
+    return NanThrowError("you must call \"set_cb()\" first");
   } else {
     uv_work_t *req = new uv_work_t;
     req->data = (void *)callback;
     uv_queue_work(uv_default_loop(), req, AsyncCbCall, (uv_after_work_cb)FinishAsyncCbCall);
   }
-  return Undefined();
+  NanReturnUndefined();
 }
 
 
@@ -213,12 +214,11 @@ void wrap_pointer_cb(char *data, void *hint) {
 Handle<Object> WrapPointer(char *ptr) {
   void *user_data = NULL;
   size_t length = 0;
-  Buffer *buf = Buffer::New(ptr, length, wrap_pointer_cb, user_data);
-  return buf->handle_;
+  return NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data);
 }
 
 void Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
 #if WIN32
   // initialize "floating point support" on Windows?!?!
@@ -228,14 +228,14 @@ void Initialize(Handle<Object> target) {
 #endif
 
   // atoi and abs here for testing purposes
-  target->Set(String::NewSymbol("atoi"), WrapPointer((char *)atoi));
+  target->Set(NanNew<String>("atoi"), WrapPointer((char *)atoi));
 
   // Windows has multiple `abs` signatures, so we need to manually disambiguate
   int (*absPtr)(int)(abs);
-  target->Set(String::NewSymbol("abs"),  WrapPointer((char *)absPtr));
+  target->Set(NanNew<String>("abs"),  WrapPointer((char *)absPtr));
 
   // sprintf pointer; used in the varadic tests
-  target->Set(String::NewSymbol("sprintf"),  WrapPointer((char *)sprintf));
+  target->Set(NanNew<String>("sprintf"),  WrapPointer((char *)sprintf));
 
   // hard-coded `strtoul` binding, for the benchmarks
   NODE_SET_METHOD(target, "strtoul", Strtoul);
@@ -245,16 +245,16 @@ void Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "call_cb_async", CallCbAsync);
 
   // also need to test these custom functions
-  target->Set(String::NewSymbol("double_box"), WrapPointer((char *)double_box));
-  target->Set(String::NewSymbol("double_box_ptr"), WrapPointer((char *)double_box_ptr));
-  target->Set(String::NewSymbol("area_box"), WrapPointer((char *)area_box));
-  target->Set(String::NewSymbol("area_box_ptr"), WrapPointer((char *)area_box_ptr));
-  target->Set(String::NewSymbol("create_box"), WrapPointer((char *)create_box));
-  target->Set(String::NewSymbol("add_boxes"), WrapPointer((char *)add_boxes));
-  target->Set(String::NewSymbol("int_array"), WrapPointer((char *)int_array));
-  target->Set(String::NewSymbol("array_in_struct"), WrapPointer((char *)array_in_struct));
-  target->Set(String::NewSymbol("callback_func"), WrapPointer((char *)callback_func));
-  target->Set(String::NewSymbol("play_ping_pong"), WrapPointer((char *)play_ping_pong));
+  target->Set(NanNew<String>("double_box"), WrapPointer((char *)double_box));
+  target->Set(NanNew<String>("double_box_ptr"), WrapPointer((char *)double_box_ptr));
+  target->Set(NanNew<String>("area_box"), WrapPointer((char *)area_box));
+  target->Set(NanNew<String>("area_box_ptr"), WrapPointer((char *)area_box_ptr));
+  target->Set(NanNew<String>("create_box"), WrapPointer((char *)create_box));
+  target->Set(NanNew<String>("add_boxes"), WrapPointer((char *)add_boxes));
+  target->Set(NanNew<String>("int_array"), WrapPointer((char *)int_array));
+  target->Set(NanNew<String>("array_in_struct"), WrapPointer((char *)array_in_struct));
+  target->Set(NanNew<String>("callback_func"), WrapPointer((char *)callback_func));
+  target->Set(NanNew<String>("play_ping_pong"), WrapPointer((char *)play_ping_pong));
 }
 
 } // anonymous namespace

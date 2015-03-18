@@ -21,10 +21,11 @@
   },
   "main": "./lib/ffi",
   "dependencies": {
-    "bindings": "*",
-    "debug": "*",
+    "bindings": "~1.2.0",
+    "debug": "~1.0.1",
     "ref": "*",
-    "ref-struct": "*"
+    "ref-struct": "*",
+    "nan": "*"
   },
   "devDependencies": {
     "mocha": "*",

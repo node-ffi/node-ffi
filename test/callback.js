@@ -1,4 +1,3 @@
-
 var assert = require('assert')
   , ref = require('ref')
   , ffi = require('../')
@@ -62,7 +61,8 @@ describe('Callback', function () {
 
   it('should throw an Error with a meaningful message when a type\'s "set()" throws', function () {
     var cb = ffi.Callback('int', [ ], function () {
-      return 'a string!?!?'
+      // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
+      return 1111111111111111111111
     })
     var fn = ffi.ForeignFunction(cb, 'int', [ ])
     assert.throws(function () {
@@ -71,7 +71,7 @@ describe('Callback', function () {
   })
 
   it('should throw an Error when invoked after the callback gets garbage collected', function () {
-    var cb = ffi.Callback('void', [ ], function () {})
+    var cb = ffi.Callback('void', [ ], function () { })
 
     // register the callback function
     bindings.set_cb(cb)
@@ -110,16 +110,16 @@ describe('Callback', function () {
     it('multiple callback invocations from uv thread pool should be properly synchronized', function (done) {
       this.timeout(10000)
       var iterations = 30000
-      var cb = ffi.Callback('string', ['string'], function (val) {
+      var cb = ffi.Callback('string', [ 'string' ], function (val) {
         if (val === "ping" && --iterations > 0) {
-	  return "pong"
+          return "pong"
         }
-	return "end"
+        return "end"
       })
       var pingPongFn = ffi.ForeignFunction(bindings.play_ping_pong, 'void', [ 'pointer' ])
       pingPongFn.async(cb, function (err, ret) {
         assert.equal(iterations, 0)
-	done()
+        done()
       })
     })
 
@@ -188,7 +188,7 @@ describe('Callback', function () {
     })
 
     it('should throw an Error when invoked after the callback gets garbage collected', function (done) {
-      var cb = ffi.Callback('void', [ ], function () {})
+      var cb = ffi.Callback('void', [ ], function () { })
 
       // register the callback function
       bindings.set_cb(cb)
@@ -200,14 +200,17 @@ describe('Callback', function () {
       var listeners = process.listeners('uncaughtException').slice()
       process.removeAllListeners('uncaughtException')
       process.once('uncaughtException', function (e) {
-        assert(/ffi/.test(e.message))
+        var err
+        try {
+          assert(/ffi/.test(e.message))
+        } catch (ae) {
+          err = ae
+        }
+        done(err);
 
-        // re-add Mocha's listeners
         listeners.forEach(function (fn) {
           process.on('uncaughtException', fn)
         })
-
-        done()
       })
 
       cb = null // KILL!!

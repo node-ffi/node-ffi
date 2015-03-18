@@ -32,7 +32,8 @@ describe('ForeignFunction', function () {
     var _abs = bindings.abs
     var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
     assert.throws(function () {
-      abs('a string?!?!')
+      // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
+      abs(11111111111111111111)
     }, /error setting argument 0/)
   })
 
@@ -175,11 +176,17 @@ describe('ForeignFunction', function () {
       var _abs = bindings.abs
       var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
 
-      abs.async('a string!?!?', function (err, res) {
+      // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
+      abs.async(1111111111111111111111, function (err, res) {
+        try {
           assert(err)
           assert(/error setting argument 0/.test(err.message))
           assert.equal('undefined', typeof res)
           done()
+        }
+        catch (e) {
+          done(e)
+        }
       });
     })
 
