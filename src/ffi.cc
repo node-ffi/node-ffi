@@ -285,7 +285,7 @@ NAN_METHOD(FFI::FFICall) {
         );
 #if __OBJC__ || __OBJC2__
     } @catch (id ex) {
-      return THROW_ERROR_EXCEPTION((char *)ex);
+      return THROW_ERROR_EXCEPTION(WrapPointer((char *)ex));
     }
 #endif
 
