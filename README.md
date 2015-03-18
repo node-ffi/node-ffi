@@ -1,5 +1,5 @@
 # NOTICE:
-**This is ffi.io package, a (hopefully temporary) fork of [ffi](https://github.com/node-ffi/node-ffi) module adding io.js and Node.js 0.12 support.**
+**This is ffi-io package, a (hopefully temporary) fork of [ffi](https://github.com/node-ffi/node-ffi) module adding io.js and Node.js 0.12 support.**
 
 **Installation:**
 
