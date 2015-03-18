@@ -28,7 +28,7 @@ describe('ForeignFunction', function () {
     assert.equal(1234, abs(-1234))
   })
 
-	it('should throw an Error with a meaningful message when type\'s `set()` throws', function () {
+  it('should throw an Error with a meaningful message when type\'s `set()` throws', function () {
     var _abs = bindings.abs
     var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
     assert.throws(function () {
@@ -172,21 +172,21 @@ describe('ForeignFunction', function () {
       })
     })
 
-	  it('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
+    it('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
       var _abs = bindings.abs
       var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
 
       // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
       abs.async(1111111111111111111111, function (err, res) {
-	      try {
-		      assert(err)
-		      assert(/error setting argument 0/.test(err.message))
-		      assert.equal('undefined', typeof res)
-		      done()
-	      }
-	      catch(e) {
-		      done(e)
-	      }
+        try {
+          assert(err)
+          assert(/error setting argument 0/.test(err.message))
+          assert.equal('undefined', typeof res)
+          done()
+        }
+        catch (e) {
+          done(e)
+        }
       });
     })
 
