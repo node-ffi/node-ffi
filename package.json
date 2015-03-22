@@ -22,7 +22,7 @@
   "main": "./lib/ffi",
   "dependencies": {
     "bindings": "~1.2.0",
-    "debug": "~1.0.1",
+    "debug": "2",
     "ref": "*",
     "ref-struct": "*",
     "nan": "*"
