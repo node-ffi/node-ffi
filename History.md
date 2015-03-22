@@ -1,4 +1,18 @@
 
+1.3.0 / 2015-03-22
+==================
+
+  * add appveyor.yml file for Windows testing
+  * add support for io.js >= v1.1.0 and node.js v0.12.x via nan
+  * avoid VS build error LNK2005
+  * package: allow any "debug" v2
+  * package: update github URLs for new repo location
+  * travis: don't test node v0.6, test v0.12
+  * now using libuv's pthread impl on Windows, removed `pthreads-win32` dep
+  * `dlfcn-win32` dep updated to fix process global symbols on Windows
+  * README: add appveyor build badge
+  * README: use SVG appveyor badge
+
 1.2.7 / 2014-07-06
 ==================
 
