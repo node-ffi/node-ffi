@@ -1,4 +1,7 @@
-# NOTICE:
+# OBSOLETE:
+Since [ffi](https://github.com/node-ffi/node-ffi) has landed a new version and supports node.js 0.12 and io.js from now, this module is considered to obsolete. Please update to recent ffi version as soon as possible.
+
+# OLD NOTICE:
 **This is ffi-io package, a (hopefully temporary) fork of [ffi](https://github.com/node-ffi/node-ffi) module adding io.js and Node.js 0.12 support.**
 
 **Installation:**
@@ -11,7 +14,7 @@ npm install ffi-io --save
 
 - [TooTallNate](https://github.com/tootallnate): ffi package supporting Node 0.10.*
 - [kjunichi](https://github.com/kjunichi): NAN update, pthread to libuv switch
-- [unbornchikken](https://github.com/unbornchikken): Error handling reworked, unit tests fixes
+- [unbornchikken](https://github.com/unbornchikken): Error handling reworked, unit tests fixes</del>
 
 
 node-ffi
