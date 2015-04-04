@@ -211,7 +211,6 @@ void CallbackInfo::Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "Callback", Callback);
 
   // initialize our threaded invokation stuff
-  GetCurrentThreadId();
 #ifdef WIN32
   g_threadID = GetCurrentThreadId();
 #else
