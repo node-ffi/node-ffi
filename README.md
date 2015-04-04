@@ -1,7 +1,3 @@
-# OBSOLETE:
-Since [ffi](https://github.com/node-ffi/node-ffi) has landed a new version and supports node.js 0.12 and io.js from now, this module is considered to obsolete. Please update to recent ffi version as soon as possible.
-
-# OLD NOTICE:
 **This is ffi-io package, a (hopefully temporary) fork of [ffi](https://github.com/node-ffi/node-ffi) module adding io.js and Node.js 0.12 support.**
 
 **Installation:**
