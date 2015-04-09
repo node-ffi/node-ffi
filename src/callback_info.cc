@@ -163,10 +163,10 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
   callback_info *info = reinterpret_cast<callback_info *>(user_data);
 
   // are we executing from another thread?
-  uv_thread_t self_thread = (uv_thread_t) uv_thread_self();
 #ifdef WIN32
   if (g_threadID == GetCurrentThreadId()) {
 #else
+  uv_thread_t self_thread = (uv_thread_t) uv_thread_self();
   if (uv_thread_equal(&self_thread, &g_mainthread)) {
 #endif    
     DispatchToV8(info, retval, parameters);
