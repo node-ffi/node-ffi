@@ -189,8 +189,9 @@ void invoke_callback(void* args) {
 #else
 void* invoke_callback(void* args) {
 #endif // WIN32
-  if (callback != NULL) {
-    callback();
+  cb c = callback;
+  if (c != NULL) {
+    c();
   }
 #ifndef WIN32
   return NULL;
