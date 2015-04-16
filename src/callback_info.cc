@@ -50,6 +50,8 @@ void closure_pointer_cb(char *data, void *hint) {
  */
 
 void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters, bool dispatched) {
+  NanScope();
+  
   const char* errorMessage = "ffi fatal: callback has been garbage collected!";
 
   if (info->function == NULL) {
