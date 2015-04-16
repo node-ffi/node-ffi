@@ -91,6 +91,71 @@ describe('Callback', function () {
     }
   })
 
+  /**
+   * We should make sure that callbacks or errors gets propagated back to node's main thread
+   * when it called on a non libuv native thread.
+   * See: https://github.com/node-ffi/node-ffi/issues/199
+   */
+
+  it("should propagate callbacks and errors back from native threads", function(done) {
+    var invokeCount = 0
+    var cb = ffi.Callback('void', [ ], function () {
+      invokeCount++
+    })
+
+    var kill = (function (cb) {
+      // register the callback function
+      bindings.set_cb(cb)
+      return function () {
+        var c = cb
+        cb = null // kill
+        c = null // kill!!!
+      }
+    })(cb)
+
+    // destroy the outer "cb". now "kill()" holds the "cb" reference
+    cb = null
+
+    // invoke the callback a couple times
+    assert.equal(0, invokeCount)
+    bindings.call_cb_from_thread()
+    bindings.call_cb_from_thread()
+
+    setTimeout(function () {
+      assert.equal(2, invokeCount)
+
+      gc() // ensure the outer "cb" Buffer is collected
+      process.nextTick(finish)
+    }, 100)
+
+    function finish () {
+      kill()
+      gc() // now ensure the inner "cb" Buffer is collected
+
+      // should throw an Error asynchronously!,
+      // because the callback has been garbage collected.
+
+      // hijack the "uncaughtException" event for this test
+      var listeners = process.listeners('uncaughtException').slice()
+      process.removeAllListeners('uncaughtException')
+      process.once('uncaughtException', function (e) {
+        var err
+        try {
+          assert(/ffi/.test(e.message))
+        } catch (ae) {
+          err = ae
+        }
+        done(err);
+
+        listeners.forEach(function (fn) {
+          process.on('uncaughtException', fn)
+        })
+      })
+
+      bindings.call_cb_from_thread()
+    }
+  });
+
   describe('async', function () {
 
     it('should be invokable asynchronously by an ffi\'d ForeignFunction', function (done) {

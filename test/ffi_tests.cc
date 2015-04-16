@@ -5,6 +5,12 @@
 #include "node_buffer.h"
 #include <nan.h>
 
+#ifdef WIN32
+#include <process.h>
+#else
+#include <pthread.h>
+#endif // WIN32
+
 using namespace v8;
 using namespace node;
 
@@ -177,6 +183,35 @@ NAN_METHOD(CallCb) {
   NanReturnUndefined();
 }
 
+// Invoke callback from a native (non libuv) thread:
+void invoke_callback(void* args) {
+  if (callback != NULL) {
+    try {
+      callback();
+    }
+    catch (...) {
+    }
+  }
+#ifndef WIN32
+  pthread_exit(NULL);
+#endif // WIN32
+}
+
+NAN_METHOD(CallCbFromThread) {
+  if (callback == NULL) {
+    return NanThrowError("you must call \"set_cb()\" first");
+  }
+  else {
+#ifdef WIN32
+    _beginthread(&invoke_callback, 0, NULL);
+#else
+    pthread_t thread;
+    pthread_create(&thread, NULL, &invoke_callback, NULL);
+#endif // WIN32
+  }
+  NanReturnUndefined();
+}
+
 void AsyncCbCall(uv_work_t *req) {
   cb c = (cb)req->data;
   c();
@@ -242,6 +277,7 @@ void Initialize(Handle<Object> target) {
 
   NODE_SET_METHOD(target, "set_cb", SetCb);
   NODE_SET_METHOD(target, "call_cb", CallCb);
+  NODE_SET_METHOD(target, "call_cb_from_thread", CallCbFromThread);
   NODE_SET_METHOD(target, "call_cb_async", CallCbAsync);
 
   // also need to test these custom functions
