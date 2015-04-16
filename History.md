@@ -1,4 +1,12 @@
 
+1.3.1 / 2015-04-16
+==================
+
+  * test: use `assert.throws()` for Obj-C test cases
+  * test: add case for #199 that covers callback and error propagation on non-libuv thread
+  * HandleScope issue fix for iojs v1.7+
+  * use Windows' native thread API, rather than libuv
+
 1.3.0 / 2015-03-22
 ==================
 
