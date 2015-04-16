@@ -184,16 +184,16 @@ NAN_METHOD(CallCb) {
 }
 
 // Invoke callback from a native (non libuv) thread:
+#ifdef WIN32
 void invoke_callback(void* args) {
+#else
+void* invoke_callback(void* args) {
+#endif // WIN32
   if (callback != NULL) {
-    try {
-      callback();
-    }
-    catch (...) {
-    }
+    callback();
   }
 #ifndef WIN32
-  pthread_exit(NULL);
+  return NULL;
 #endif // WIN32
 }
 
