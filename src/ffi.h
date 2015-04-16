@@ -102,7 +102,7 @@ class CallbackInfo {
     static DWORD g_threadID;
 #else
     static uv_thread_t          g_mainthread;
-#endif // WIN32    
+#endif // WIN32
     static uv_mutex_t    g_queue_mutex;
     static std::queue<ThreadedCallbackInvokation *> g_queue;
     static uv_async_t         g_async;

@@ -1,22 +1,8 @@
-**This is ffi-io package, a (hopefully temporary) fork of [ffi](https://github.com/node-ffi/node-ffi) module adding io.js and Node.js 0.12 support.**
-
-**Installation:**
-
-```
-npm install ffi-io --save
-```
-
-**Credits:**
-
-- [TooTallNate](https://github.com/tootallnate): ffi package supporting Node 0.10.*
-- [kjunichi](https://github.com/kjunichi): NAN update, pthread to libuv switch
-- [unbornchikken](https://github.com/unbornchikken): Error handling reworked, unit test fixes
-
-
 node-ffi
 ========
-
 ### Node.js Foreign Function Interface
+[![Build Status](https://travis-ci.org/node-ffi/node-ffi.svg?branch=master)](https://travis-ci.org/node-ffi/node-ffi)
+[![Build Status](https://ci.appveyor.com/api/projects/status/n81apam1igfw8491?svg=true)](https://ci.appveyor.com/project/TooTallNate/node-ffi)
 
 `node-ffi` is a Node.js addon for loading and calling dynamic libraries using
 pure JavaScript. It can be used to create bindings to native libraries without
@@ -35,7 +21,7 @@ Example
 -------
 
 ``` js
-var ffi = require('ffi-io');
+var ffi = require('ffi');
 
 var libm = ffi.Library('libm', {
   'ceil': [ 'double', [ 'double' ] ]
@@ -66,7 +52,7 @@ tools](https://github.com/TooTallNate/node-gyp#installation) for your platform,
 then invoke:
 
 ``` bash
-$ npm install ffi-io
+$ npm install ffi
 ```
 
 Source Install / Manual Compilation
@@ -82,7 +68,7 @@ $ npm install -g node-gyp
 Now you can compile `node-ffi`:
 
 ``` bash
-$ git clone git://github.com/unbornchikken/node-ffi.git
+$ git clone git://github.com/node-ffi/node-ffi.git
 $ cd node-ffi
 $ node-gyp rebuild
 ```
