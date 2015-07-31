@@ -25,7 +25,7 @@
     "debug": "2",
     "ref": "*",
     "ref-struct": "*",
-    "nan": "<2.0.0"
+    "nan": "1"
   },
   "devDependencies": {
     "mocha": "*",
