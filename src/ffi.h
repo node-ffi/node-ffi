@@ -21,8 +21,8 @@
   #include <objc/objc.h>
 #endif
 
-#define THROW_ERROR_EXCEPTION(x) NanThrowError(x)
-#define THROW_ERROR_EXCEPTION_WITH_STATUS_CODE(x, y) NanThrowError(x, y)
+#define THROW_ERROR_EXCEPTION(x) Nan::ThrowError(x)
+#define THROW_ERROR_EXCEPTION_WITH_STATUS_CODE(x, y) Nan::ThrowError(x)
 
 #define FFI_ASYNC_ERROR (ffi_status)1
 
@@ -48,7 +48,7 @@ class AsyncCallParams {
     char *fn;
     char *res;
     char *argv;
-    NanCallback *callback;
+    Nan::Callback *callback;
 };
 
 class FFI {
@@ -78,8 +78,8 @@ class FFI {
 typedef struct _callback_info {
   ffi_closure closure;           // the actual `ffi_closure` instance get inlined
   void *code;                    // the executable function pointer
-  NanCallback* errorFunction;    // JS callback function for reporting catched exceptions for the process' event loop
-  NanCallback* function;         // JS callback function the closure represents
+  Nan::Callback* errorFunction;    // JS callback function for reporting catched exceptions for the process' event loop
+  Nan::Callback* function;         // JS callback function the closure represents
   // these two are required for creating proper sized WrapPointer buffer instances
   int argc;                      // the number of arguments this function expects
   size_t resultSize;             // the size of the result pointer

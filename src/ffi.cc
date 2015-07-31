@@ -17,34 +17,34 @@ Handle<Value> WrapPointer(char *ptr) {
 }
 
 Handle<Value> WrapPointer(char *ptr, size_t length) {
-  NanEscapableScope();
+  Nan::EscapableHandleScope scope;
 
   void *user_data = NULL;
 
-  return NanEscapeScope(
-    NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data)
+  return scope.Escape(
+    Nan::NewBuffer(ptr, length, wrap_pointer_cb, user_data).ToLocalChecked()
   );
 }
 
 ///////////////
 
 void FFI::InitializeStaticFunctions(Handle<Object> target) {
-  Local<Object> o = NanNew<Object>();
+  Local<Object> o = Nan::New<Object>();
 
   // dl functions used by the DynamicLibrary JS class
-  o->Set(NanNew<String>("dlopen"),  WrapPointer((char *)dlopen));
-  o->Set(NanNew<String>("dlclose"), WrapPointer((char *)dlclose));
-  o->Set(NanNew<String>("dlsym"),   WrapPointer((char *)dlsym));
-  o->Set(NanNew<String>("dlerror"), WrapPointer((char *)dlerror));
+  o->Set(Nan::New<String>("dlopen").ToLocalChecked(),  WrapPointer((char *)dlopen));
+  o->Set(Nan::New<String>("dlclose").ToLocalChecked(), WrapPointer((char *)dlclose));
+  o->Set(Nan::New<String>("dlsym").ToLocalChecked(),   WrapPointer((char *)dlsym));
+  o->Set(Nan::New<String>("dlerror").ToLocalChecked(), WrapPointer((char *)dlerror));
 
-  target->Set(NanNew<String>("StaticFunctions"), o);
+  target->Set(Nan::New<String>("StaticFunctions").ToLocalChecked(), o);
 }
 
 ///////////////
 
 #define SET_ENUM_VALUE(_value) \
-  target->ForceSet(NanNew<String>(#_value), \
-              NanNew<Integer>((uint32_t)_value), \
+  target->ForceSet(Nan::New<String>(#_value), \
+              Nan::New<Integer>((uint32_t)_value), \
               static_cast<PropertyAttribute>(ReadOnly|DontDelete))
 
 void FFI::InitializeBindings(Handle<Object> target) {
@@ -109,54 +109,54 @@ void FFI::InitializeBindings(Handle<Object> target) {
 
   /* flags for dlsym() */
 #ifdef RTLD_NEXT
-  target->ForceSet(NanNew<String>("RTLD_NEXT"), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_NEXT"), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_DEFAULT
-  target->ForceSet(NanNew<String>("RTLD_DEFAULT"), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_DEFAULT"), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_SELF
-  target->ForceSet(NanNew<String>("RTLD_SELF"), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_SELF"), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_MAIN_ONLY
-  target->ForceSet(NanNew<String>("RTLD_MAIN_ONLY"), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_MAIN_ONLY"), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 
-  target->ForceSet(NanNew<String>("FFI_ARG_SIZE"), NanNew<Integer>((uint32_t)sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  target->ForceSet(NanNew<String>("FFI_SARG_SIZE"), NanNew<Integer>((uint32_t)sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  target->ForceSet(NanNew<String>("FFI_TYPE_SIZE"), NanNew<Integer>((uint32_t)sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  target->ForceSet(NanNew<String>("FFI_CIF_SIZE"), NanNew<Integer>((uint32_t)sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_ARG_SIZE"), Nan::New<Integer>((uint32_t)sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_SARG_SIZE"), Nan::New<Integer>((uint32_t)sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_TYPE_SIZE"), Nan::New<Integer>((uint32_t)sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_CIF_SIZE"), Nan::New<Integer>((uint32_t)sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 
   bool hasObjc = false;
 #if __OBJC__ || __OBJC2__
   hasObjc = true;
 #endif
-  target->ForceSet(NanNew<String>("HAS_OBJC"), NanNew<Boolean>(hasObjc), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("HAS_OBJC"), Nan::New<Boolean>(hasObjc), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 
-  Local<Object> ftmap = NanNew<Object>();
-  ftmap->Set(NanNew<String>("void"),     WrapPointer((char *)&ffi_type_void));
-  ftmap->Set(NanNew<String>("uint8"),    WrapPointer((char *)&ffi_type_uint8));
-  ftmap->Set(NanNew<String>("int8"),     WrapPointer((char *)&ffi_type_sint8));
-  ftmap->Set(NanNew<String>("uint16"),   WrapPointer((char *)&ffi_type_uint16));
-  ftmap->Set(NanNew<String>("int16"),    WrapPointer((char *)&ffi_type_sint16));
-  ftmap->Set(NanNew<String>("uint32"),   WrapPointer((char *)&ffi_type_uint32));
-  ftmap->Set(NanNew<String>("int32"),    WrapPointer((char *)&ffi_type_sint32));
-  ftmap->Set(NanNew<String>("uint64"),   WrapPointer((char *)&ffi_type_uint64));
-  ftmap->Set(NanNew<String>("int64"),    WrapPointer((char *)&ffi_type_sint64));
-  ftmap->Set(NanNew<String>("uchar"),    WrapPointer((char *)&ffi_type_uchar));
-  ftmap->Set(NanNew<String>("char"),     WrapPointer((char *)&ffi_type_schar));
-  ftmap->Set(NanNew<String>("ushort"),   WrapPointer((char *)&ffi_type_ushort));
-  ftmap->Set(NanNew<String>("short"),    WrapPointer((char *)&ffi_type_sshort));
-  ftmap->Set(NanNew<String>("uint"),     WrapPointer((char *)&ffi_type_uint));
-  ftmap->Set(NanNew<String>("int"),      WrapPointer((char *)&ffi_type_sint));
-  ftmap->Set(NanNew<String>("float"),    WrapPointer((char *)&ffi_type_float));
-  ftmap->Set(NanNew<String>("double"),   WrapPointer((char *)&ffi_type_double));
-  ftmap->Set(NanNew<String>("pointer"),  WrapPointer((char *)&ffi_type_pointer));
+  Local<Object> ftmap = Nan::New<Object>();
+  ftmap->Set(Nan::New<String>("void"),     WrapPointer((char *)&ffi_type_void));
+  ftmap->Set(Nan::New<String>("uint8"),    WrapPointer((char *)&ffi_type_uint8));
+  ftmap->Set(Nan::New<String>("int8"),     WrapPointer((char *)&ffi_type_sint8));
+  ftmap->Set(Nan::New<String>("uint16"),   WrapPointer((char *)&ffi_type_uint16));
+  ftmap->Set(Nan::New<String>("int16"),    WrapPointer((char *)&ffi_type_sint16));
+  ftmap->Set(Nan::New<String>("uint32"),   WrapPointer((char *)&ffi_type_uint32));
+  ftmap->Set(Nan::New<String>("int32"),    WrapPointer((char *)&ffi_type_sint32));
+  ftmap->Set(Nan::New<String>("uint64"),   WrapPointer((char *)&ffi_type_uint64));
+  ftmap->Set(Nan::New<String>("int64"),    WrapPointer((char *)&ffi_type_sint64));
+  ftmap->Set(Nan::New<String>("uchar"),    WrapPointer((char *)&ffi_type_uchar));
+  ftmap->Set(Nan::New<String>("char"),     WrapPointer((char *)&ffi_type_schar));
+  ftmap->Set(Nan::New<String>("ushort"),   WrapPointer((char *)&ffi_type_ushort));
+  ftmap->Set(Nan::New<String>("short"),    WrapPointer((char *)&ffi_type_sshort));
+  ftmap->Set(Nan::New<String>("uint"),     WrapPointer((char *)&ffi_type_uint));
+  ftmap->Set(Nan::New<String>("int"),      WrapPointer((char *)&ffi_type_sint));
+  ftmap->Set(Nan::New<String>("float"),    WrapPointer((char *)&ffi_type_float));
+  ftmap->Set(Nan::New<String>("double"),   WrapPointer((char *)&ffi_type_double));
+  ftmap->Set(Nan::New<String>("pointer"),  WrapPointer((char *)&ffi_type_pointer));
   // NOTE: "long" and "ulong" get handled in JS-land
   // Let libffi handle "long long"
-  ftmap->Set(NanNew<String>("ulonglong"), WrapPointer((char *)&ffi_type_ulong));
-  ftmap->Set(NanNew<String>("longlong"),  WrapPointer((char *)&ffi_type_slong));
+  ftmap->Set(Nan::New<String>("ulonglong"), WrapPointer((char *)&ffi_type_ulong));
+  ftmap->Set(Nan::New<String>("longlong"),  WrapPointer((char *)&ffi_type_slong));
 
-  target->Set(NanNew<String>("FFI_TYPES"), ftmap);
+  target->Set(Nan::New<String>("FFI_TYPES"), ftmap);
 }
 
 /*
@@ -173,7 +173,7 @@ void FFI::InitializeBindings(Handle<Object> target) {
  */
 
 NAN_METHOD(FFI::FFIPrepCif) {
-  NanScope();
+  Nan::HandleScope();
 
   unsigned int nargs;
   char *rtype, *atypes, *cif;
@@ -202,7 +202,7 @@ NAN_METHOD(FFI::FFIPrepCif) {
       (ffi_type *)rtype,
       (ffi_type **)atypes);
 
-  NanReturnValue(NanNew<Integer>(status));
+  NanReturnValue(Nan::New<Integer>(status));
 }
 
 /*
@@ -219,7 +219,7 @@ NAN_METHOD(FFI::FFIPrepCif) {
  * returns the ffi_status result from ffi_prep_cif_var()
  */
 NAN_METHOD(FFI::FFIPrepCifVar) {
-  NanScope();
+  Nan::HandleScope();
 
   unsigned int fargs, targs;
   char *rtype, *atypes, *cif;
@@ -250,7 +250,7 @@ NAN_METHOD(FFI::FFIPrepCifVar) {
       (ffi_type *)rtype,
       (ffi_type **)atypes);
 
-  NanReturnValue(NanNew<Integer>(status));
+  NanReturnValue(Nan::New<Integer>(status));
 }
 
 /*
@@ -263,7 +263,7 @@ NAN_METHOD(FFI::FFIPrepCifVar) {
  */
 
 NAN_METHOD(FFI::FFICall) {
-  NanScope();
+  Nan::HandleScope();
 
   if (args.Length() != 4) {
     return THROW_ERROR_EXCEPTION("ffi_call() requires 4 arguments!");
@@ -303,7 +303,7 @@ NAN_METHOD(FFI::FFICall) {
  */
 
 NAN_METHOD(FFI::FFICallAsync) {
-  NanScope();
+  Nan::HandleScope();
 
   if (args.Length() != 5) {
     return THROW_ERROR_EXCEPTION("ffi_call_async() requires 5 arguments!");
@@ -361,7 +361,7 @@ void FFI::AsyncFFICall(uv_work_t *req) {
  */
 
 void FFI::FinishAsyncFFICall(uv_work_t *req) {
-  NanScope();
+  Nan::HandleScope();
 
   AsyncCallParams *p = (AsyncCallParams *)req->data;
 
@@ -389,7 +389,7 @@ void FFI::FinishAsyncFFICall(uv_work_t *req) {
 }
 
 void init(Handle<Object> target) {
-  NanScope();
+  Nan::HandleScope();
 
   FFI::InitializeBindings(target);
   FFI::InitializeStaticFunctions(target);
