@@ -210,7 +210,8 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
 void CallbackInfo::Initialize(Handle<Object> target) {
   Nan::HandleScope();
 
-  NODE_SET_METHOD(target, "Callback", Callback);
+	Nan::Set(target, Nan::New<String>("Callback").ToLocalChecked(),
+		Nan::New<FunctionTemplate>(Callback)->GetFunction());
 
   // initialize our threaded invokation stuff
 #ifdef WIN32
