@@ -11,19 +11,13 @@ void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
-Handle<Value> WrapPointer(char *ptr) {
+Local<Value> WrapPointer(char *ptr) {
   size_t size = 0;
   return WrapPointer(ptr, size);
 }
 
-Handle<Value> WrapPointer(char *ptr, size_t length) {
-  Nan::EscapableHandleScope scope;
-
-  void *user_data = NULL;
-
-  return scope.Escape(
-    Nan::NewBuffer(ptr, length, wrap_pointer_cb, user_data).ToLocalChecked()
-  );
+Local<Value> WrapPointer(char *ptr, size_t length) {
+  return Nan::NewBuffer(ptr, length, wrap_pointer_cb, NULL).ToLocalChecked();
 }
 
 ///////////////

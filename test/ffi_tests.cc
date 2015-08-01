@@ -175,6 +175,7 @@ NAN_METHOD(SetCb) {
 }
 
 NAN_METHOD(CallCb) {
+  Nan::HandleScope();
   if (callback == NULL) {
     return Nan::ThrowError("you must call \"set_cb()\" first");
   } else {
@@ -199,6 +200,7 @@ void* invoke_callback(void* args) {
 }
 
 NAN_METHOD(CallCbFromThread) {
+  Nan::HandleScope();
   if (callback == NULL) {
     return Nan::ThrowError("you must call \"set_cb()\" first");
   }
@@ -224,6 +226,7 @@ void FinishAsyncCbCall(uv_work_t *req) {
 }
 
 NAN_METHOD(CallCbAsync) {
+  Nan::HandleScope();
   if (callback == NULL) {
     return Nan::ThrowError("you must call \"set_cb()\" first");
   } else {
@@ -247,10 +250,8 @@ void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
-Handle<Object> WrapPointer(char *ptr) {
-  void *user_data = NULL;
-  size_t length = 0;
-  return Nan::NewBuffer(ptr, length, wrap_pointer_cb, user_data).ToLocalChecked();
+Local<Value> WrapPointer(char *ptr) {
+  return Nan::NewBuffer(ptr, 0, wrap_pointer_cb, NULL).ToLocalChecked();
 }
 
 void Initialize(Handle<Object> target) {
