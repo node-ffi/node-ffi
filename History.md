@@ -1,4 +1,10 @@
 
+1.3.2 / 2015-07-31
+==================
+
+  * package: made the nan dependency stricter (#217, @feldgendler)
+  * package: reflect the fact that the build fails for node <= 0.8 (#196, @addaleax)
+
 1.3.1 / 2015-04-16
 ==================
 
