@@ -1,4 +1,18 @@
 
+1.3.2 / 2015-07-31
+==================
+
+  * package: made the nan dependency stricter (#217, @feldgendler)
+  * package: reflect the fact that the build fails for node <= 0.8 (#196, @addaleax)
+
+1.3.1 / 2015-04-16
+==================
+
+  * test: use `assert.throws()` for Obj-C test cases
+  * test: add case for #199 that covers callback and error propagation on non-libuv thread
+  * HandleScope issue fix for iojs v1.7+
+  * use Windows' native thread API, rather than libuv
+
 1.3.0 / 2015-03-22
 ==================
 

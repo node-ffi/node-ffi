@@ -126,7 +126,6 @@ describe('Callback', function () {
 
       gc() // ensure the outer "cb" Buffer is collected
       process.nextTick(finish)
-      console.log(3)
     }, 100)
 
     function finish () {

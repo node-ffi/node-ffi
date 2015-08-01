@@ -212,7 +212,7 @@ NAN_METHOD(CallCbFromThread) {
     pthread_create(&thread, NULL, &invoke_callback, NULL);
 #endif // WIN32
   }
-	info.GetReturnValue().SetUndefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 void AsyncCbCall(uv_work_t *req) {

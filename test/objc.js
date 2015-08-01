@@ -29,25 +29,21 @@ if (ffi.HAS_OBJC) {
     var pool = objcLib.objc_msgSend(NSAutoreleasePool, sel_new);
 
     it('should proxy @try/@catch to JavaScript via try/catch/throw', function () {
-      var sel_retain = objcLib.sel_registerName('retain')
-      try {
+      var sel_retain = objcLib.sel_registerName('retain');
+      assert.throws(function () {
         objcLib.objc_msgSend(pool, sel_retain);
-        assert(false); // unreachable
-      } catch (e) {
-        assert(e);
-      }
+      });
     });
 
     it('should throw a Buffer instance when an exception happens', function () {
       var sel_retain = objcLib.sel_registerName('retain');
-      try {
+      assert.throws(function () {
         objcLib.objc_msgSend(pool, sel_retain);
-        assert(false); // unreachable
-      } catch (e) {
-        assert(Buffer.isBuffer(e));
-        assert(!e.isNull());
-        assert(e.address() > 0);
-      }
+      }, function (e) {
+        return Buffer.isBuffer(e)
+            && !e.isNull()
+            && e.address() > 0;
+      });
     });
 
   });
