@@ -50,9 +50,9 @@ void closure_pointer_cb(char *data, void *hint) {
  */
 
 void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters, bool dispatched) {
-  Nan::HandleScope();
+  Nan::HandleScope scope;
 
-  const char* errorMessage = "ffi fatal: callback has been garbage collected!";
+  static const char* errorMessage = "ffi fatal: callback has been garbage collected!";
 
   if (info->function == NULL) {
     // throw an error instead of segfaulting.
@@ -103,8 +103,6 @@ void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
  */
 
 NAN_METHOD(CallbackInfo::Callback) {
-  Nan::HandleScope();
-
   if (info.Length() != 5) {
     return THROW_ERROR_EXCEPTION("Not enough arguments.");
   }
@@ -208,7 +206,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
  */
 
 void CallbackInfo::Initialize(Handle<Object> target) {
-  Nan::HandleScope();
+  Nan::HandleScope scope;
 
 	Nan::Set(target, Nan::New<String>("Callback").ToLocalChecked(),
 		Nan::New<FunctionTemplate>(Callback)->GetFunction());
