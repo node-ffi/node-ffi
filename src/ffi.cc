@@ -11,18 +11,9 @@ void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
-Local<Value> WrapPointer(char *ptr) {
-  size_t size = 0;
-  return WrapPointer(ptr, size);
-}
-
-Local<Value> WrapPointer(char *ptr, size_t length) {
-  return Nan::NewBuffer(ptr, length, wrap_pointer_cb, NULL).ToLocalChecked();
-}
-
 ///////////////
 
-void FFI::InitializeStaticFunctions(Handle<Object> target) {
+NAN_MODULE_INIT(FFI::InitializeStaticFunctions) {
   Local<Object> o = Nan::New<Object>();
 
   // dl functions used by the DynamicLibrary JS class
@@ -41,7 +32,7 @@ void FFI::InitializeStaticFunctions(Handle<Object> target) {
 	Nan::New<Integer>((uint32_t)_value), \
   static_cast<PropertyAttribute>(ReadOnly|DontDelete))
 
-void FFI::InitializeBindings(Handle<Object> target) {
+NAN_MODULE_INIT(FFI::InitializeBindings) {
 
   // main function exports
 	Nan::Set(target, Nan::New<String>("ffi_prep_cif").ToLocalChecked(),
@@ -119,10 +110,10 @@ void FFI::InitializeBindings(Handle<Object> target) {
 	target->ForceSet(Nan::New<String>("RTLD_MAIN_ONLY").ToLocalChecked(), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 
-  target->ForceSet(Nan::New<String>("FFI_ARG_SIZE").ToLocalChecked(), Nan::New<Integer>((uint32_t)sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-	target->ForceSet(Nan::New<String>("FFI_SARG_SIZE").ToLocalChecked(), Nan::New<Integer>((uint32_t)sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
-	target->ForceSet(Nan::New<String>("FFI_TYPE_SIZE").ToLocalChecked(), Nan::New<Integer>((uint32_t)sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
-	target->ForceSet(Nan::New<String>("FFI_CIF_SIZE").ToLocalChecked(), Nan::New<Integer>((uint32_t)sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_ARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+	target->ForceSet(Nan::New<String>("FFI_SARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+	target->ForceSet(Nan::New<String>("FFI_TYPE_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+	target->ForceSet(Nan::New<String>("FFI_CIF_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 
   bool hasObjc = false;
 #if __OBJC__ || __OBJC2__
@@ -171,8 +162,6 @@ void FFI::InitializeBindings(Handle<Object> target) {
  */
 
 NAN_METHOD(FFI::FFIPrepCif) {
-  Nan::HandleScope();
-
   unsigned int nargs;
   char *rtype, *atypes, *cif;
   ffi_status status;
@@ -217,14 +206,12 @@ NAN_METHOD(FFI::FFIPrepCif) {
  * returns the ffi_status result from ffi_prep_cif_var()
  */
 NAN_METHOD(FFI::FFIPrepCifVar) {
-  Nan::HandleScope();
-
   unsigned int fargs, targs;
   char *rtype, *atypes, *cif;
   ffi_status status;
   ffi_abi abi;
 
-	if (info.Length() != 6) {
+  if (info.Length() != 6) {
     return THROW_ERROR_EXCEPTION("ffi_prep_cif() requires 5 arguments!");
   }
 
@@ -261,9 +248,7 @@ NAN_METHOD(FFI::FFIPrepCifVar) {
  */
 
 NAN_METHOD(FFI::FFICall) {
-  Nan::HandleScope();
-
-	if (info.Length() != 4) {
+  if (info.Length() != 4) {
     return THROW_ERROR_EXCEPTION("ffi_call() requires 4 arguments!");
   }
 
@@ -301,9 +286,7 @@ NAN_METHOD(FFI::FFICall) {
  */
 
 NAN_METHOD(FFI::FFICallAsync) {
-  Nan::HandleScope();
-
-	if (info.Length() != 5) {
+  if (info.Length() != 5) {
     return THROW_ERROR_EXCEPTION("ffi_call_async() requires 5 arguments!");
   }
 
@@ -359,7 +342,7 @@ void FFI::AsyncFFICall(uv_work_t *req) {
  */
 
 void FFI::FinishAsyncFFICall(uv_work_t *req) {
-  Nan::HandleScope();
+  Nan::HandleScope scope;
 
   AsyncCallParams *p = (AsyncCallParams *)req->data;
 
@@ -369,7 +352,7 @@ void FFI::FinishAsyncFFICall(uv_work_t *req) {
     argv[0] = WrapPointer(p->err);
   }
 
-  TryCatch try_catch;
+  Nan::TryCatch try_catch;
 
   // invoke the registered callback function
   p->callback->Call(1, argv);
@@ -382,15 +365,16 @@ void FFI::FinishAsyncFFICall(uv_work_t *req) {
   delete req;
 
   if (try_catch.HasCaught()) {
-    FatalException(try_catch);
+    Nan::FatalException(try_catch);
   }
 }
 
-void init(Handle<Object> target) {
-  Nan::HandleScope();
+NAN_MODULE_INIT(init) {
+  Nan::HandleScope scope;
 
   FFI::InitializeBindings(target);
   FFI::InitializeStaticFunctions(target);
   CallbackInfo::Initialize(target);
 }
-NODE_MODULE(ffi_bindings, init);
+
+NODE_MODULE(ffi_bindings, init)
