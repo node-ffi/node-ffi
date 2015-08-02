@@ -1,6 +1,8 @@
 #include <limits.h>
 #include <errno.h>
+#ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS true
+#endif
 #include <stdint.h>
 #include <queue>
 
@@ -33,8 +35,16 @@ using namespace node;
  * Converts an arbitrary pointer to a node Buffer with 0-length
  */
 
-Local<Value> WrapPointer(char *);
-Local<Value> WrapPointer(char *, size_t length);
+void wrap_pointer_cb(char *data, void *hint);
+
+inline Local<Value> WrapPointer(char *ptr, size_t length) {
+  Nan::EscapableHandleScope scope;
+  return scope.Escape(Nan::NewBuffer(ptr, length, wrap_pointer_cb, NULL).ToLocalChecked());
+}
+
+inline Local<Value> WrapPointer(char *ptr) {
+  return WrapPointer(ptr, 0);
+}
 
 /*
  * Class used to store stuff during async ffi_call() invokations.
@@ -53,8 +63,8 @@ class AsyncCallParams {
 
 class FFI {
   public:
-    static void InitializeStaticFunctions(Handle<Object> Target);
-    static void InitializeBindings(Handle<Object> Target);
+    static NAN_MODULE_INIT(InitializeStaticFunctions);
+    static NAN_MODULE_INIT(InitializeBindings);
 
   protected:
     static NAN_METHOD(FFIPrepCif);
@@ -89,7 +99,7 @@ class ThreadedCallbackInvokation;
 
 class CallbackInfo {
   public:
-    static void Initialize(Handle<Object> Target);
+    static NAN_MODULE_INIT(Initialize);
     static void WatcherCallback(uv_async_t *w, int revents);
 
   protected:
