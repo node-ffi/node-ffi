@@ -294,12 +294,12 @@ NAN_METHOD(FFI::FFICallAsync) {
   p->result = FFI_OK;
 
   // store a persistent references to all the Buffers and the callback function
-	p->cif = Buffer::Data(info[0]->ToObject());
-	p->fn = Buffer::Data(info[1]->ToObject());
-	p->res = Buffer::Data(info[2]->ToObject());
-	p->argv = Buffer::Data(info[3]->ToObject());
+  p->cif = Buffer::Data(info[0]->ToObject());
+  p->fn = Buffer::Data(info[1]->ToObject());
+  p->res = Buffer::Data(info[2]->ToObject());
+  p->argv = Buffer::Data(info[3]->ToObject());
 
-	Local<Function> callback = Local<Function>::Cast(info[4]);
+  Local<Function> callback = Local<Function>::Cast(info[4]);
   p->callback = new Nan::Callback(callback);
 
   uv_work_t *req = new uv_work_t;
@@ -365,7 +365,11 @@ void FFI::FinishAsyncFFICall(uv_work_t *req) {
   delete req;
 
   if (try_catch.HasCaught()) {
+#if NODE_VERSION_AT_LEAST(0, 12, 0)
     Nan::FatalException(try_catch);
+#else
+    FatalException(try_catch);
+#endif
   }
 }
 

@@ -150,7 +150,7 @@ NAN_METHOD(CallbackInfo::Callback) {
   }
 
   info.GetReturnValue().Set(
-    Nan::NewBuffer((char *)code, sizeof(void *), closure_pointer_cb, cbInfo).ToLocalChecked()
+    Nan::NewBuffer((char *)code, sizeof(void*), closure_pointer_cb, cbInfo).ToLocalChecked()
   );
 }
 

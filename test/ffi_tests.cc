@@ -247,11 +247,15 @@ void play_ping_pong (const char* (*callback) (const char*)) {
 }
 
 void wrap_pointer_cb(char *data, void *hint) {
-  //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
-Local<Value> WrapPointer(char *ptr) {
-  return Nan::NewBuffer(ptr, 0, wrap_pointer_cb, NULL).ToLocalChecked();
+inline Local<Value> WrapPointer(char *ptr, size_t length) {
+  Nan::EscapableHandleScope scope;
+  return scope.Escape(Nan::NewBuffer(ptr, length, wrap_pointer_cb, NULL).ToLocalChecked());
+}
+
+inline Local<Value> WrapPointer(char *ptr) {
+  return WrapPointer(ptr, 0);
 }
 
 void Initialize(Handle<Object> target) {
