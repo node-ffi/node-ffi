@@ -28,21 +28,21 @@ NAN_MODULE_INIT(FFI::InitializeStaticFunctions) {
 ///////////////
 
 #define SET_ENUM_VALUE(_value) \
-	Nan::ForceSet(target, Nan::New<String>(#_value).ToLocalChecked(), \
-	Nan::New<Integer>((uint32_t)_value), \
+  Nan::ForceSet(target, Nan::New<String>(#_value).ToLocalChecked(), \
+  Nan::New<Integer>((uint32_t)_value), \
   static_cast<PropertyAttribute>(ReadOnly|DontDelete))
 
 NAN_MODULE_INIT(FFI::InitializeBindings) {
 
   // main function exports
-	Nan::Set(target, Nan::New<String>("ffi_prep_cif").ToLocalChecked(),
-		Nan::New<FunctionTemplate>(FFIPrepCif)->GetFunction());
-	Nan::Set(target, Nan::New<String>("ffi_prep_cif_var").ToLocalChecked(),
-		Nan::New<FunctionTemplate>(FFIPrepCifVar)->GetFunction());
-	Nan::Set(target, Nan::New<String>("ffi_call").ToLocalChecked(),
-		Nan::New<FunctionTemplate>(FFICall)->GetFunction());
-	Nan::Set(target, Nan::New<String>("ffi_call_async").ToLocalChecked(),
-		Nan::New<FunctionTemplate>(FFICallAsync)->GetFunction());
+  Nan::Set(target, Nan::New<String>("ffi_prep_cif").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(FFIPrepCif)->GetFunction());
+  Nan::Set(target, Nan::New<String>("ffi_prep_cif_var").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(FFIPrepCifVar)->GetFunction());
+  Nan::Set(target, Nan::New<String>("ffi_call").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(FFICall)->GetFunction());
+  Nan::Set(target, Nan::New<String>("ffi_call_async").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(FFICallAsync)->GetFunction());
 
   // `ffi_status` enum values
   SET_ENUM_VALUE(FFI_OK);
@@ -98,54 +98,54 @@ NAN_MODULE_INIT(FFI::InitializeBindings) {
 
   /* flags for dlsym() */
 #ifdef RTLD_NEXT
-	target->ForceSet(Nan::New<String>("RTLD_NEXT").ToLocalChecked(), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_NEXT").ToLocalChecked(), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 #endif
 #ifdef RTLD_DEFAULT
-	target->ForceSet(Nan::New<String>("RTLD_DEFAULT").ToLocalChecked(), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_DEFAULT").ToLocalChecked(), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 #endif
 #ifdef RTLD_SELF
-	target->ForceSet(Nan::New<String>("RTLD_SELF").ToLocalChecked(), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_SELF").ToLocalChecked(), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_MAIN_ONLY
-	target->ForceSet(Nan::New<String>("RTLD_MAIN_ONLY").ToLocalChecked(), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_MAIN_ONLY").ToLocalChecked(), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 
   target->ForceSet(Nan::New<String>("FFI_ARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-	target->ForceSet(Nan::New<String>("FFI_SARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
-	target->ForceSet(Nan::New<String>("FFI_TYPE_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
-	target->ForceSet(Nan::New<String>("FFI_CIF_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_SARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_TYPE_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_CIF_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 
   bool hasObjc = false;
 #if __OBJC__ || __OBJC2__
   hasObjc = true;
 #endif
-	target->ForceSet(Nan::New<String>("HAS_OBJC").ToLocalChecked(), Nan::New<Boolean>(hasObjc), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  target->ForceSet(Nan::New<String>("HAS_OBJC").ToLocalChecked(), Nan::New<Boolean>(hasObjc), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 
   Local<Object> ftmap = Nan::New<Object>();
-	ftmap->Set(Nan::New<String>("void").ToLocalChecked(), WrapPointer((char *)&ffi_type_void));
-	ftmap->Set(Nan::New<String>("uint8").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint8));
-	ftmap->Set(Nan::New<String>("int8").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint8));
-	ftmap->Set(Nan::New<String>("uint16").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint16));
-	ftmap->Set(Nan::New<String>("int16").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint16));
-	ftmap->Set(Nan::New<String>("uint32").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint32));
-	ftmap->Set(Nan::New<String>("int32").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint32));
-	ftmap->Set(Nan::New<String>("uint64").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint64));
-	ftmap->Set(Nan::New<String>("int64").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint64));
-	ftmap->Set(Nan::New<String>("uchar").ToLocalChecked(), WrapPointer((char *)&ffi_type_uchar));
-	ftmap->Set(Nan::New<String>("char").ToLocalChecked(), WrapPointer((char *)&ffi_type_schar));
-	ftmap->Set(Nan::New<String>("ushort").ToLocalChecked(), WrapPointer((char *)&ffi_type_ushort));
-	ftmap->Set(Nan::New<String>("short").ToLocalChecked(), WrapPointer((char *)&ffi_type_sshort));
-	ftmap->Set(Nan::New<String>("uint").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint));
-	ftmap->Set(Nan::New<String>("int").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint));
-	ftmap->Set(Nan::New<String>("float").ToLocalChecked(), WrapPointer((char *)&ffi_type_float));
-	ftmap->Set(Nan::New<String>("double").ToLocalChecked(), WrapPointer((char *)&ffi_type_double));
-	ftmap->Set(Nan::New<String>("pointer").ToLocalChecked(), WrapPointer((char *)&ffi_type_pointer));
+  ftmap->Set(Nan::New<String>("void").ToLocalChecked(), WrapPointer((char *)&ffi_type_void));
+  ftmap->Set(Nan::New<String>("uint8").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint8));
+  ftmap->Set(Nan::New<String>("int8").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint8));
+  ftmap->Set(Nan::New<String>("uint16").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint16));
+  ftmap->Set(Nan::New<String>("int16").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint16));
+  ftmap->Set(Nan::New<String>("uint32").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint32));
+  ftmap->Set(Nan::New<String>("int32").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint32));
+  ftmap->Set(Nan::New<String>("uint64").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint64));
+  ftmap->Set(Nan::New<String>("int64").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint64));
+  ftmap->Set(Nan::New<String>("uchar").ToLocalChecked(), WrapPointer((char *)&ffi_type_uchar));
+  ftmap->Set(Nan::New<String>("char").ToLocalChecked(), WrapPointer((char *)&ffi_type_schar));
+  ftmap->Set(Nan::New<String>("ushort").ToLocalChecked(), WrapPointer((char *)&ffi_type_ushort));
+  ftmap->Set(Nan::New<String>("short").ToLocalChecked(), WrapPointer((char *)&ffi_type_sshort));
+  ftmap->Set(Nan::New<String>("uint").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint));
+  ftmap->Set(Nan::New<String>("int").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint));
+  ftmap->Set(Nan::New<String>("float").ToLocalChecked(), WrapPointer((char *)&ffi_type_float));
+  ftmap->Set(Nan::New<String>("double").ToLocalChecked(), WrapPointer((char *)&ffi_type_double));
+  ftmap->Set(Nan::New<String>("pointer").ToLocalChecked(), WrapPointer((char *)&ffi_type_pointer));
   // NOTE: "long" and "ulong" get handled in JS-land
   // Let libffi handle "long long"
-	ftmap->Set(Nan::New<String>("ulonglong").ToLocalChecked(), WrapPointer((char *)&ffi_type_ulong));
-	ftmap->Set(Nan::New<String>("longlong").ToLocalChecked(), WrapPointer((char *)&ffi_type_slong));
+  ftmap->Set(Nan::New<String>("ulonglong").ToLocalChecked(), WrapPointer((char *)&ffi_type_ulong));
+  ftmap->Set(Nan::New<String>("longlong").ToLocalChecked(), WrapPointer((char *)&ffi_type_slong));
 
-	target->Set(Nan::New<String>("FFI_TYPES").ToLocalChecked(), ftmap);
+  target->Set(Nan::New<String>("FFI_TYPES").ToLocalChecked(), ftmap);
 }
 
 /*
@@ -171,16 +171,16 @@ NAN_METHOD(FFI::FFIPrepCif) {
     return THROW_ERROR_EXCEPTION("ffi_prep_cif() requires 5 arguments!");
   }
 
-	Handle<Value> cif_buf = info[0];
+  Handle<Value> cif_buf = info[0];
   if (!Buffer::HasInstance(cif_buf)) {
     return THROW_ERROR_EXCEPTION("prepCif(): Buffer required as first arg");
   }
 
   cif = Buffer::Data(cif_buf.As<Object>());
-	nargs = info[1]->Uint32Value();
-	rtype = Buffer::Data(info[2]->ToObject());
-	atypes = Buffer::Data(info[3]->ToObject());
-	abi = (ffi_abi)info[4]->Uint32Value();
+  nargs = info[1]->Uint32Value();
+  rtype = Buffer::Data(info[2]->ToObject());
+  atypes = Buffer::Data(info[3]->ToObject());
+  abi = (ffi_abi)info[4]->Uint32Value();
 
   status = ffi_prep_cif(
       (ffi_cif *)cif,
@@ -189,7 +189,7 @@ NAN_METHOD(FFI::FFIPrepCif) {
       (ffi_type *)rtype,
       (ffi_type **)atypes);
 
-	info.GetReturnValue().Set(Nan::New<Integer>(status));
+  info.GetReturnValue().Set(Nan::New<Integer>(status));
 }
 
 /*
@@ -215,17 +215,17 @@ NAN_METHOD(FFI::FFIPrepCifVar) {
     return THROW_ERROR_EXCEPTION("ffi_prep_cif() requires 5 arguments!");
   }
 
-	Handle<Value> cif_buf = info[0];
+  Handle<Value> cif_buf = info[0];
   if (!Buffer::HasInstance(cif_buf)) {
     return THROW_ERROR_EXCEPTION("prepCifVar(): Buffer required as first arg");
   }
 
   cif = Buffer::Data(cif_buf.As<Object>());
-	fargs = info[1]->Uint32Value();
-	targs = info[2]->Uint32Value();
-	rtype = Buffer::Data(info[3]->ToObject());
-	atypes = Buffer::Data(info[4]->ToObject());
-	abi = (ffi_abi)info[5]->Uint32Value();
+  fargs = info[1]->Uint32Value();
+  targs = info[2]->Uint32Value();
+  rtype = Buffer::Data(info[3]->ToObject());
+  atypes = Buffer::Data(info[4]->ToObject());
+  abi = (ffi_abi)info[5]->Uint32Value();
 
   status = ffi_prep_cif_var(
       (ffi_cif *)cif,
@@ -235,7 +235,7 @@ NAN_METHOD(FFI::FFIPrepCifVar) {
       (ffi_type *)rtype,
       (ffi_type **)atypes);
 
-	info.GetReturnValue().Set(Nan::New<Integer>(status));
+  info.GetReturnValue().Set(Nan::New<Integer>(status));
 }
 
 /*
@@ -252,10 +252,10 @@ NAN_METHOD(FFI::FFICall) {
     return THROW_ERROR_EXCEPTION("ffi_call() requires 4 arguments!");
   }
 
-	char *cif = Buffer::Data(info[0]->ToObject());
-	char *fn = Buffer::Data(info[1]->ToObject());
-	char *res = Buffer::Data(info[2]->ToObject());
-	char *fnargs = Buffer::Data(info[3]->ToObject());
+  char *cif = Buffer::Data(info[0]->ToObject());
+  char *fn = Buffer::Data(info[1]->ToObject());
+  char *res = Buffer::Data(info[2]->ToObject());
+  char *fnargs = Buffer::Data(info[3]->ToObject());
 
 #if __OBJC__ || __OBJC2__
     @try {
