@@ -37,8 +37,8 @@ describe('DynamicLibrary', function () {
     })
 
     it('should load libraries when pathname contains unicode characters', function() {
-      var lib = path.join(__dirname, 'build\\Release\\ffi_tests.node') // .node file is just a dynamic library
-      var toLib = path.join(__dirname, 'build\\Release\\sárgarigómadarfészekazalegszebbakirészeg\\ffi_tests.node')
+      var lib = path.join(__dirname, 'build', 'Release', 'ffi_tests.node') // .node file is just a dynamic library
+      var toLib = path.join(__dirname, 'build', 'Release', 'sárgarigómadarfészekazalegszebbakirészeg', 'ffi_tests.node')
       fs.copySync(lib, toLib);
       var handle = DynamicLibrary(toLib)
       var name = '_register_ffi_tests_'
