@@ -16,7 +16,7 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
-              'deps/dlfcn-win32/dlfcn.gyp:dlfcn'
+              'deps/simple-dlfcn-win32/dlfcn.gyp:dlfcn'
           ]
         }],
         ['OS=="mac"', {
