@@ -33,6 +33,19 @@
 #endif
 #include "dlfcn.h"
 
+#if ((defined(_WIN32) || defined(WIN32)) && (defined(_MSC_VER)) )
+#define snprintf sprintf_s
+#endif
+
+#ifdef UNICODE
+#include <wchar.h>
+#define CHAR	wchar_t
+#define UNICODE_L(s)	L##s
+#else
+#define CHAR	char
+#define UNICODE_L(s)	s
+#endif
+
 /* Note:
  * MSDN says these functions are not thread-safe. We make no efforts to have
  * any kind of thread safety.
@@ -86,7 +99,7 @@ static void global_add( global_object *start, HMODULE hModule )
 
     for( pobject = start; pobject->next; pobject = pobject->next );
 
-    nobject = malloc( sizeof( global_object ) );
+    nobject = (global_object*) malloc( sizeof( global_object ) );
 
     /* Should this be enough to fail global_add, and therefore also fail
      * dlopen?
@@ -125,10 +138,11 @@ static void global_rem( global_object *start, HMODULE hModule )
  * MSDN says the buffer cannot be larger than 64K bytes, so we set it to
  * the limit.
  */
-static char error_buffer[65535];
-static char *current_error;
+static CHAR error_buffer[65535];
+static CHAR *current_error;
+static char dlerror_buffer[65536];
 
-static int copy_string( char *dest, int dest_size, const char *src )
+static int copy_string( CHAR *dest, int dest_size, const CHAR *src )
 {
     int i = 0;
 
@@ -148,7 +162,7 @@ static int copy_string( char *dest, int dest_size, const char *src )
     return i;
 }
 
-static void save_err_str( const char *str )
+static void save_err_str( const CHAR *str )
 {
     DWORD dwMessageId;
     DWORD pos;
@@ -160,13 +174,13 @@ static void save_err_str( const char *str )
 
     /* Format error message to:
      * "<argument to function that failed>": <Windows localized error message>
-     */
-    pos  = copy_string( error_buffer,     sizeof(error_buffer),     "\"" );
+      */
+    pos  = copy_string( error_buffer,     sizeof(error_buffer),     UNICODE_L("\"") );
     pos += copy_string( error_buffer+pos, sizeof(error_buffer)-pos, str );
-    pos += copy_string( error_buffer+pos, sizeof(error_buffer)-pos, "\": " );
+    pos += copy_string( error_buffer+pos, sizeof(error_buffer)-pos, UNICODE_L("\": ") );
     pos += FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwMessageId,
-                          MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
-                          error_buffer+pos, sizeof(error_buffer)-pos, NULL );
+        MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
+        error_buffer+pos, sizeof(error_buffer)-pos, NULL );
 
     if( pos > 1 )
     {
@@ -180,9 +194,19 @@ static void save_err_str( const char *str )
 
 static void save_err_ptr_str( const void *ptr )
 {
-    char ptr_buf[19]; /* 0x<pointer> up to 64 bits. */
+    CHAR ptr_buf[19]; /* 0x<pointer> up to 64 bits. */
 
-    sprintf_s( ptr_buf, 19, "0x%p", ptr );
+#ifdef UNICODE
+
+#	if ((defined(_WIN32) || defined(WIN32)) && (defined(_MSC_VER)) )
+    swprintf_s( ptr_buf, 19, UNICODE_L("0x%p"), ptr );
+#	else
+    swprintf(ptr_buf, 19, UNICODE_L("0x%p"), ptr);
+#	endif
+
+#else
+    snprintf( ptr_buf, 19, "0x%p", ptr );
+#endif
 
     save_err_str( ptr_buf );
 }
@@ -220,11 +244,11 @@ void *dlopen( const char *file, int mode )
 
 
         /* GetModuleHandle( NULL ) only returns the current program file. So
-	 * if we want to get ALL loaded module including those in linked DLLs,
-	 * we have to use EnumProcessModules( ).
+         * if we want to get ALL loaded module including those in linked DLLs,
+         * we have to use EnumProcessModules( ).
          */
         if( EnumProcessModules( hCurrentProc, hAddtnlMods,
-                                sizeof( hAddtnlMods ), &cbNeeded ) != 0 )
+            sizeof( hAddtnlMods ), &cbNeeded ) != 0 )
         {
             DWORD i;
             for( i = 0; i < cbNeeded / sizeof( HMODULE ); i++ )
@@ -236,11 +260,11 @@ void *dlopen( const char *file, int mode )
     }
     else
     {
-        char lpFileName[MAX_PATH];
+        CHAR lpFileName[MAX_PATH];
         int i;
 
         /* MSDN says backslashes *must* be used instead of forward slashes. */
-        for( i = 0 ; i < sizeof(lpFileName)-1 ; i++ )
+        for( i = 0 ; i < sizeof(lpFileName) - 1 ; i ++ )
         {
             if( !file[i] )
                 break;
@@ -256,8 +280,8 @@ void *dlopen( const char *file, int mode )
          * to UNIX's search paths (start with system folders instead of current
          * folder).
          */
-        hModule = LoadLibraryEx( (LPSTR) lpFileName, NULL, 
-                                 LOAD_WITH_ALTERED_SEARCH_PATH );
+        hModule = LoadLibraryEx(lpFileName, NULL,
+                                LOAD_WITH_ALTERED_SEARCH_PATH );
 
         /* If the object was loaded with RTLD_GLOBAL, add it to list of global
          * objects, so that its symbols may be retrieved even if the handle for
@@ -320,6 +344,7 @@ int dlclose( void *handle )
     }
     else
         save_err_ptr_str( handle );
+
     /* dlclose's return value in inverted in relation to FreeLibrary's. */
     ret = !ret;
 
@@ -331,9 +356,14 @@ void *dlsym( void *handle, const char *name )
     FARPROC symbol;
     HMODULE hModule;
 
+#ifdef UNICODE
+    wchar_t namew[MAX_PATH];
+    wmemset(namew, 0, MAX_PATH);
+#endif
+
     current_error = NULL;
 
-    symbol = GetProcAddress( handle, name );
+    symbol = GetProcAddress( (HMODULE) handle, name );
 
     if( symbol != NULL )
         goto end;
@@ -371,9 +401,27 @@ void *dlsym( void *handle, const char *name )
 
 end:
     if( symbol == NULL )
-        save_err_str( name );
+    {
+#ifdef UNICODE
+        size_t converted_chars;
 
-//  warning C4054: 'type cast' : from function pointer 'FARPROC' to data pointer 'void *'
+        size_t str_len = strlen(name) + 1;
+
+#if ((defined(_WIN32) || defined(WIN32)) && (defined(_MSC_VER)) )
+        errno_t err = mbstowcs_s(&converted_chars, namew, str_len, name, str_len);
+        if (err != 0)
+            return NULL;
+#else
+        mbstowcs(namew, name, str_len);
+#endif
+
+        save_err_str( namew );
+#else
+        save_err_str( name );
+#endif
+    }
+
+    //  warning C4054: 'type cast' : from function pointer 'FARPROC' to data pointer 'void *'
 #ifdef _MSC_VER
 #pragma warning( suppress: 4054 )
 #endif
@@ -382,7 +430,28 @@ end:
 
 char *dlerror( void )
 {
-    char *error_pointer = current_error;
+    char *error_pointer = dlerror_buffer;
+
+#ifdef UNICODE
+    errno_t err = 0;
+    size_t converted_chars = 0;
+    size_t str_len = wcslen(current_error) + 1;
+    memset(error_pointer, 0, 65535);
+
+#	if ((defined(_WIN32) || defined(WIN32)) && (defined(_MSC_VER)) )
+    err = wcstombs_s(&converted_chars, 
+        error_pointer, str_len * sizeof(char),
+        current_error, str_len * sizeof(wchar_t));
+
+    if (err != 0)
+        return NULL;
+#	else
+    wcstombs(error_pointer, current_error, str_len);
+#	endif
+
+#else
+    memcpy(error_pointer, current_error, strlen(current_error) + 1);
+#endif
 
     /* POSIX says that invoking dlerror( ) a second time, immediately following
      * a prior invocation, shall result in NULL being returned.

@@ -1,7 +1,9 @@
 
 var assert = require('assert')
+  , path = require('path')
   , ref = require('ref')
   , ffi = require('../')
+  , fs = require('fs-extra')
   , DynamicLibrary = ffi.DynamicLibrary
 
 describe('DynamicLibrary', function () {
@@ -30,6 +32,16 @@ describe('DynamicLibrary', function () {
       var lib = process.platform == 'win32' ? 'msvcrt' : 'libc'
       var handle = DynamicLibrary(lib + ffi.LIB_EXT)
       var name = 'free'
+      var symbol = handle.get(name)
+      assert.equal(name, symbol.name)
+    })
+
+    it('should load libraries when pathname contains unicode characters', function() {
+      var lib = path.join(__dirname, 'build', 'Release', 'ffi_tests.node') // .node file is just a dynamic library
+      var toLib = path.join(__dirname, 'build', 'Release', 'sárgarigómadarfészekazalegszebbakirészeg', 'ffi_tests.node')
+      fs.copySync(lib, toLib);
+      var handle = DynamicLibrary(toLib)
+      var name = '_register_ffi_tests_'
       var symbol = handle.get(name)
       assert.equal(name, symbol.name)
     })
