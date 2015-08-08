@@ -21,10 +21,17 @@ describe('Library', function () {
   })
 
   it('should accept `null` as a first argument', function () {
+    //
+    // On POSIX, null refers to the global symbol table, and lets you use
+    // symbols in the main executable and loaded shared libaries.
+    //
+    // On Windows, null refers to just the main executable (e.g. node.exe).
+    // Windows never searches for symbols across multiple DLL's.
+    //
     var thisFuncs = new Library(null, {
-      'printf': [ 'void', [ charPtr ] ]
+      'node_module_register': [ 'void', [ charPtr ] ]
     })
-    assert(typeof thisFuncs.printf === 'function');
+    assert(typeof thisFuncs.node_module_register === 'function');
   })
 
   it('should accept a lib name as the first argument', function () {
@@ -59,9 +66,10 @@ describe('Library', function () {
   })
 
   it('should work with "strcpy" and a 128 length string', function () {
+    var lib = process.platform == 'win32' ? 'msvcrt.dll' : null;
     var ZEROS_128 = Array(128 + 1).join('0');
     var buf = new Buffer(256);
-    var strcpy = new Library(null, {
+    var strcpy = new Library(lib, {
         'strcpy': [ charPtr, [ charPtr, 'string' ] ]
     }).strcpy;
     strcpy(buf, ZEROS_128);
@@ -69,9 +77,10 @@ describe('Library', function () {
   })
 
   it('should work with "strcpy" and a 2k length string', function () {
+    var lib = process.platform == 'win32' ? 'msvcrt' : null;
     var ZEROS_2K = Array(2e3 + 1).join('0');
     var buf = new Buffer(4096);
-    var strcpy = new Library(null, {
+    var strcpy = new Library(lib, {
         'strcpy': [ charPtr, [ charPtr, 'string' ] ]
     }).strcpy;
     strcpy(buf, ZEROS_2K);
