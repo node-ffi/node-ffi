@@ -45,7 +45,7 @@ describe('DynamicLibrary', function () {
       fs.mkdirsSync(toDir);
       fs.copySync(lib, toLib);
       var handle = DynamicLibrary(toLib)
-      var name = '_register_ffi_tests_'
+      var name = 'ExportedFunction'
       var symbol = handle.get(name)
       assert.equal(name, symbol.name)
     })

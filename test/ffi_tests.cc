@@ -14,6 +14,20 @@
 using namespace v8;
 using namespace node;
 
+/*
+ * Exported function with C naming and calling conventions.
+ * Used by dynamic_library.js to test symbol lookup.
+ * Never actually called.
+ */
+
+extern "C"
+int
+NODE_MODULE_EXPORT
+ExportedFunction(int value)
+{
+  return value * 2;
+}
+
 namespace {
 
 /*
