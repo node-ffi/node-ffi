@@ -155,8 +155,6 @@ dlsym(
 char*
 dlerror(void)
 {
-#if TRUE
-
     static char errorMessage[64];
 
     if (lastError != 0) {
@@ -166,13 +164,6 @@ dlerror(void)
     } else {
         return NULL;
     }
-
-#else
-
-    /* "Ken Thompson has an automobile which he helped design..." */
-    return "?";
-
-#endif
 }
 
 #ifdef __cplusplus
