@@ -21,17 +21,27 @@ describe('Library', function () {
   })
 
   it('should accept `null` as a first argument', function () {
-    //
-    // On POSIX, null refers to the global symbol table, and lets you use
-    // symbols in the main executable and loaded shared libaries.
-    //
-    // On Windows, null refers to just the main executable (e.g. node.exe).
-    // Windows never searches for symbols across multiple DLL's.
-    //
-    var thisFuncs = new Library(null, {
-      'node_module_register': [ 'void', [ charPtr ] ]
-    })
-    assert(typeof thisFuncs.node_module_register === 'function');
+    if (process.platform == 'win32') {
+      // On Windows, null refers to just the main executable (e.g. node.exe).
+      // Windows never searches for symbols across multiple DLL's.
+      // Note: Exporting symbols from an executable is unusual on Windows.
+      // Normally you only see exports from DLL's. It happens that node.exe
+      // does export symbols, so null as a first argument can be tested.
+      // This is an implementation detail of node, and could potentially
+      // change in the future (e.g. if node gets broken up into DLL's
+      // rather than being one large static linked executable).
+      var winFuncs = new Library(null, {
+        'node_module_register': [ 'void', [ charPtr ] ]
+      })
+      assert(typeof winFuncs.node_module_register === 'function');
+    } else {
+      // On POSIX, null refers to the global symbol table, and lets you use
+      // symbols in the main executable and loaded shared libaries.
+      var posixFuncs = new Library(null, {
+        'printf': [ 'void', [ charPtr ] ]
+      })
+      assert(typeof posixFuncs.printf === 'function');
+    }
   })
 
   it('should accept a lib name as the first argument', function () {
