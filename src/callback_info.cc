@@ -50,34 +50,34 @@ void closure_pointer_cb(char *data, void *hint) {
  */
 
 void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters, bool dispatched) {
-  NanScope();
+  Nan::HandleScope scope;
 
-  const char* errorMessage = "ffi fatal: callback has been garbage collected!";
+  static const char* errorMessage = "ffi fatal: callback has been garbage collected!";
 
   if (info->function == NULL) {
     // throw an error instead of segfaulting.
     // see: https://github.com/rbranson/node-ffi/issues/72
     if (dispatched) {
-        Handle<Value> errorFunctionArgv[1];
-        errorFunctionArgv[0] = NanNew<String>(errorMessage);
+        Local<Value> errorFunctionArgv[1];
+        errorFunctionArgv[0] = Nan::New<String>(errorMessage).ToLocalChecked();
         info->errorFunction->Call(1, errorFunctionArgv);
     }
     else {
-      NanThrowError(errorMessage);
+      Nan::ThrowError(errorMessage);
     }
   } else {
     // invoke the registered callback function
-    Handle<Value> functionArgv[2];
+    Local<Value> functionArgv[2];
     functionArgv[0] = WrapPointer((char *)retval, info->resultSize);
     functionArgv[1] = WrapPointer((char *)parameters, sizeof(char *) * info->argc);
-    Handle<Value> e = info->function->Call(2, functionArgv);
+    Local<Value> e = info->function->Call(2, functionArgv);
     if (!e->IsUndefined()) {
       if (dispatched) {
-        Handle<Value> errorFunctionArgv[1];
+        Local<Value> errorFunctionArgv[1];
         errorFunctionArgv[0] = e;
         info->errorFunction->Call(1, errorFunctionArgv);
       } else {
-        NanThrowError(e);
+        Nan::ThrowError(e);
       }
     }
   }
@@ -103,56 +103,54 @@ void CallbackInfo::WatcherCallback(uv_async_t *w, int revents) {
  */
 
 NAN_METHOD(CallbackInfo::Callback) {
-  NanScope();
-
-  if (args.Length() != 5) {
+  if (info.Length() != 5) {
     return THROW_ERROR_EXCEPTION("Not enough arguments.");
   }
 
   // Args: cif pointer, JS function
   // TODO: Check args
-  ffi_cif *cif = (ffi_cif *)Buffer::Data(args[0]->ToObject());
-  size_t resultSize = args[1]->Int32Value();
-  int argc = args[2]->Int32Value();
-  Local<Function> errorReportCallback = Local<Function>::Cast(args[3]);
-  Local<Function> callback = Local<Function>::Cast(args[4]);
+  ffi_cif *cif = (ffi_cif *)Buffer::Data(info[0]->ToObject());
+  size_t resultSize = info[1]->Int32Value();
+  int argc = info[2]->Int32Value();
+  Local<Function> errorReportCallback = Local<Function>::Cast(info[3]);
+  Local<Function> callback = Local<Function>::Cast(info[4]);
 
-  callback_info *info;
+  callback_info *cbInfo;
   ffi_status status;
   void *code;
 
-  info = reinterpret_cast<callback_info *>(ffi_closure_alloc(sizeof(callback_info), &code));
+  cbInfo = reinterpret_cast<callback_info *>(ffi_closure_alloc(sizeof(callback_info), &code));
 
-  if (!info) {
+  if (!cbInfo) {
     return THROW_ERROR_EXCEPTION("ffi_closure_alloc() Returned Error");
   }
 
-  info->resultSize = resultSize;
-  info->argc = argc;
-  info->errorFunction = new NanCallback(errorReportCallback);
-  info->function = new NanCallback(callback);
+  cbInfo->resultSize = resultSize;
+  cbInfo->argc = argc;
+  cbInfo->errorFunction = new Nan::Callback(errorReportCallback);
+  cbInfo->function = new Nan::Callback(callback);
 
   // store a reference to the callback function pointer
   // (not sure if this is actually needed...)
-  info->code = code;
+  cbInfo->code = code;
 
   //CallbackInfo *self = new CallbackInfo(callback, closure, code, argc);
 
   status = ffi_prep_closure_loc(
-    (ffi_closure *)info,
+    (ffi_closure *)cbInfo,
     cif,
     Invoke,
-    (void *)info,
+    (void *)cbInfo,
     code
   );
 
   if (status != FFI_OK) {
-    ffi_closure_free(info);
+    ffi_closure_free(cbInfo);
     return THROW_ERROR_EXCEPTION_WITH_STATUS_CODE("ffi_prep_closure() Returned Error", status);
   }
 
-  NanReturnValue(
-    NanNewBufferHandle((char *)code, sizeof(void *), closure_pointer_cb, info)
+  info.GetReturnValue().Set(
+    Nan::NewBuffer((char *)code, sizeof(void*), closure_pointer_cb, cbInfo).ToLocalChecked()
   );
 }
 
@@ -208,9 +206,10 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
  */
 
 void CallbackInfo::Initialize(Handle<Object> target) {
-  NanScope();
+  Nan::HandleScope scope;
 
-  NODE_SET_METHOD(target, "Callback", Callback);
+	Nan::Set(target, Nan::New<String>("Callback").ToLocalChecked(),
+		Nan::New<FunctionTemplate>(Callback)->GetFunction());
 
   // initialize our threaded invokation stuff
 #ifdef WIN32

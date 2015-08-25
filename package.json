@@ -5,6 +5,7 @@
     "Rick Branson",
     "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
   ],
+  "license" : "MIT",
   "description": "A foreign function interface (FFI) for Node.js",
   "keywords": [
     "foreign",
@@ -21,11 +22,11 @@
   },
   "main": "./lib/ffi",
   "dependencies": {
-    "bindings": "~1.2.0",
+    "bindings": "*",
     "debug": "2",
     "ref": "*",
     "ref-struct": "*",
-    "nan": "1"
+    "nan": "^2.0.2"
   },
   "devDependencies": {
     "mocha": "*",
@@ -40,5 +41,6 @@
   },
   "bugs": {
     "url": "http://github.com/node-ffi/node-ffi/issues"
-  }
+  },
+  "contributors": ["Gabor Mezo <gabor.mezo@outlook.com> (https://github.com/unbornchikken)"]
 }

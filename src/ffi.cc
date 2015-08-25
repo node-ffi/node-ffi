@@ -11,49 +11,38 @@ void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
-Handle<Value> WrapPointer(char *ptr) {
-  size_t size = 0;
-  return WrapPointer(ptr, size);
-}
-
-Handle<Value> WrapPointer(char *ptr, size_t length) {
-  NanEscapableScope();
-
-  void *user_data = NULL;
-
-  return NanEscapeScope(
-    NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data)
-  );
-}
-
 ///////////////
 
-void FFI::InitializeStaticFunctions(Handle<Object> target) {
-  Local<Object> o = NanNew<Object>();
+NAN_MODULE_INIT(FFI::InitializeStaticFunctions) {
+  Local<Object> o = Nan::New<Object>();
 
   // dl functions used by the DynamicLibrary JS class
-  o->Set(NanNew<String>("dlopen"),  WrapPointer((char *)dlopen));
-  o->Set(NanNew<String>("dlclose"), WrapPointer((char *)dlclose));
-  o->Set(NanNew<String>("dlsym"),   WrapPointer((char *)dlsym));
-  o->Set(NanNew<String>("dlerror"), WrapPointer((char *)dlerror));
+  o->Set(Nan::New<String>("dlopen").ToLocalChecked(),  WrapPointer((char *)dlopen));
+  o->Set(Nan::New<String>("dlclose").ToLocalChecked(), WrapPointer((char *)dlclose));
+  o->Set(Nan::New<String>("dlsym").ToLocalChecked(),   WrapPointer((char *)dlsym));
+  o->Set(Nan::New<String>("dlerror").ToLocalChecked(), WrapPointer((char *)dlerror));
 
-  target->Set(NanNew<String>("StaticFunctions"), o);
+  target->Set(Nan::New<String>("StaticFunctions").ToLocalChecked(), o);
 }
 
 ///////////////
 
 #define SET_ENUM_VALUE(_value) \
-  target->ForceSet(NanNew<String>(#_value), \
-              NanNew<Integer>((uint32_t)_value), \
-              static_cast<PropertyAttribute>(ReadOnly|DontDelete))
+  Nan::ForceSet(target, Nan::New<String>(#_value).ToLocalChecked(), \
+  Nan::New<Integer>((uint32_t)_value), \
+  static_cast<PropertyAttribute>(ReadOnly|DontDelete))
 
-void FFI::InitializeBindings(Handle<Object> target) {
+NAN_MODULE_INIT(FFI::InitializeBindings) {
 
   // main function exports
-  NODE_SET_METHOD(target, "ffi_prep_cif", FFIPrepCif);
-  NODE_SET_METHOD(target, "ffi_prep_cif_var", FFIPrepCifVar);
-  NODE_SET_METHOD(target, "ffi_call", FFICall);
-  NODE_SET_METHOD(target, "ffi_call_async", FFICallAsync);
+  Nan::Set(target, Nan::New<String>("ffi_prep_cif").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(FFIPrepCif)->GetFunction());
+  Nan::Set(target, Nan::New<String>("ffi_prep_cif_var").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(FFIPrepCifVar)->GetFunction());
+  Nan::Set(target, Nan::New<String>("ffi_call").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(FFICall)->GetFunction());
+  Nan::Set(target, Nan::New<String>("ffi_call_async").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(FFICallAsync)->GetFunction());
 
   // `ffi_status` enum values
   SET_ENUM_VALUE(FFI_OK);
@@ -109,54 +98,54 @@ void FFI::InitializeBindings(Handle<Object> target) {
 
   /* flags for dlsym() */
 #ifdef RTLD_NEXT
-  target->ForceSet(NanNew<String>("RTLD_NEXT"), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_NEXT").ToLocalChecked(), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 #endif
 #ifdef RTLD_DEFAULT
-  target->ForceSet(NanNew<String>("RTLD_DEFAULT"), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_DEFAULT").ToLocalChecked(), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 #endif
 #ifdef RTLD_SELF
-  target->ForceSet(NanNew<String>("RTLD_SELF"), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_SELF").ToLocalChecked(), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_MAIN_ONLY
-  target->ForceSet(NanNew<String>("RTLD_MAIN_ONLY"), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("RTLD_MAIN_ONLY").ToLocalChecked(), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 
-  target->ForceSet(NanNew<String>("FFI_ARG_SIZE"), NanNew<Integer>((uint32_t)sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  target->ForceSet(NanNew<String>("FFI_SARG_SIZE"), NanNew<Integer>((uint32_t)sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  target->ForceSet(NanNew<String>("FFI_TYPE_SIZE"), NanNew<Integer>((uint32_t)sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  target->ForceSet(NanNew<String>("FFI_CIF_SIZE"), NanNew<Integer>((uint32_t)sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_ARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_SARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_TYPE_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  target->ForceSet(Nan::New<String>("FFI_CIF_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 
   bool hasObjc = false;
 #if __OBJC__ || __OBJC2__
   hasObjc = true;
 #endif
-  target->ForceSet(NanNew<String>("HAS_OBJC"), NanNew<Boolean>(hasObjc), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  target->ForceSet(Nan::New<String>("HAS_OBJC").ToLocalChecked(), Nan::New<Boolean>(hasObjc), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 
-  Local<Object> ftmap = NanNew<Object>();
-  ftmap->Set(NanNew<String>("void"),     WrapPointer((char *)&ffi_type_void));
-  ftmap->Set(NanNew<String>("uint8"),    WrapPointer((char *)&ffi_type_uint8));
-  ftmap->Set(NanNew<String>("int8"),     WrapPointer((char *)&ffi_type_sint8));
-  ftmap->Set(NanNew<String>("uint16"),   WrapPointer((char *)&ffi_type_uint16));
-  ftmap->Set(NanNew<String>("int16"),    WrapPointer((char *)&ffi_type_sint16));
-  ftmap->Set(NanNew<String>("uint32"),   WrapPointer((char *)&ffi_type_uint32));
-  ftmap->Set(NanNew<String>("int32"),    WrapPointer((char *)&ffi_type_sint32));
-  ftmap->Set(NanNew<String>("uint64"),   WrapPointer((char *)&ffi_type_uint64));
-  ftmap->Set(NanNew<String>("int64"),    WrapPointer((char *)&ffi_type_sint64));
-  ftmap->Set(NanNew<String>("uchar"),    WrapPointer((char *)&ffi_type_uchar));
-  ftmap->Set(NanNew<String>("char"),     WrapPointer((char *)&ffi_type_schar));
-  ftmap->Set(NanNew<String>("ushort"),   WrapPointer((char *)&ffi_type_ushort));
-  ftmap->Set(NanNew<String>("short"),    WrapPointer((char *)&ffi_type_sshort));
-  ftmap->Set(NanNew<String>("uint"),     WrapPointer((char *)&ffi_type_uint));
-  ftmap->Set(NanNew<String>("int"),      WrapPointer((char *)&ffi_type_sint));
-  ftmap->Set(NanNew<String>("float"),    WrapPointer((char *)&ffi_type_float));
-  ftmap->Set(NanNew<String>("double"),   WrapPointer((char *)&ffi_type_double));
-  ftmap->Set(NanNew<String>("pointer"),  WrapPointer((char *)&ffi_type_pointer));
+  Local<Object> ftmap = Nan::New<Object>();
+  ftmap->Set(Nan::New<String>("void").ToLocalChecked(), WrapPointer((char *)&ffi_type_void));
+  ftmap->Set(Nan::New<String>("uint8").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint8));
+  ftmap->Set(Nan::New<String>("int8").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint8));
+  ftmap->Set(Nan::New<String>("uint16").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint16));
+  ftmap->Set(Nan::New<String>("int16").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint16));
+  ftmap->Set(Nan::New<String>("uint32").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint32));
+  ftmap->Set(Nan::New<String>("int32").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint32));
+  ftmap->Set(Nan::New<String>("uint64").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint64));
+  ftmap->Set(Nan::New<String>("int64").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint64));
+  ftmap->Set(Nan::New<String>("uchar").ToLocalChecked(), WrapPointer((char *)&ffi_type_uchar));
+  ftmap->Set(Nan::New<String>("char").ToLocalChecked(), WrapPointer((char *)&ffi_type_schar));
+  ftmap->Set(Nan::New<String>("ushort").ToLocalChecked(), WrapPointer((char *)&ffi_type_ushort));
+  ftmap->Set(Nan::New<String>("short").ToLocalChecked(), WrapPointer((char *)&ffi_type_sshort));
+  ftmap->Set(Nan::New<String>("uint").ToLocalChecked(), WrapPointer((char *)&ffi_type_uint));
+  ftmap->Set(Nan::New<String>("int").ToLocalChecked(), WrapPointer((char *)&ffi_type_sint));
+  ftmap->Set(Nan::New<String>("float").ToLocalChecked(), WrapPointer((char *)&ffi_type_float));
+  ftmap->Set(Nan::New<String>("double").ToLocalChecked(), WrapPointer((char *)&ffi_type_double));
+  ftmap->Set(Nan::New<String>("pointer").ToLocalChecked(), WrapPointer((char *)&ffi_type_pointer));
   // NOTE: "long" and "ulong" get handled in JS-land
   // Let libffi handle "long long"
-  ftmap->Set(NanNew<String>("ulonglong"), WrapPointer((char *)&ffi_type_ulong));
-  ftmap->Set(NanNew<String>("longlong"),  WrapPointer((char *)&ffi_type_slong));
+  ftmap->Set(Nan::New<String>("ulonglong").ToLocalChecked(), WrapPointer((char *)&ffi_type_ulong));
+  ftmap->Set(Nan::New<String>("longlong").ToLocalChecked(), WrapPointer((char *)&ffi_type_slong));
 
-  target->Set(NanNew<String>("FFI_TYPES"), ftmap);
+  target->Set(Nan::New<String>("FFI_TYPES").ToLocalChecked(), ftmap);
 }
 
 /*
@@ -173,27 +162,25 @@ void FFI::InitializeBindings(Handle<Object> target) {
  */
 
 NAN_METHOD(FFI::FFIPrepCif) {
-  NanScope();
-
   unsigned int nargs;
   char *rtype, *atypes, *cif;
   ffi_status status;
   ffi_abi abi;
 
-  if (args.Length() != 5) {
+  if (info.Length() != 5) {
     return THROW_ERROR_EXCEPTION("ffi_prep_cif() requires 5 arguments!");
   }
 
-  Handle<Value> cif_buf = args[0];
+  Handle<Value> cif_buf = info[0];
   if (!Buffer::HasInstance(cif_buf)) {
     return THROW_ERROR_EXCEPTION("prepCif(): Buffer required as first arg");
   }
 
   cif = Buffer::Data(cif_buf.As<Object>());
-  nargs = args[1]->Uint32Value();
-  rtype = Buffer::Data(args[2]->ToObject());
-  atypes = Buffer::Data(args[3]->ToObject());
-  abi = (ffi_abi)args[4]->Uint32Value();
+  nargs = info[1]->Uint32Value();
+  rtype = Buffer::Data(info[2]->ToObject());
+  atypes = Buffer::Data(info[3]->ToObject());
+  abi = (ffi_abi)info[4]->Uint32Value();
 
   status = ffi_prep_cif(
       (ffi_cif *)cif,
@@ -202,7 +189,7 @@ NAN_METHOD(FFI::FFIPrepCif) {
       (ffi_type *)rtype,
       (ffi_type **)atypes);
 
-  NanReturnValue(NanNew<Integer>(status));
+  info.GetReturnValue().Set(Nan::New<Integer>(status));
 }
 
 /*
@@ -219,28 +206,26 @@ NAN_METHOD(FFI::FFIPrepCif) {
  * returns the ffi_status result from ffi_prep_cif_var()
  */
 NAN_METHOD(FFI::FFIPrepCifVar) {
-  NanScope();
-
   unsigned int fargs, targs;
   char *rtype, *atypes, *cif;
   ffi_status status;
   ffi_abi abi;
 
-  if (args.Length() != 6) {
+  if (info.Length() != 6) {
     return THROW_ERROR_EXCEPTION("ffi_prep_cif() requires 5 arguments!");
   }
 
-  Handle<Value> cif_buf = args[0];
+  Handle<Value> cif_buf = info[0];
   if (!Buffer::HasInstance(cif_buf)) {
     return THROW_ERROR_EXCEPTION("prepCifVar(): Buffer required as first arg");
   }
 
   cif = Buffer::Data(cif_buf.As<Object>());
-  fargs = args[1]->Uint32Value();
-  targs = args[2]->Uint32Value();
-  rtype = Buffer::Data(args[3]->ToObject());
-  atypes = Buffer::Data(args[4]->ToObject());
-  abi = (ffi_abi)args[5]->Uint32Value();
+  fargs = info[1]->Uint32Value();
+  targs = info[2]->Uint32Value();
+  rtype = Buffer::Data(info[3]->ToObject());
+  atypes = Buffer::Data(info[4]->ToObject());
+  abi = (ffi_abi)info[5]->Uint32Value();
 
   status = ffi_prep_cif_var(
       (ffi_cif *)cif,
@@ -250,7 +235,7 @@ NAN_METHOD(FFI::FFIPrepCifVar) {
       (ffi_type *)rtype,
       (ffi_type **)atypes);
 
-  NanReturnValue(NanNew<Integer>(status));
+  info.GetReturnValue().Set(Nan::New<Integer>(status));
 }
 
 /*
@@ -263,16 +248,14 @@ NAN_METHOD(FFI::FFIPrepCifVar) {
  */
 
 NAN_METHOD(FFI::FFICall) {
-  NanScope();
-
-  if (args.Length() != 4) {
+  if (info.Length() != 4) {
     return THROW_ERROR_EXCEPTION("ffi_call() requires 4 arguments!");
   }
 
-  char *cif    = Buffer::Data(args[0]->ToObject());
-  char *fn     = Buffer::Data(args[1]->ToObject());
-  char *res    = Buffer::Data(args[2]->ToObject());
-  char *fnargs = Buffer::Data(args[3]->ToObject());
+  char *cif = Buffer::Data(info[0]->ToObject());
+  char *fn = Buffer::Data(info[1]->ToObject());
+  char *res = Buffer::Data(info[2]->ToObject());
+  char *fnargs = Buffer::Data(info[3]->ToObject());
 
 #if __OBJC__ || __OBJC2__
     @try {
@@ -289,7 +272,7 @@ NAN_METHOD(FFI::FFICall) {
     }
 #endif
 
-  NanReturnUndefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
@@ -303,9 +286,7 @@ NAN_METHOD(FFI::FFICall) {
  */
 
 NAN_METHOD(FFI::FFICallAsync) {
-  NanScope();
-
-  if (args.Length() != 5) {
+  if (info.Length() != 5) {
     return THROW_ERROR_EXCEPTION("ffi_call_async() requires 5 arguments!");
   }
 
@@ -313,13 +294,13 @@ NAN_METHOD(FFI::FFICallAsync) {
   p->result = FFI_OK;
 
   // store a persistent references to all the Buffers and the callback function
-  p->cif  = Buffer::Data(args[0]->ToObject());
-  p->fn   = Buffer::Data(args[1]->ToObject());
-  p->res  = Buffer::Data(args[2]->ToObject());
-  p->argv = Buffer::Data(args[3]->ToObject());
+  p->cif = Buffer::Data(info[0]->ToObject());
+  p->fn = Buffer::Data(info[1]->ToObject());
+  p->res = Buffer::Data(info[2]->ToObject());
+  p->argv = Buffer::Data(info[3]->ToObject());
 
-  Local<Function> callback = Local<Function>::Cast(args[4]);
-  p->callback = new NanCallback(callback);
+  Local<Function> callback = Local<Function>::Cast(info[4]);
+  p->callback = new Nan::Callback(callback);
 
   uv_work_t *req = new uv_work_t;
   req->data = p;
@@ -328,7 +309,7 @@ NAN_METHOD(FFI::FFICallAsync) {
       FFI::AsyncFFICall,
       (uv_after_work_cb)FFI::FinishAsyncFFICall);
 
-  NanReturnUndefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
@@ -361,17 +342,17 @@ void FFI::AsyncFFICall(uv_work_t *req) {
  */
 
 void FFI::FinishAsyncFFICall(uv_work_t *req) {
-  NanScope();
+  Nan::HandleScope scope;
 
   AsyncCallParams *p = (AsyncCallParams *)req->data;
 
-  Handle<Value> argv[] = { NanNull() };
+  Local<Value> argv[] = { Nan::Null() };
   if (p->result != FFI_OK) {
     // an Objective-C error was thrown
     argv[0] = WrapPointer(p->err);
   }
 
-  TryCatch try_catch;
+  Nan::TryCatch try_catch;
 
   // invoke the registered callback function
   p->callback->Call(1, argv);
@@ -384,15 +365,20 @@ void FFI::FinishAsyncFFICall(uv_work_t *req) {
   delete req;
 
   if (try_catch.HasCaught()) {
+#if NODE_VERSION_AT_LEAST(0, 12, 0)
+    Nan::FatalException(try_catch);
+#else
     FatalException(try_catch);
+#endif
   }
 }
 
-void init(Handle<Object> target) {
-  NanScope();
+NAN_MODULE_INIT(init) {
+  Nan::HandleScope scope;
 
   FFI::InitializeBindings(target);
   FFI::InitializeStaticFunctions(target);
   CallbackInfo::Initialize(target);
 }
-NODE_MODULE(ffi_bindings, init);
+
+NODE_MODULE(ffi_bindings, init)
