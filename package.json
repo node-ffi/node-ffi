@@ -23,14 +23,14 @@
   "main": "./lib/ffi",
   "dependencies": {
     "bindings": "*",
-    "debug": "2",
-    "ref": "*",
-    "ref-struct": "*",
-    "nan": "^2.0.2"
+    "debug": "*",
+    "ref": "1",
+    "ref-struct": "1",
+    "nan": "2"
   },
   "devDependencies": {
     "mocha": "*",
-    "ref-array": "*"
+    "ref-array": "1"
   },
   "scripts": {
     "test": "node-gyp rebuild --directory test && mocha -gc --reporter spec"
