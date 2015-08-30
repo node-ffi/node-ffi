@@ -144,21 +144,21 @@ my_callback callback_func (my_callback cb) {
  */
 
 NAN_METHOD(Strtoul) {
-  NanScope();
+  Nan::HandleScope();
   char buf[128];
   int base;
   char **endptr;
 
-  args[0]->ToString()->WriteUtf8(buf);
+  info[0]->ToString()->WriteUtf8(buf);
 
-  Local<Value> endptr_arg = args[0];
+  Local<Value> endptr_arg = info[0];
   endptr = (char **)Buffer::Data(endptr_arg.As<Object>());
 
-  base = args[2]->Int32Value();
+  base = info[2]->Int32Value();
 
   unsigned long val = strtoul(buf, endptr, base);
 
-  NanReturnValue(NanNew<Integer>((uint32_t)val));
+  info.GetReturnValue().Set(Nan::New<Integer>((uint32_t)val));
 }
 
 
@@ -168,19 +168,20 @@ typedef void (*cb)(void);
 static cb callback = NULL;
 
 NAN_METHOD(SetCb) {
-  NanScope();
-  char *buf = Buffer::Data(args[0].As<Object>());
+  Nan::HandleScope();
+  char *buf = Buffer::Data(info[0].As<Object>());
   callback = (cb)buf;
-  NanReturnUndefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 NAN_METHOD(CallCb) {
+  Nan::HandleScope();
   if (callback == NULL) {
-    return NanThrowError("you must call \"set_cb()\" first");
+    return Nan::ThrowError("you must call \"set_cb()\" first");
   } else {
     callback();
   }
-  NanReturnUndefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 // Invoke callback from a native (non libuv) thread:
@@ -199,8 +200,9 @@ void* invoke_callback(void* args) {
 }
 
 NAN_METHOD(CallCbFromThread) {
+  Nan::HandleScope();
   if (callback == NULL) {
-    return NanThrowError("you must call \"set_cb()\" first");
+    return Nan::ThrowError("you must call \"set_cb()\" first");
   }
   else {
 #ifdef WIN32
@@ -210,7 +212,7 @@ NAN_METHOD(CallCbFromThread) {
     pthread_create(&thread, NULL, &invoke_callback, NULL);
 #endif // WIN32
   }
-  NanReturnUndefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 void AsyncCbCall(uv_work_t *req) {
@@ -224,14 +226,15 @@ void FinishAsyncCbCall(uv_work_t *req) {
 }
 
 NAN_METHOD(CallCbAsync) {
+  Nan::HandleScope();
   if (callback == NULL) {
-    return NanThrowError("you must call \"set_cb()\" first");
+    return Nan::ThrowError("you must call \"set_cb()\" first");
   } else {
     uv_work_t *req = new uv_work_t;
     req->data = (void *)callback;
     uv_queue_work(uv_default_loop(), req, AsyncCbCall, (uv_after_work_cb)FinishAsyncCbCall);
   }
-  NanReturnUndefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 
@@ -244,17 +247,19 @@ void play_ping_pong (const char* (*callback) (const char*)) {
 }
 
 void wrap_pointer_cb(char *data, void *hint) {
-  //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
-Handle<Object> WrapPointer(char *ptr) {
-  void *user_data = NULL;
-  size_t length = 0;
-  return NanNewBufferHandle(ptr, length, wrap_pointer_cb, user_data);
+inline Local<Value> WrapPointer(char *ptr, size_t length) {
+  Nan::EscapableHandleScope scope;
+  return scope.Escape(Nan::NewBuffer(ptr, length, wrap_pointer_cb, NULL).ToLocalChecked());
+}
+
+inline Local<Value> WrapPointer(char *ptr) {
+  return WrapPointer(ptr, 0);
 }
 
 void Initialize(Handle<Object> target) {
-  NanScope();
+  Nan::HandleScope();
 
 #if WIN32
   // initialize "floating point support" on Windows?!?!
@@ -264,34 +269,39 @@ void Initialize(Handle<Object> target) {
 #endif
 
   // atoi and abs here for testing purposes
-  target->Set(NanNew<String>("atoi"), WrapPointer((char *)atoi));
+  target->Set(Nan::New<String>("atoi").ToLocalChecked(), WrapPointer((char *)atoi));
 
   // Windows has multiple `abs` signatures, so we need to manually disambiguate
   int (*absPtr)(int)(abs);
-  target->Set(NanNew<String>("abs"),  WrapPointer((char *)absPtr));
+  target->Set(Nan::New<String>("abs").ToLocalChecked(), WrapPointer((char *)absPtr));
 
   // sprintf pointer; used in the varadic tests
-  target->Set(NanNew<String>("sprintf"),  WrapPointer((char *)sprintf));
+  target->Set(Nan::New<String>("sprintf").ToLocalChecked(), WrapPointer((char *)sprintf));
 
   // hard-coded `strtoul` binding, for the benchmarks
-  NODE_SET_METHOD(target, "strtoul", Strtoul);
+  Nan::Set(target, Nan::New<String>("strtoul").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(Strtoul)->GetFunction());
 
-  NODE_SET_METHOD(target, "set_cb", SetCb);
-  NODE_SET_METHOD(target, "call_cb", CallCb);
-  NODE_SET_METHOD(target, "call_cb_from_thread", CallCbFromThread);
-  NODE_SET_METHOD(target, "call_cb_async", CallCbAsync);
+  Nan::Set(target, Nan::New<String>("set_cb").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(SetCb)->GetFunction());
+  Nan::Set(target, Nan::New<String>("call_cb").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(CallCb)->GetFunction());
+  Nan::Set(target, Nan::New<String>("call_cb_from_thread").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(CallCbFromThread)->GetFunction());
+  Nan::Set(target, Nan::New<String>("call_cb_async").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(CallCbAsync)->GetFunction());
 
   // also need to test these custom functions
-  target->Set(NanNew<String>("double_box"), WrapPointer((char *)double_box));
-  target->Set(NanNew<String>("double_box_ptr"), WrapPointer((char *)double_box_ptr));
-  target->Set(NanNew<String>("area_box"), WrapPointer((char *)area_box));
-  target->Set(NanNew<String>("area_box_ptr"), WrapPointer((char *)area_box_ptr));
-  target->Set(NanNew<String>("create_box"), WrapPointer((char *)create_box));
-  target->Set(NanNew<String>("add_boxes"), WrapPointer((char *)add_boxes));
-  target->Set(NanNew<String>("int_array"), WrapPointer((char *)int_array));
-  target->Set(NanNew<String>("array_in_struct"), WrapPointer((char *)array_in_struct));
-  target->Set(NanNew<String>("callback_func"), WrapPointer((char *)callback_func));
-  target->Set(NanNew<String>("play_ping_pong"), WrapPointer((char *)play_ping_pong));
+  target->Set(Nan::New<String>("double_box").ToLocalChecked(), WrapPointer((char *)double_box));
+  target->Set(Nan::New<String>("double_box_ptr").ToLocalChecked(), WrapPointer((char *)double_box_ptr));
+  target->Set(Nan::New<String>("area_box").ToLocalChecked(), WrapPointer((char *)area_box));
+  target->Set(Nan::New<String>("area_box_ptr").ToLocalChecked(), WrapPointer((char *)area_box_ptr));
+  target->Set(Nan::New<String>("create_box").ToLocalChecked(), WrapPointer((char *)create_box));
+  target->Set(Nan::New<String>("add_boxes").ToLocalChecked(), WrapPointer((char *)add_boxes));
+  target->Set(Nan::New<String>("int_array").ToLocalChecked(), WrapPointer((char *)int_array));
+  target->Set(Nan::New<String>("array_in_struct").ToLocalChecked(), WrapPointer((char *)array_in_struct));
+  target->Set(Nan::New<String>("callback_func").ToLocalChecked(), WrapPointer((char *)callback_func));
+  target->Set(Nan::New<String>("play_ping_pong").ToLocalChecked(), WrapPointer((char *)play_ping_pong));
 }
 
 } // anonymous namespace
