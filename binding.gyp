@@ -15,9 +15,9 @@
       ],
       'conditions': [
         ['OS=="win"', {
-          'dependencies': [
-              'deps/dlfcn-win32/dlfcn.gyp:dlfcn'
-          ]
+          'sources': [
+              'src/win32-dlfcn.cc'
+          ],
         }],
         ['OS=="mac"', {
           'xcode_settings': {
