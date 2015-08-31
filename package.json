@@ -2,8 +2,8 @@
   "name": "ffi",
   "version": "1.3.2",
   "license": "MIT",
-  "authors": [
-    "Rick Branson",
+  "author": "Rick Branson",
+  "contributors": [
     "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
   ],
   "description": "A foreign function interface (FFI) for Node.js",
