@@ -4,7 +4,8 @@
   "license": "MIT",
   "author": "Rick Branson",
   "contributors": [
-    "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
+    "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)",
+    "Gabor Mezo <gabor.mezo@outlook.com> (https://github.com/unbornchikken)"
   ],
   "description": "A foreign function interface (FFI) for Node.js",
   "keywords": [
