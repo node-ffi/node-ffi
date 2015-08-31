@@ -24,14 +24,14 @@
   "dependencies": {
     "bindings": "~1.2.0",
     "debug": "2",
-    "ref": "*",
-    "ref-struct": "*",
-    "nan": "1"
+    "ref": "1",
+    "ref-struct": "1",
+    "nan": "2"
   },
   "devDependencies": {
     "fs-extra": "^0.23.1",
     "mocha": "*",
-    "ref-array": "*"
+    "ref-array": "1"
   },
   "scripts": {
     "test": "node-gyp rebuild --directory test && mocha -gc --reporter spec"
