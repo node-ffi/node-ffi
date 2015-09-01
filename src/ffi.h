@@ -4,8 +4,11 @@
 #include <stdint.h>
 #include <queue>
 
+#ifdef WIN32
+#include "win32-dlfcn.h"
+#else
 #include <dlfcn.h>
-//#include <pthread.h> for win32 threading problems. are
+#endif
 
 /* define FFI_BUILDING before including ffi.h to workaround a libffi bug on Windows */
 #define FFI_BUILDING
