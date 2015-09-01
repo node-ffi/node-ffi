@@ -1,6 +1,7 @@
 {
   "name": "ffi",
   "version": "1.3.2",
+  "license": "MIT",
   "authors": [
     "Rick Branson",
     "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)"
