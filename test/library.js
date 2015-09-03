@@ -31,9 +31,9 @@ describe('Library', function () {
       // change in the future (e.g. if node gets broken up into DLL's
       // rather than being one large static linked executable).
       var winFuncs = new Library(null, {
-        'node_module_register': [ 'void', [ charPtr ] ]
+        'uv_fs_open': [ 'void', [ charPtr ] ]
       })
-      assert(typeof winFuncs.node_module_register === 'function');
+      assert(typeof winFuncs.uv_fs_open === 'function');
     } else {
       // On POSIX, null refers to the global symbol table, and lets you use
       // symbols in the main executable and loaded shared libaries.
