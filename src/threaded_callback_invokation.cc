@@ -1,5 +1,10 @@
 #include <node.h>
+#include <node_version.h>
 #include "ffi.h"
+
+#if !NODE_VERSION_AT_LEAST(0, 9, 0)
+  #include "uv_cond_compat.c"
+#endif
 
 ThreadedCallbackInvokation::ThreadedCallbackInvokation(callback_info *cbinfo, void *retval, void **parameters) {
   m_cbinfo = cbinfo;

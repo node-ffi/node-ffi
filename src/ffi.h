@@ -19,6 +19,11 @@
 #include <uv.h>
 #include <node_object_wrap.h>
 #include <node.h>
+#include <node_version.h>
+
+#if !NODE_VERSION_AT_LEAST(0, 9, 0)
+  #include "uv_cond_compat.h"
+#endif
 
 #include <nan.h>
 
