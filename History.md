@@ -1,4 +1,17 @@
 
+2.0.0 / 2015-09-04
+==================
+
+  * update to "nan" v2, adds io.js v3 support
+  * replace "dlfcn-win32" with "simple-dlfcn-win32" (uses MIT license rather than LGPL, #226, @mcnameej)
+  * remove compiled binary file from libffi deps dir (#229, @fredericgermain)
+  * fix dynamic linking when locale is not English (#224, @unbornchikken)
+  * appveyor: test v0.8, io.js v2.5 and v3
+  * travis: test v0.8, and iojs v2.5 and v3
+  * package: add "license" field
+  * package: add Gábor to LICENSE and "contributors"
+  * package: move TooTallNate to "contributors" array
+
 1.3.2 / 2015-07-31
 ==================
 
