@@ -21,16 +21,16 @@ describe('Function "type"', function () {
   })
 
   it('should be accepted as a return "type" to a ForeignFunction', function () {
-    var fn = ffi.ForeignFunction(ref.NULL, voidFn, []);
+    var fn = ffi.ForeignFunction(ref.NULL, voidFn, [])
   })
 
   it('should be accepted as an argument "type" to a ForeignFunction', function () {
-    var fn = ffi.ForeignFunction(ref.NULL, 'void', [ voidFn ]);
+    var fn = ffi.ForeignFunction(ref.NULL, 'void', [ voidFn ])
   })
 
   it('should work as expected using the "callback_func" static bindings', function () {
     var fn = ffi.Function('int', [ 'int' ])
-    var callback_func = ffi.ForeignFunction(bindings.callback_func, fn, [ fn ]);
+    var callback_func = ffi.ForeignFunction(bindings.callback_func, fn, [ fn ])
 
     var abs = callback_func(Math.abs)
     assert.equal('function', typeof abs)
