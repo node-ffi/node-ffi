@@ -7,7 +7,6 @@ environment:
   # Test against these versions of Node.js and io.js
   matrix:
     # node.js
-    - nodejs_version: "0.8"
     - nodejs_version: "0.10"
     - nodejs_version: "0.12"
     # io.js
