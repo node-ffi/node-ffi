@@ -14,8 +14,9 @@ language: node_js
 node_js:
   - "0.10"
   - "0.12"
-  - "iojs-v2.5"
-  - "iojs-v3"
+  - "iojs-v2"
+  - "iojs-v3.2"
+  - "iojs-v4"
 
 install:
   - PATH="`npm bin`:`npm bin -g`:$PATH"
