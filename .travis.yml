@@ -16,7 +16,7 @@ node_js:
   - "0.12"
   - "2"
   - "3.2"
-  - "4"
+  - "4.1"
 
 install:
   - PATH="`npm bin`:`npm bin -g`:$PATH"
