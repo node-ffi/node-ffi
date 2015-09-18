@@ -41,4 +41,37 @@ describe('Function "type"', function () {
     assert.equal(Math.abs(3), abs(3))
   })
 
+  it('should keep pointer in memory until the FunctionType is garbage collected (GH-241)', function () {
+    var called = 0
+    var fnType = ffi.Function('void', [])
+    var set_cb = ffi.ForeignFunction(bindings.set_cb_func, 'void', [ fnType ])
+
+    function callback () {
+      called++
+    }
+
+    set_cb(callback)
+
+    // good obviously
+    bindings.call_cb()
+    assert.equal(1, called)
+
+    gc()
+
+    // should still be good since `callback` is still alive
+    bindings.call_cb()
+    assert.equal(2, called)
+
+    // destroy stuff
+    callback = null
+    fnType = null
+    set_cb = null
+    gc()
+
+    // should throw an Error synchronously
+    assert.throws(function () {
+      bindings.call_cb()
+    }, /callback has been garbage collected/)
+  })
+
 })

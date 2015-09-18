@@ -181,10 +181,14 @@ typedef void (*cb)(void);
 
 static cb callback = NULL;
 
+void SetCbFunc(cb cb) {
+  callback = cb;
+}
+
 NAN_METHOD(SetCb) {
   Nan::HandleScope();
   char *buf = Buffer::Data(info[0].As<Object>());
-  callback = (cb)buf;
+  SetCbFunc((cb)buf);
   info.GetReturnValue().SetUndefined();
 }
 
@@ -315,6 +319,7 @@ void Initialize(Handle<Object> target) {
   target->Set(Nan::New<String>("int_array").ToLocalChecked(), WrapPointer((char *)int_array));
   target->Set(Nan::New<String>("array_in_struct").ToLocalChecked(), WrapPointer((char *)array_in_struct));
   target->Set(Nan::New<String>("callback_func").ToLocalChecked(), WrapPointer((char *)callback_func));
+  target->Set(Nan::New<String>("set_cb_func").ToLocalChecked(), WrapPointer((char *)SetCbFunc));
   target->Set(Nan::New<String>("play_ping_pong").ToLocalChecked(), WrapPointer((char *)play_ping_pong));
 }
 
