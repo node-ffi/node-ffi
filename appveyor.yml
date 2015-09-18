@@ -12,7 +12,7 @@ environment:
     # io.js
     - nodejs_version: "2"
     - nodejs_version: "3.2"
-    - nodejs_version: "4"
+    - nodejs_version: "4.1"
 
 platform:
   - x86
