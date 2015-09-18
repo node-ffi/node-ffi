@@ -61,7 +61,8 @@ describe('Callback', function () {
 
   it('should throw an Error with a meaningful message when a type\'s "set()" throws', function () {
     var cb = ffi.Callback('int', [ ], function () {
-      // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
+      // Changed, because returning string is not failing because of this
+      // https://github.com/iojs/io.js/issues/1161
       return 1111111111111111111111
     })
     var fn = ffi.ForeignFunction(cb, 'int', [ ])
@@ -83,12 +84,9 @@ describe('Callback', function () {
     gc()
 
     // should throw an Error synchronously
-    try {
+    assert.throws(function () {
       bindings.call_cb()
-      assert(false) // shouldn't get here
-    } catch (e) {
-      assert(/ffi/.test(e.message))
-    }
+    }, /callback has been garbage collected/)
   })
 
   /**
@@ -145,7 +143,7 @@ describe('Callback', function () {
         } catch (ae) {
           err = ae
         }
-        done(err);
+        done(err)
 
         listeners.forEach(function (fn) {
           process.on('uncaughtException', fn)
@@ -154,7 +152,7 @@ describe('Callback', function () {
 
       bindings.call_cb_from_thread()
     }
-  });
+  })
 
   describe('async', function () {
 
@@ -271,7 +269,7 @@ describe('Callback', function () {
         } catch (ae) {
           err = ae
         }
-        done(err);
+        done(err)
 
         listeners.forEach(function (fn) {
           process.on('uncaughtException', fn)
