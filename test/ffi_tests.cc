@@ -260,6 +260,12 @@ void play_ping_pong (const char* (*callback) (const char*)) {
   } while (strcmp(response, "pong") == 0);
 }
 
+// https://github.com/node-ffi/node-ffi/issues/169
+int test_169(char* str, int len) {
+  const char str1[] = "sample str\0";
+  return strlcpy(str, str1, len);
+}
+
 void wrap_pointer_cb(char *data, void *hint) {
 }
 
@@ -316,6 +322,7 @@ void Initialize(Handle<Object> target) {
   target->Set(Nan::New<String>("array_in_struct").ToLocalChecked(), WrapPointer((char *)array_in_struct));
   target->Set(Nan::New<String>("callback_func").ToLocalChecked(), WrapPointer((char *)callback_func));
   target->Set(Nan::New<String>("play_ping_pong").ToLocalChecked(), WrapPointer((char *)play_ping_pong));
+  target->Set(Nan::New<String>("test_169").ToLocalChecked(), WrapPointer((char *)test_169));
 }
 
 } // anonymous namespace

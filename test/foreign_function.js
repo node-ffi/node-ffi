@@ -150,6 +150,15 @@ describe('ForeignFunction', function () {
     }
   })
 
+  // allow a Buffer backing store to be used as a "string" FFI argument
+  // https://github.com/node-ffi/node-ffi/issues/169
+  it.only('should call the static "test_169" bindings', function () {
+    var test = ffi.ForeignFunction(bindings.test_169, 'int', [ 'string', 'int' ])
+    var b = new Buffer(20)
+    var len = test(b, b.length)
+    assert.equal('sample str', b.toString('ascii', 0, len))
+  })
+
   it('should not call the "ref()" function of its arguments', function () {
     var void_ptr_arg = ffi.ForeignFunction(bindings.abs, 'void *', [ 'void *' ])
     var b = new Buffer(0)
