@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "v8.h"
 #include "node.h"
 #include "node_buffer.h"
@@ -261,9 +262,10 @@ void play_ping_pong (const char* (*callback) (const char*)) {
 }
 
 // https://github.com/node-ffi/node-ffi/issues/169
-int test_169(char* str, int len) {
-  const char str1[] = "sample str\0";
-  return strlcpy(str, str1, len);
+int test_169(char* dst, int len) {
+  const char src[] = "sample str\0";
+  strncpy(dst, src, len);
+  return fmin(len, strlen(src));
 }
 
 void wrap_pointer_cb(char *data, void *hint) {
