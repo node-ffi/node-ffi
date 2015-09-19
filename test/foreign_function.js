@@ -137,7 +137,7 @@ describe('ForeignFunction', function () {
     assert.equal(20, a.array.length)
     a.num = 69
     for (var i = 0; i < 20; i++) {
-      a.array[i] = i / 3.14;
+      a.array[i] = i / 3.14
     }
 
     var b = array_in_struct(a)
@@ -187,7 +187,7 @@ describe('ForeignFunction', function () {
         catch (e) {
           done(e)
         }
-      });
+      })
     })
 
   })
