@@ -109,7 +109,7 @@ box add_boxes(box boxes[], int num) {
 }
 
 /*
- * Reads "ints" from the "input" array until a NULL pointer is found.
+ * Reads "ints" from the "input" array until -1 is found.
  * Returns the number of elements in the array.
  */
 
