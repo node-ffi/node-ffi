@@ -160,18 +160,17 @@ my_callback callback_func (my_callback cb) {
 
 NAN_METHOD(Strtoul) {
   Nan::HandleScope();
-  char buf[128];
   int base;
   char **endptr;
 
-  info[0]->ToString()->WriteUtf8(buf);
+  Nan::Utf8String buf(info[0]);
 
-  Local<Value> endptr_arg = info[0];
+  Local<Value> endptr_arg = info[1];
   endptr = (char **)Buffer::Data(endptr_arg.As<Object>());
 
   base = info[2]->Int32Value();
 
-  unsigned long val = strtoul(buf, endptr, base);
+  unsigned long val = strtoul(*buf, endptr, base);
 
   info.GetReturnValue().Set(Nan::New<Integer>((uint32_t)val));
 }
