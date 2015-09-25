@@ -267,6 +267,11 @@ int test_169(char* dst, int len) {
   return fmin(len, strlen(src));
 }
 
+// https://github.com/node-ffi/node-ffi/issues/244
+const int *test_244() {
+  return NULL;
+}
+
 void wrap_pointer_cb(char *data, void *hint) {
 }
 
@@ -324,6 +329,7 @@ void Initialize(Handle<Object> target) {
   target->Set(Nan::New<String>("callback_func").ToLocalChecked(), WrapPointer((char *)callback_func));
   target->Set(Nan::New<String>("play_ping_pong").ToLocalChecked(), WrapPointer((char *)play_ping_pong));
   target->Set(Nan::New<String>("test_169").ToLocalChecked(), WrapPointer((char *)test_169));
+  target->Set(Nan::New<String>("test_244").ToLocalChecked(), WrapPointer((char *)test_244));
 }
 
 } // anonymous namespace

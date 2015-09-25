@@ -159,6 +159,16 @@ describe('ForeignFunction', function () {
     assert.equal('sample str', b.toString('ascii', 0, len))
   })
 
+  // https://github.com/node-ffi/node-ffi/issues/244
+  it('should call the static "test_244" bindings', function () {
+    var test = ffi.ForeignFunction(bindings.test_244, 'int*', [ ])
+    var r = test()
+    assert(r.isNull())
+
+    // shouldn't crash
+    gc()
+  })
+
   it('should not call the "ref()" function of its arguments', function () {
     var void_ptr_arg = ffi.ForeignFunction(bindings.abs, 'void *', [ 'void *' ])
     var b = new Buffer(0)
