@@ -252,7 +252,8 @@ NAN_METHOD(CallCbAsync) {
 }
 
 
-// Race condition in threaded callback invocation testing, see #153
+// Race condition in threaded callback invocation testing
+// https://github.com/node-ffi/node-ffi/issues/153
 void play_ping_pong (const char* (*callback) (const char*)) {
   const char * response;
   do {
