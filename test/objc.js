@@ -14,10 +14,10 @@ var Class = voidPtr;
 if (ffi.HAS_OBJC) {
 
   describe('@try / @catch', function () {
-    // not entirely sure why this works, but we have to load `Cocoa` first,
+    // not entirely sure why this works, but we have to load `Foundation` first,
     // otherwise Objective-C exceptions will not work. Magic!
     // https://github.com/node-ffi/node-ffi/issues/195
-    var lib = ffi.DynamicLibrary('/System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa');
+    var lib = ffi.DynamicLibrary('/System/Library/Frameworks/Foundation.framework/Versions/Current/Foundation')
 
     afterEach(gc);
 
