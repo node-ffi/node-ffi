@@ -34,7 +34,7 @@
 #include <ffi_common.h>
 
 #if !FFI_MMAP_EXEC_WRIT && !FFI_EXEC_TRAMPOLINE_TABLE
-# if __gnu_linux__
+# if __gnu_linux__ && !defined(__ANDROID__)
 /* This macro indicates it may be forbidden to map anonymous memory
    with both write and execute permission.  Code compiled when this
    option is defined will attempt to map such pages once, but if it
@@ -172,6 +172,41 @@ selinux_enabled_check (void)
 
 #endif /* !FFI_MMAP_EXEC_SELINUX */
 
+/* On PaX enable kernels that have MPROTECT enable we can't use PROT_EXEC. */
+#ifdef FFI_MMAP_EXEC_EMUTRAMP_PAX
+#include <stdlib.h>
+
+static int emutramp_enabled = -1;
+
+static int
+emutramp_enabled_check (void)
+{
+  char *buf = NULL;
+  size_t len = 0;
+  FILE *f;
+  int ret;
+  f = fopen ("/proc/self/status", "r");
+  if (f == NULL)
+    return 0;
+  ret = 0;
+
+  while (getline (&buf, &len, f) != -1)
+    if (!strncmp (buf, "PaX:", 4))
+      {
+        char emutramp;
+        if (sscanf (buf, "%*s %*c%c", &emutramp) == 1)
+          ret = (emutramp == 'E');
+        break;
+      }
+  free (buf);
+  fclose (f);
+  return ret;
+}
+
+#define is_emutramp_enabled() (emutramp_enabled >= 0 ? emutramp_enabled \
+                               : (emutramp_enabled = emutramp_enabled_check ()))
+#endif /* FFI_MMAP_EXEC_EMUTRAMP_PAX */
+
 #elif defined (__CYGWIN__) || defined(__INTERIX)
 
 #include <sys/mman.h>
@@ -180,6 +215,10 @@ selinux_enabled_check (void)
 #define is_selinux_enabled() 0
 
 #endif /* !defined(X86_WIN32) && !defined(X86_WIN64) */
+
+#ifndef FFI_MMAP_EXEC_EMUTRAMP_PAX
+#define is_emutramp_enabled() 0
+#endif /* FFI_MMAP_EXEC_EMUTRAMP_PAX */
 
 /* Declare all functions defined in dlmalloc.c as static.  */
 static void *dlmalloc(size_t);
@@ -226,9 +265,15 @@ static size_t execsize = 0;
 
 /* Open a temporary file name, and immediately unlink it.  */
 static int
-open_temp_exec_file_name (char *name)
+open_temp_exec_file_name (char *name, int flags)
 {
-  int fd = mkstemp (name);
+  int fd;
+
+#ifdef HAVE_MKOSTEMP
+  fd = mkostemp (name, flags);
+#else
+  fd = mkstemp (name);
+#endif
 
   if (fd != -1)
     unlink (name);
@@ -241,8 +286,30 @@ static int
 open_temp_exec_file_dir (const char *dir)
 {
   static const char suffix[] = "/ffiXXXXXX";
-  int lendir = strlen (dir);
-  char *tempname = __builtin_alloca (lendir + sizeof (suffix));
+  int lendir, flags;
+  char *tempname;
+#ifdef O_TMPFILE
+  int fd;
+#endif
+
+#ifdef O_CLOEXEC
+  flags = O_CLOEXEC;
+#else
+  flags = 0;
+#endif
+
+#ifdef O_TMPFILE
+  fd = open (dir, flags | O_RDWR | O_EXCL | O_TMPFILE, 0700);
+  /* If the running system does not support the O_TMPFILE flag then retry without it. */
+  if (fd != -1 || (errno != EINVAL && errno != EISDIR && errno != EOPNOTSUPP)) {
+    return fd;
+  } else {
+    errno = 0;
+  }
+#endif
+
+  lendir = strlen (dir);
+  tempname = __builtin_alloca (lendir + sizeof (suffix));
 
   if (!tempname)
     return -1;
@@ -250,7 +317,7 @@ open_temp_exec_file_dir (const char *dir)
   memcpy (tempname, dir, lendir);
   memcpy (tempname + lendir, suffix, sizeof (suffix));
 
-  return open_temp_exec_file_name (tempname);
+  return open_temp_exec_file_name (tempname, flags);
 }
 
 /* Open a temporary file in the directory in the named environment
@@ -359,7 +426,7 @@ open_temp_exec_file_opts_next (void)
 }
 
 /* Return a file descriptor of a temporary zero-sized file in a
-   writable and exexutable filesystem.  */
+   writable and executable filesystem.  */
 static int
 open_temp_exec_file (void)
 {
@@ -457,6 +524,12 @@ dlmmap (void *start, size_t length, int prot,
 #if FFI_CLOSURE_TEST
   printf ("mapping in %zi\n", length);
 #endif
+
+  if (execfd == -1 && is_emutramp_enabled ())
+    {
+      ptr = mmap (start, length, prot & ~PROT_EXEC, flags, fd, offset);
+      return ptr;
+    }
 
   if (execfd == -1 && !is_selinux_enabled ())
     {
