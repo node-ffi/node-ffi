@@ -7485,13 +7485,18 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-    case `/usr/bin/file conftest.o` in
+    if test -f '/usr/bin/file' ; then
+        bits=`/usr/bin/file conftest.o`
+    else
+        bits=`$OBJDUMP -f conftest.o | grep "file format"`
+    fi
+    case "$bits" in
       *32-bit*)
 	case $host in
 	  x86_64-*kfreebsd*-gnu)
 	    LD="${LD-ld} -m elf_i386_fbsd"
 	    ;;
-	  x86_64-*linux*)
+	  x86_64-*linux*|elf32-*)
 	    LD="${LD-ld} -m elf_i386"
 	    ;;
 	  ppc64-*linux*|powerpc64-*linux*)
@@ -7510,7 +7515,7 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*kfreebsd*-gnu)
 	    LD="${LD-ld} -m elf_x86_64_fbsd"
 	    ;;
-	  x86_64-*linux*)
+	  x86_64-*linux*|elf64-*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
 	  ppc*-*linux*|powerpc*-*linux*)
