@@ -51,6 +51,9 @@
 
 #define FFI_TARGET_SPECIFIC_STACK_SPACE_ALLOCATION
 #define FFI_TARGET_HAS_COMPLEX_TYPE
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#undef FFI_TARGET_HAS_COMPLEX_TYPE
+#endif
 
 /* ---- Generic type definitions ----------------------------------------- */
 

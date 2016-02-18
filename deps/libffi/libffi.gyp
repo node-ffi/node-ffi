@@ -79,6 +79,12 @@
           },
         ],
       },
+    },
+    # else
+    {
+      'variables': {
+        'prebuilt_headers': '<!(./configure --enable-static --disable-shared --disable-builddir --with-pic)',
+      }
     }],
   ],
 
@@ -105,16 +111,15 @@
       ],
       'include_dirs': [
         'include',
-        # platform and arch-specific headers
-        'config/<(OS)/<(target_arch)'
+        '.'
       ],
       'direct_dependent_settings': {
         'include_dirs': [
           'include',
-          # platform and arch-specific headers
-          'config/<(OS)/<(target_arch)'
+          '.'
         ],
       },
+      # reference: Makefile.in#L83-L122
       'conditions': [
         ['target_arch=="arm"', {
           'sources': [ 'src/arm/ffi.c' ],
@@ -123,38 +128,71 @@
               'sources': [ 'src/arm/sysv.S' ]
             }]
           ]
-        }, { # ia32 or x64
+        }, {
+         # all x86 system use ffi.c
           'sources': [
             'src/x86/ffi.c',
-            'src/x86/ffi64.c'
+            'src/x86/sysv.S',
           ],
+          # all 32bit system use win32.S
+          # all 64bit system use unix64.S and ffi64.c
           'conditions': [
+            ['target_arch=="ia32"', {
+              'sources': [
+                'src/x86/win32.S',
+              ]
+            }, {
+              'sources': [
+                'src/x86/ffi64.c',
+                'src/x86/unix64.S',
+              ]
+            }],
+            # 32bit bsd system use freebsd.S instead of sysv.S
+            ['OS=="freebsd" or OS=="openbsd"', {
+              'conditions': [
+                ['target_arch=="ia32"', {
+                  'sources!': [ 'src/x86/sysv.S' ],
+                  'sources': [
+                    'src/x86/freebsd.S',
+                  ]
+                }],
+              ],
+            }],
+            # darwin system use darwin.S and darwin64.S
             ['OS=="mac"', {
               'sources': [
                 'src/x86/darwin.S',
-                'src/x86/darwin64.S'
-              ]
+                'src/x86/darwin64.S',
+              ],
             }],
             ['OS=="win"', {
               # the libffi dlmalloc.c file has a bunch of implicit conversion
               # warnings, and the main ffi.c file contains one, so silence them
               'msvs_disabled_warnings': [ 4267 ],
-              # the ffi64.c file is never compiled on Windows
-              'sources!': [ 'src/x86/ffi64.c' ],
+              'include_dirs': [ 'windows/<(target_arch)' ],
+              # all windows system not use sysv.S
+              'sources!': [ 'src/x86/sysv.S' ],
+              # all windows system need to prebuilt S file to asm file
               'conditions': [
                 ['target_arch=="ia32"', {
-                  'sources': [ 'src/x86/win32.asm' ]
+                  'soruces!': [
+                    'src/x86/win32.S',
+                  ],
+                  'sources': [
+                    'src/x86/win32.asm',
+                  ]
                 }, { # target_arch=="x64"
-                  'sources': [ 'src/x86/win64.asm' ]
+                  # win64 not use ffi64.c, unix64.S
+                  'sources!': [
+                    'src/x86/ffi64.c',
+                    'src/x86/unix64.S',
+                  ],
+                  'sources': [
+                    'src/x86/win64.asm',
+                  ]
                 }]
-              ]
+              ],
             }],
-            ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-              'sources': [
-                'src/x86/unix64.S',
-                'src/x86/sysv.S'
-              ]
-            }]
           ]
         }],
       ]
