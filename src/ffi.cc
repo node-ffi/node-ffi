@@ -146,6 +146,9 @@ NAN_MODULE_INIT(FFI::InitializeBindings) {
   ftmap->Set(Nan::New<String>("longlong").ToLocalChecked(), WrapPointer((char *)&ffi_type_slong));
 
   target->Set(Nan::New<String>("FFI_TYPES").ToLocalChecked(), ftmap);
+
+  Nan::Set(target, Nan::New<String>("errno").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(GetError)->GetFunction());
 }
 
 /*
@@ -310,6 +313,13 @@ NAN_METHOD(FFI::FFICallAsync) {
       (uv_after_work_cb)FFI::FinishAsyncFFICall);
 
   info.GetReturnValue().SetUndefined();
+}
+
+/*
+ * Wrap `errno` variable (or defined method call).
+ */
+NAN_METHOD(GetError) {
+    info.GetReturnValue().Set(errno);
 }
 
 /*
