@@ -146,5 +146,3 @@ class ThreadedCallbackInvokation {
     uv_cond_t m_cond;
     uv_mutex_t m_mutex;
 };
-
-NAN_METHOD(GetError);

@@ -11,6 +11,10 @@ void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
 }
 
+int node_ffi_errno() {
+    return errno;
+}
+
 ///////////////
 
 NAN_MODULE_INIT(FFI::InitializeStaticFunctions) {
@@ -21,6 +25,8 @@ NAN_MODULE_INIT(FFI::InitializeStaticFunctions) {
   o->Set(Nan::New<String>("dlclose").ToLocalChecked(), WrapPointer((char *)dlclose));
   o->Set(Nan::New<String>("dlsym").ToLocalChecked(),   WrapPointer((char *)dlsym));
   o->Set(Nan::New<String>("dlerror").ToLocalChecked(), WrapPointer((char *)dlerror));
+
+  o->Set(Nan::New<String>("_errno").ToLocalChecked(), WrapPointer((char *)node_ffi_errno));
 
   target->Set(Nan::New<String>("StaticFunctions").ToLocalChecked(), o);
 }
@@ -146,9 +152,6 @@ NAN_MODULE_INIT(FFI::InitializeBindings) {
   ftmap->Set(Nan::New<String>("longlong").ToLocalChecked(), WrapPointer((char *)&ffi_type_slong));
 
   target->Set(Nan::New<String>("FFI_TYPES").ToLocalChecked(), ftmap);
-
-  Nan::Set(target, Nan::New<String>("errno").ToLocalChecked(),
-    Nan::New<FunctionTemplate>(GetError)->GetFunction());
 }
 
 /*
@@ -316,16 +319,8 @@ NAN_METHOD(FFI::FFICallAsync) {
 }
 
 /*
- * Wrap `errno` variable (or defined method call).
- */
-NAN_METHOD(GetError) {
-    info.GetReturnValue().Set(errno);
-}
-
-/*
  * Called on the thread pool.
  */
-
 void FFI::AsyncFFICall(uv_work_t *req) {
   AsyncCallParams *p = (AsyncCallParams *)req->data;
 
