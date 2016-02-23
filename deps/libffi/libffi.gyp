@@ -160,6 +160,11 @@
             }],
             # darwin system use darwin.S and darwin64.S
             ['OS=="mac"', {
+              'conditions': [
+                ['target_arch=="x64"', {
+                  'sources!': [ 'src/x86/unix64.S' ],
+                }],
+              ],
               'sources': [
                 'src/x86/darwin.S',
                 'src/x86/darwin64.S',
