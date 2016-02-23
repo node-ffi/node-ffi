@@ -20,6 +20,7 @@ sed -i.bak -e "$COMPLEX_DEFINE" include/ffitarget.h
 $CPP $ASM_OPTS $ASM_WIN64_OPTS src/x86/win64.S > src/x86/win64.asm
 # replace `jmp SHORT` to `jmp`
 sed -i.bak -e "s/jmp\tSHORT /jmp\t/g" src/x86/win64.asm
+sed -i.bak -e "/^$/d" src/x86/win64.asm
 mv fficonfig.h include/ffi.h include/ffitarget.h windows/x64/
 
 ### x86
