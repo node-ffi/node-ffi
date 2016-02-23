@@ -129,74 +129,31 @@
             }]
           ]
         }, {
-         # all x86 system use ffi.c
-          'sources': [
-            'src/x86/ffi.c',
-            'src/x86/sysv.S',
-          ],
-          # all 32bit system use win32.S
-          # all 64bit system use unix64.S and ffi64.c
           'conditions': [
-            ['target_arch=="ia32"', {
-              'sources': [
-                'src/x86/win32.S',
-              ]
-            }, {
-              'sources': [
-                'src/x86/ffi64.c',
-                'src/x86/unix64.S',
-              ]
-            }],
-            # 32bit bsd system use freebsd.S instead of sysv.S
-            ['OS=="freebsd" or OS=="openbsd"', {
-              'conditions': [
-                ['target_arch=="ia32"', {
-                  'sources!': [ 'src/x86/sysv.S' ],
-                  'sources': [
-                    'src/x86/freebsd.S',
-                  ]
-                }],
-              ],
-            }],
-            # darwin system use darwin.S and darwin64.S
-            ['OS=="mac"', {
-              'conditions': [
-                ['target_arch=="x64"', {
-                  'sources!': [ 'src/x86/unix64.S' ],
-                }],
-              ],
-              'sources': [
-                'src/x86/darwin.S',
-                'src/x86/darwin64.S',
-              ],
-            }],
             ['OS=="win"', {
               # the libffi dlmalloc.c file has a bunch of implicit conversion
               # warnings, and the main ffi.c file contains one, so silence them
               'msvs_disabled_warnings': [ 4267 ],
               'include_dirs': [ 'windows/<(target_arch)' ],
               # all windows system not use sysv.S
-              'sources!': [ 'src/x86/sysv.S' ],
               # all windows system need to prebuilt S file to asm file
+              'sources': [
+                'src/x86/ffi.c',
+              ],
               'conditions': [
                 ['target_arch=="ia32"', {
-                  'soruces!': [
-                    'src/x86/win32.S',
-                  ],
                   'sources': [
                     'src/x86/win32.asm',
                   ]
                 }, { # target_arch=="x64"
-                  # win64 not use ffi64.c, unix64.S
-                  'sources!': [
-                    'src/x86/ffi64.c',
-                    'src/x86/unix64.S',
-                  ],
                   'sources': [
                     'src/x86/win64.asm',
                   ]
                 }]
               ],
+            }, {
+              # all x86 system reuse makefile configure result
+              'sources': ['<!@(grep "^am__append" Makefile | sed -e "s/.* = //")'],
             }],
           ]
         }],
