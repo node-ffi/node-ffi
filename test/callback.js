@@ -1,5 +1,6 @@
 var assert = require('assert')
   , ref = require('ref')
+  , array = require('ref-array')
   , ffi = require('../')
   , int = ref.types.int
   , bindings = require('bindings')({ module_root: __dirname, bindings: 'ffi_tests' })
@@ -17,6 +18,19 @@ describe('Callback', function () {
     var funcPtr = ffi.Callback(int, [ int ], Math.abs)
     var func = ffi.ForeignFunction(funcPtr, int, [ int ])
     assert.equal(1234, func(-1234))
+  })
+
+  it('should be possible to marshal variable size array', function () {
+    function refineTypes(ptr, size) {
+      return ref.refType(array(ref.types.uint8, size))
+    }
+    function bytesToString(ptr, size) {
+      return (+ptr.toString());
+    }
+    var funcPtr = ffi.Callback(int, [ refineTypes, int ], bytesToString)
+    var func = ffi.ForeignFunction(funcPtr, int, [ ref.refType(ref.types.uint8), int ])
+    var buf = new Buffer("1234567890")
+    assert.equal(1234567890, func(buf, buf.length))
   })
 
   it('should work with a "void" return type', function () {
