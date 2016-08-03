@@ -14,6 +14,7 @@ environment:
     - nodejs_version: "3.2"
     - nodejs_version: "4.1"
     - nodejs_version: "5.1"
+    - nodejs_version: "6"
 
 platform:
   - x86
