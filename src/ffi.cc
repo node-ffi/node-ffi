@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <node.h>
 #include <node_buffer.h>
 #include "ffi.h"
@@ -35,6 +36,8 @@ NAN_MODULE_INIT(FFI::InitializeStaticFunctions) {
 NAN_MODULE_INIT(FFI::InitializeBindings) {
 
   // main function exports
+  Nan::Set(target, Nan::New<String>("errno").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(GetErrno)->GetFunction());
   Nan::Set(target, Nan::New<String>("ffi_prep_cif").ToLocalChecked(),
     Nan::New<FunctionTemplate>(FFIPrepCif)->GetFunction());
   Nan::Set(target, Nan::New<String>("ffi_prep_cif_var").ToLocalChecked(),
@@ -146,6 +149,14 @@ NAN_MODULE_INIT(FFI::InitializeBindings) {
   ftmap->Set(Nan::New<String>("longlong").ToLocalChecked(), WrapPointer((char *)&ffi_type_slong));
 
   target->Set(Nan::New<String>("FFI_TYPES").ToLocalChecked(), ftmap);
+}
+
+/*
+ * Gets `errno`.
+ */
+
+NAN_METHOD(FFI::GetErrno) {
+  info.GetReturnValue().Set(Nan::New<Integer>(errno));
 }
 
 /*

@@ -70,6 +70,7 @@ class FFI {
     static NAN_MODULE_INIT(InitializeBindings);
 
   protected:
+    static NAN_METHOD(GetErrno);
     static NAN_METHOD(FFIPrepCif);
     static NAN_METHOD(FFIPrepCifVar);
     static NAN_METHOD(FFICall);
