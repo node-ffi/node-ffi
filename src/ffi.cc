@@ -1,6 +1,7 @@
 #include <node.h>
 #include <node_buffer.h>
 #include "ffi.h"
+#include "fficonfig.h"
 
 /*
  * Called when the wrapped pointer is garbage collected.
@@ -39,6 +40,9 @@ NAN_MODULE_INIT(FFI::InitializeStaticFunctions) {
   static_cast<PropertyAttribute>(ReadOnly|DontDelete))
 
 NAN_MODULE_INIT(FFI::InitializeBindings) {
+
+  Nan::Set(target, Nan::New<String>("version").ToLocalChecked(),
+    Nan::New<String>(PACKAGE_VERSION).ToLocalChecked());
 
   // main function exports
   Nan::Set(target, Nan::New<String>("ffi_prep_cif").ToLocalChecked(),
