@@ -159,6 +159,21 @@ describe('ForeignFunction', function () {
     assert.equal('sample str', b.toString('ascii', 0, len))
   })
 
+  // testing `bool` ref type
+  // https://github.com/TooTallNate/ref/issues/56
+  it('should call the static "test_169" bindings', function () {
+    var Obj56 = Struct({
+      'traceMode': ref.types.bool
+    })
+    var t = new Obj56({ traceMode: true })
+    var f = new Obj56({ traceMode: false })
+
+    var test = ffi.ForeignFunction(bindings.test_ref_56, 'int', [ ref.refType(Obj56) ])
+
+    assert.equal(1, test(t.ref()))
+    assert.equal(0, test(f.ref()))
+  })
+
   it('should not call the "ref()" function of its arguments', function () {
     var void_ptr_arg = ffi.ForeignFunction(bindings.abs, 'void *', [ 'void *' ])
     var b = new Buffer(0)

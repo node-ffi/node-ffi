@@ -261,12 +261,23 @@ void play_ping_pong (const char* (*callback) (const char*)) {
   } while (strcmp(response, "pong") == 0);
 }
 
+
 // https://github.com/node-ffi/node-ffi/issues/169
 int test_169(char* dst, int len) {
   const char src[] = "sample str\0";
   strncpy(dst, src, len);
   return fmin(len, strlen(src));
 }
+
+
+// https://github.com/TooTallNate/ref/issues/56
+struct Obj56 {
+  bool traceMode;
+};
+int test_ref_56(struct Obj56 *obj) {
+  return obj->traceMode ? 1 : 0;
+}
+
 
 void wrap_pointer_cb(char *data, void *hint) {
 }
@@ -325,6 +336,7 @@ void Initialize(Handle<Object> target) {
   target->Set(Nan::New<String>("callback_func").ToLocalChecked(), WrapPointer((char *)callback_func));
   target->Set(Nan::New<String>("play_ping_pong").ToLocalChecked(), WrapPointer((char *)play_ping_pong));
   target->Set(Nan::New<String>("test_169").ToLocalChecked(), WrapPointer((char *)test_169));
+  target->Set(Nan::New<String>("test_ref_56").ToLocalChecked(), WrapPointer((char *)test_ref_56));
 }
 
 } // anonymous namespace
