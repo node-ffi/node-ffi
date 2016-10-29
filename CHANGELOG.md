@@ -1,3 +1,9 @@
+2.2.0 / 2016-10-29
+==================
+
+* [[`8fc355f276`](https://github.com/node-ffi/ffi/commit/8fc355f276)] - add libffi `version` string (Nathan Rajlich)
+* [[`97d7ab12e6`](https://github.com/node-ffi/ffi/commit/97d7ab12e6)] - remove OS X 10.5 deployment target (Nathan Rajlich)
+* [[`7a928f38b1`](https://github.com/node-ffi/ffi/commit/7a928f38b1)] - **test**: add a test case for [TooTallNate/ref#56](https://github.com/TooTallNate/ref/issues/56) (Nathan Rajlich)
 
 2.1.0 / 2016-08-03
 ==================
