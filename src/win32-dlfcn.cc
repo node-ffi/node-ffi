@@ -31,6 +31,8 @@ static DWORD lastError = 0;
 extern "C" {
 #endif
 
+int GetDir(WCHAR *, WCHAR *);
+
 /**
  * Convert UTF-8 string to Windows UNICODE (UCS-2 LE).
  *
@@ -80,6 +82,7 @@ dlopen(
     WCHAR* unicodeFilename;
     UINT errorMode;
     void* handle;
+	WCHAR dllDir[1024] = {0};
 
     UNREFERENCED_PARAMETER(mode);
 
@@ -92,6 +95,9 @@ dlopen(
         lastError = GetLastError();
         return NULL;
     }
+
+	GetDir(unicodeFilename, dllDir);
+    SetDllDirectoryW(dllDir);
 
     errorMode = GetErrorMode();
 
@@ -127,6 +133,7 @@ dlclose(
     if (rc)
         lastError = GetLastError();
 
+	SetDllDirectory(NULL);
     return rc;
 }
 
@@ -164,6 +171,31 @@ dlerror(void)
     } else {
         return NULL;
     }
+}
+
+int GetDir(WCHAR *fullPath, WCHAR *dir) {
+    const int buffSize = 1024;
+
+    WCHAR buff[buffSize] = {0};
+    int buffCounter = 0;
+    int dirSymbolCounter = 0;
+
+    for (int i = 0; i < wcslen(fullPath); i++) {
+        if (fullPath[i] != L'\\') {
+            if (buffCounter < buffSize) buff[buffCounter++] = fullPath[i];
+            else return -1;
+        } else {
+            for (int i2 = 0; i2 < buffCounter; i2++) {
+                dir[dirSymbolCounter++] = buff[i2];
+                buff[i2] = 0;
+            }
+
+            dir[dirSymbolCounter++] = fullPath[i];
+            buffCounter = 0;
+        }
+    }
+
+    return dirSymbolCounter;
 }
 
 #ifdef __cplusplus
