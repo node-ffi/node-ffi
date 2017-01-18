@@ -1,6 +1,6 @@
 {
   "name": "ffi",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "license": "MIT",
   "author": "Rick Branson",
   "contributors": [
@@ -39,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/node-ffi/node-ffi.git"
+    "url": "http://github.com/xblox/node-ffi.git"
   },
   "bugs": {
     "url": "http://github.com/node-ffi/node-ffi/issues"
