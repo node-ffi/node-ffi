@@ -22,7 +22,6 @@
         ['OS=="mac"', {
           'xcode_settings': {
             'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
-            'MACOSX_DEPLOYMENT_TARGET': '10.5',
             'OTHER_CFLAGS': [
                 '-ObjC++'
             ]
