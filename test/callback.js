@@ -80,6 +80,7 @@ describe('Callback', function () {
     // should be ok
     bindings.call_cb()
 
+    global.cif = cb._cif
     cb = null // KILL!!
     gc()
 
@@ -276,6 +277,7 @@ describe('Callback', function () {
         })
       })
 
+      global.cif = cb._cif
       cb = null // KILL!!
       gc()
 
