@@ -3,6 +3,14 @@
 #include "ffi.h"
 #include "fficonfig.h"
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
+#ifdef WIN32
+uint32_t g_win32ErrNo = 0;
+#endif
+
 /*
  * Called when the wrapped pointer is garbage collected.
  * We never have to do anything here...
@@ -53,6 +61,10 @@ NAN_MODULE_INIT(FFI::InitializeBindings) {
     Nan::New<FunctionTemplate>(FFICall)->GetFunction());
   Nan::Set(target, Nan::New<String>("ffi_call_async").ToLocalChecked(),
     Nan::New<FunctionTemplate>(FFICallAsync)->GetFunction());
+#ifdef WIN32
+  Nan::Set(target, Nan::New<String>("win32ErrNo").ToLocalChecked(),
+    Nan::New<FunctionTemplate>(Win32ErrNo)->GetFunction());
+#endif
 
   // `ffi_status` enum values
   SET_ENUM_VALUE(FFI_OK);
@@ -276,6 +288,9 @@ NAN_METHOD(FFI::FFICall) {
           (void *)res,
           (void **)fnargs
         );
+#ifdef WIN32
+      g_win32ErrNo = GetLastError();
+#endif
 #if __OBJC__ || __OBJC2__
     } @catch (id ex) {
       return THROW_ERROR_EXCEPTION(WrapPointer((char *)ex));
@@ -380,6 +395,11 @@ void FFI::FinishAsyncFFICall(uv_work_t *req) {
     FatalException(try_catch);
 #endif
   }
+}
+
+NAN_METHOD(FFI::Win32ErrNo) {
+    Nan::HandleScope scope;
+    info.GetReturnValue().Set(Nan::New<Uint32>(g_win32ErrNo));
 }
 
 NAN_MODULE_INIT(init) {

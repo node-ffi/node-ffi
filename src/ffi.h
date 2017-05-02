@@ -76,6 +76,9 @@ class FFI {
     static NAN_METHOD(FFICallAsync);
     static void AsyncFFICall(uv_work_t *req);
     static void FinishAsyncFFICall(uv_work_t *req);
+#ifdef WIN32
+    static NAN_METHOD(Win32ErrNo);
+#endif
 
     static NAN_METHOD(Strtoul);
 };
