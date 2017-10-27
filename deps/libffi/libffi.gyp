@@ -116,11 +116,11 @@
         ],
       },
       'conditions': [
-        ['target_arch=="arm"', {
-          'sources': [ 'src/arm/ffi.c' ],
+        ['target_arch=="mips64el"', {
+          'sources': [ 'src/mips/ffi.c' ],
           'conditions': [
             ['OS=="linux"', {
-              'sources': [ 'src/arm/sysv.S' ]
+              'sources': [ 'src/mips/o32.S','src/mips/n32.S' ]
             }]
           ]
         }, { # ia32 or x64
