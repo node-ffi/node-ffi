@@ -67,7 +67,15 @@ NAN_MODULE_INIT(FFI::InitializeBindings) {
 #ifdef __arm__
   SET_ENUM_VALUE(FFI_SYSV);
   SET_ENUM_VALUE(FFI_VFP);
-  /* ---- Intel x86 Win32 ---------- */
+#elif defined(_mips_)
+  /*---- mips processors -----------*/
+   SET_ENUM_VALUE(FFI_O32);
+   SET_ENUM_VALUE(FFI_N32);
+   SET_ENUM_VALUE(FFI_N64);
+   SET_ENUM_VALUE(FFI_O32_SOFT_FLOAT);
+   SET_ENUM_VALUE(FFI_N32_SOFT_FLOAT);
+   SET_ENUM_VALUE(FFI_N64_SOFT_FLOAT); 
+ /* ---- Intel x86 Win32 ---------- */
 #elif defined(X86_WIN32)
   SET_ENUM_VALUE(FFI_SYSV);
   SET_ENUM_VALUE(FFI_STDCALL);
@@ -78,9 +86,9 @@ NAN_MODULE_INIT(FFI::InitializeBindings) {
   SET_ENUM_VALUE(FFI_WIN64);
 #else
   /* ---- Intel x86 and AMD x86-64 - */
-  SET_ENUM_VALUE(FFI_SYSV);
+ /* SET_ENUM_VALUE(FFI_SYSV);*/
   /* Unix variants all use the same ABI for x86-64  */
-  SET_ENUM_VALUE(FFI_UNIX64);
+ /* SET_ENUM_VALUE(FFI_UNIX64);*/
 #endif
 
   /* flags for dlopen() */
