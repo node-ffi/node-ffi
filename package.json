@@ -27,7 +27,7 @@
     "debug": "2",
     "ref": "1",
     "ref-struct": "1",
-    "nan": "2"
+    "nan": "~2.10"
   },
   "devDependencies": {
     "fs-extra": "^0.23.1",
