@@ -60,7 +60,7 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
     if (dispatched) {
         Local<Value> errorFunctionArgv[1];
         errorFunctionArgv[0] = Nan::New<String>(errorMessage).ToLocalChecked();
-        info->errorFunction->Call(1, errorFunctionArgv);
+        Nan::Call(*info->errorFunction, 1, errorFunctionArgv);
     }
     else {
       Nan::ThrowError(errorMessage);
@@ -70,12 +70,17 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
     Local<Value> functionArgv[2];
     functionArgv[0] = WrapPointer((char *)retval, info->resultSize);
     functionArgv[1] = WrapPointer((char *)parameters, sizeof(char *) * info->argc);
-    Local<Value> e = info->function->Call(2, functionArgv);
+    MaybeLocal<Value> ev = Nan::Call(*info->function, 2, functionArgv);
+    if (ev.IsEmpty()) {
+      // The function threw an exception.
+      return;
+    }
+    Local<Value> e = ev.ToLocalChecked();
     if (!e->IsUndefined()) {
       if (dispatched) {
         Local<Value> errorFunctionArgv[1];
         errorFunctionArgv[0] = e;
-        info->errorFunction->Call(1, errorFunctionArgv);
+        Nan::Call(*info->errorFunction, 1, errorFunctionArgv);
       } else {
         Nan::ThrowError(e);
       }
