@@ -34,7 +34,7 @@ describe('ForeignFunction', function () {
     assert.throws(function () {
       // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
       abs(11111111111111111111)
-    }, /error setting argument 0/)
+    }, /error setting argument 1/)
   })
 
   it('should call the static "atoi" bindings', function () {
