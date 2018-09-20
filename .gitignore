@@ -17,3 +17,4 @@ Makefile.gyp
 gyp-*-tool
 .dirstamp
 npm-debug.log
+deps/libffi.bkk/
