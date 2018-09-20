@@ -1,0 +1,78 @@
+/^$/n
+x
+/^$/bS
+x
+/\\$/{H;d;}
+{H;s/.*//;x;}
+bM
+:S
+x
+/\\$/{h;d;}
+{h;s/.*//;x;}
+:M
+s/\(\n\)	/\1 /g
+/^	/d
+/^[	 ]*[\#]/d
+/^VPATH *=/d
+s/^srcdir *=.*/srcdir = ./
+s/^top_srcdir *=.*/top_srcdir = ./
+/[:=]/!d
+/^\./d
+/ = /b
+/ .= /b
+/:/!b
+s/:.*/:/
+s/ /  /g
+s/ \([a-z][a-z-]*[a-zA-Z0-9]\)\([ :]\)/ \1 \1-all\2/g
+s/^\([a-z][a-z-]*[a-zA-Z0-9]\)\([ :]\)/\1 \1-all\2/
+s/  / /g
+/^all all-all[ :]/i\
+all-configured : all-all
+s/ [a-zA-Z0-9-]*-all [a-zA-Z0-9-]*-all-all//g
+/-all-all/d
+a\
+	@ HOST="$(HOST)\" \\\
+	; test ".$$HOST" = "." && HOST=` sh /home/niikoo/Documents/Projects/node-ffi/deps/libffi/config.guess ` \\\
+	; BUILD=` grep "^#### $$HOST " Makefile | sed -e 's/.*|//' ` \\\
+	; use=` basename "$\@" -all `; n=` echo $$BUILD | wc -w ` \\\
+	; echo "MAKE $$HOST : $$n * $\@"; if test "$$n" -eq "0" ; then : \\\
+	; BUILD=` grep "^####.*|" Makefile |tail -1| sed -e 's/.*|//' ` ; fi \\\
+	; test ".$$BUILD" = "." && BUILD="." \\\
+	; test "$$use" = "$\@" && BUILD=` echo "$$BUILD" | tail -1 ` \\\
+	; for i in $$BUILD ; do test ".$$i" = "." && continue \\\
+	; (cd "$$i" && test ! -f configure && $(MAKE) $$use) || exit; done
+/dist-all *:/a\
+	@ HOST="$(HOST)\" \\\
+	; test ".$$HOST" = "." && HOST=` sh /home/niikoo/Documents/Projects/node-ffi/deps/libffi/config.guess ` \\\
+	; BUILD=` grep "^#### $$HOST " Makefile | sed -e 's/.*|//' ` \\\
+	; found=` echo $$BUILD | wc -w ` \\\
+	; echo "MAKE $$HOST : $$found $(PACKAGE)-$(VERSION).tar.*" \\\
+	; if test "$$found" -eq "0" ; then : \\\
+	; BUILD=` grep "^#### .*|" Makefile |tail -1| sed -e 's/.*|//' ` \\\
+	; fi ; for i in $$BUILD ; do test ".$$i" = "." && continue \\\
+	; for f in $$i/$(PACKAGE)-$(VERSION).tar.* \\\
+	; do test -f "$$f" && mv "$$f" $(PUB). ; done ; break ; done
+/dist-[a-zA-Z0-9]*-all *:/a\
+	@ HOST="$(HOST)\" \\\
+	; test ".$$HOST" = "." && HOST=` sh ./config.guess ` \\\
+	; BUILD=` grep "^#### $$HOST " Makefile | sed -e 's/.*|//' ` \\\
+	; found=` echo $$BUILD | wc -w ` \\\
+	; echo "MAKE $$HOST : $$found $(PACKAGE)-$(VERSION).*" \\\
+	; if test "$$found" -eq "0" ; then : \\\
+	; BUILD=` grep "^#### .*|" Makefile |tail -1| sed -e 's/.*|//' ` \\\
+	; fi ; for i in $$BUILD ; do test ".$$i" = "." && continue \\\
+	; for f in $$i/$(PACKAGE)-$(VERSION).* \\\
+	; do test -f "$$f" && mv "$$f" $(PUB). ; done ; break ; done
+/distclean-all *:/a\
+	@ HOST="$(HOST)\" \\\
+	; test ".$$HOST" = "." && HOST=` sh /home/niikoo/Documents/Projects/node-ffi/deps/libffi/config.guess ` \\\
+	; BUILD=` grep "^#### .*|" Makefile | sed -e 's/.*|//' ` \\\
+	; use=` basename "$\@" -all `; n=` echo $$BUILD | wc -w ` \\\
+	; echo "MAKE $$HOST : $$n * $\@ (all local builds)" \\\
+	; test ".$$BUILD" = "." && BUILD="." \\\
+	; for i in $$BUILD ; do test ".$$i" = "." && continue \\\
+	; echo "# rm -r $$i"; done ; echo "# (sleep 3)" ; sleep 3 \\\
+	; for i in $$BUILD ; do test ".$$i" = "." && continue \\\
+	; echo "$$i" | grep "^/" > /dev/null && continue \\\
+	; echo "$$i" | grep "^../" > /dev/null && continue \\\
+	; echo "rm -r $$i"; (rm -r "$$i") ; done ; rm Makefile

@@ -1,0 +1,10 @@
+src/x86/unix64.lo: ../src/x86/unix64.S /usr/include/stdc-predef.h \
+ fficonfig.h include/ffi.h include/ffitarget.h
+
+/usr/include/stdc-predef.h:
+
+fficonfig.h:
+
+include/ffi.h:
+
+include/ffitarget.h:

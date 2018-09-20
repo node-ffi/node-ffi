@@ -1,0 +1,3 @@
+src/x86/ffi.lo: ../src/x86/ffi.c /usr/include/stdc-predef.h
+
+/usr/include/stdc-predef.h:

@@ -36,7 +36,7 @@
     "ref-array": "1.2.0"
   },
   "scripts": {
-    "test": "node-gyp rebuild --directory test && mocha -gc --reporter spec"
+    "test": "node-gyp rebuild --debug --directory test && mocha -gc --reporter spec"
   },
   "repository": {
     "type": "git",
