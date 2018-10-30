@@ -23,11 +23,11 @@
   },
   "main": "./lib/ffi",
   "dependencies": {
-    "bindings": "~1.2.0",
-    "debug": "2",
-    "ref": "1",
-    "ref-struct": "1",
-    "nan": "2"
+    "bindings": "1.2.1",
+    "debug": "2.6.9",
+    "nan": "2.11.1",
+    "ref": "1.3.5",
+    "ref-struct": "1.1.0"
   },
   "devDependencies": {
     "fs-extra": "^0.23.1",
