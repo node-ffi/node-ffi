@@ -71,7 +71,7 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
     Local<Value> functionArgv[2];
     functionArgv[0] = WrapPointer((char *)retval, info->resultSize);
     functionArgv[1] = WrapPointer((char *)parameters, sizeof(char *) * info->argc);
-    Local<Value> e = info->function->Call(2, functionArgv, &resource).ToLocalChecked();
+    Local<Value> e = info->function->Call(2, functionArgv);
     if (!e->IsUndefined()) {
       if (dispatched) {
         Local<Value> errorFunctionArgv[1];
