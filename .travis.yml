@@ -11,12 +11,10 @@ addons:
       - g++-4.8
 env:
   matrix:
-    - TRAVIS_NODE_VERSION="4.1"
-    - TRAVIS_NODE_VERSION="5.1"
     - TRAVIS_NODE_VERSION="6"
-    - TRAVIS_NODE_VERSION="7"
     - TRAVIS_NODE_VERSION="8"
-    - TRAVIS_NODE_VERSION="9"
+    - TRAVIS_NODE_VERSION="10"
+    - TRAVIS_NODE_VERSION="11"
 
 install:
   - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION

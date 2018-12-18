@@ -6,16 +6,10 @@ environment:
   MSVS_VERSION: 2013
   # Test against these versions of Node.js and io.js
   matrix:
-    # node.js
-    - nodejs_version: "0.10"
-    - nodejs_version: "0.12"
-    # io.js
-    - nodejs_version: "2"
-    - nodejs_version: "3.2"
-    - nodejs_version: "4.1"
-    - nodejs_version: "5.1"
     - nodejs_version: "6"
     - nodejs_version: "8"
+    - nodejs_version: "10"
+    - nodejs_version: "11"
 
 platform:
   - x86
