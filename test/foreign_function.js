@@ -216,4 +216,30 @@ describe('ForeignFunction', function () {
 
   })
 
+  describe('promise', function () {
+
+    it('should call the static "abs" bindings asynchronously', function () {
+      var _abs = bindings.abs
+      var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
+      assert.equal('function', typeof abs.async)
+
+      return abs.promise(-1234).then(function (res) {
+        assert.equal(res, 1234)
+      })
+    })
+
+    it('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function () {
+      var _abs = bindings.abs
+      var abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ])
+
+      return abs.promise(1111111111111111111111).catch(function (err) {
+        return err;
+      }).then(function (err) {
+        assert(err instanceof Error)
+        assert(/error setting argument 0/.test(err.message))
+      })
+    })
+
+  })
+
 })

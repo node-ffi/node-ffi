@@ -149,4 +149,18 @@ describe('Library', function () {
 
   })
 
+  describe('promise', function () {
+
+    it('should call a function asynchronously and return a promise', function () {
+      var lib = process.platform == 'win32' ? 'msvcrt' : 'libm'
+      var libm = new Library(lib, {
+          'ceil': [ 'double', [ 'double' ], { promise: true } ]
+      })
+      return libm.ceil(1.1).then(function (res) {
+        assert.equal(res, 2)
+      })
+    })
+
+  })
+
 })
