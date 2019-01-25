@@ -1,6 +1,7 @@
 #include <node.h>
 #include <node_buffer.h>
 #include "ffi.h"
+#include "fficonfig.h"
 
 /*
  * Called when the wrapped pointer is garbage collected.
@@ -9,6 +10,10 @@
 
 void wrap_pointer_cb(char *data, void *hint) {
   //fprintf(stderr, "wrap_pointer_cb\n");
+}
+
+int node_ffi_errno() {
+    return errno;
 }
 
 ///////////////
@@ -22,6 +27,8 @@ NAN_MODULE_INIT(FFI::InitializeStaticFunctions) {
   o->Set(Nan::New<String>("dlsym").ToLocalChecked(),   WrapPointer((char *)dlsym));
   o->Set(Nan::New<String>("dlerror").ToLocalChecked(), WrapPointer((char *)dlerror));
 
+  o->Set(Nan::New<String>("_errno").ToLocalChecked(), WrapPointer((char *)node_ffi_errno));
+
   target->Set(Nan::New<String>("StaticFunctions").ToLocalChecked(), o);
 }
 
@@ -33,6 +40,9 @@ NAN_MODULE_INIT(FFI::InitializeStaticFunctions) {
   static_cast<PropertyAttribute>(ReadOnly|DontDelete))
 
 NAN_MODULE_INIT(FFI::InitializeBindings) {
+
+  Nan::Set(target, Nan::New<String>("version").ToLocalChecked(),
+    Nan::New<String>(PACKAGE_VERSION).ToLocalChecked());
 
   // main function exports
   Nan::Set(target, Nan::New<String>("ffi_prep_cif").ToLocalChecked(),
@@ -98,28 +108,28 @@ NAN_MODULE_INIT(FFI::InitializeBindings) {
 
   /* flags for dlsym() */
 #ifdef RTLD_NEXT
-  target->ForceSet(Nan::New<String>("RTLD_NEXT").ToLocalChecked(), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  Nan::ForceSet(target,Nan::New<String>("RTLD_NEXT").ToLocalChecked(), WrapPointer((char *)RTLD_NEXT), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 #endif
 #ifdef RTLD_DEFAULT
-  target->ForceSet(Nan::New<String>("RTLD_DEFAULT").ToLocalChecked(), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  Nan::ForceSet(target,Nan::New<String>("RTLD_DEFAULT").ToLocalChecked(), WrapPointer((char *)RTLD_DEFAULT), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 #endif
 #ifdef RTLD_SELF
-  target->ForceSet(Nan::New<String>("RTLD_SELF").ToLocalChecked(), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  Nan::ForceSet(target,Nan::New<String>("RTLD_SELF").ToLocalChecked(), WrapPointer((char *)RTLD_SELF), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 #ifdef RTLD_MAIN_ONLY
-  target->ForceSet(Nan::New<String>("RTLD_MAIN_ONLY").ToLocalChecked(), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  Nan::ForceSet(target,Nan::New<String>("RTLD_MAIN_ONLY").ToLocalChecked(), WrapPointer((char *)RTLD_MAIN_ONLY), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 #endif
 
-  target->ForceSet(Nan::New<String>("FFI_ARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  target->ForceSet(Nan::New<String>("FFI_SARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
-  target->ForceSet(Nan::New<String>("FFI_TYPE_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
-  target->ForceSet(Nan::New<String>("FFI_CIF_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  Nan::ForceSet(target,Nan::New<String>("FFI_ARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_arg)), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  Nan::ForceSet(target,Nan::New<String>("FFI_SARG_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_sarg)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  Nan::ForceSet(target,Nan::New<String>("FFI_TYPE_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_type)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  Nan::ForceSet(target,Nan::New<String>("FFI_CIF_SIZE").ToLocalChecked(), Nan::New<Uint32>((uint32_t)sizeof(ffi_cif)), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 
   bool hasObjc = false;
 #if __OBJC__ || __OBJC2__
   hasObjc = true;
 #endif
-  target->ForceSet(Nan::New<String>("HAS_OBJC").ToLocalChecked(), Nan::New<Boolean>(hasObjc), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
+  Nan::ForceSet(target,Nan::New<String>("HAS_OBJC").ToLocalChecked(), Nan::New<Boolean>(hasObjc), static_cast<PropertyAttribute>(ReadOnly | DontDelete));
 
   Local<Object> ftmap = Nan::New<Object>();
   ftmap->Set(Nan::New<String>("void").ToLocalChecked(), WrapPointer((char *)&ffi_type_void));
@@ -315,7 +325,6 @@ NAN_METHOD(FFI::FFICallAsync) {
 /*
  * Called on the thread pool.
  */
-
 void FFI::AsyncFFICall(uv_work_t *req) {
   AsyncCallParams *p = (AsyncCallParams *)req->data;
 

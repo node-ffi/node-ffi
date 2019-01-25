@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "v8.h"
 #include "node.h"
 #include "node_buffer.h"
@@ -108,7 +109,7 @@ box add_boxes(box boxes[], int num) {
 }
 
 /*
- * Reads "ints" from the "input" array until a NULL pointer is found.
+ * Reads "ints" from the "input" array until -1 is found.
  * Returns the number of elements in the array.
  */
 
@@ -159,18 +160,17 @@ my_callback callback_func (my_callback cb) {
 
 NAN_METHOD(Strtoul) {
   Nan::HandleScope();
-  char buf[128];
   int base;
   char **endptr;
 
-  info[0]->ToString()->WriteUtf8(buf);
+  Nan::Utf8String buf(info[0]);
 
-  Local<Value> endptr_arg = info[0];
+  Local<Value> endptr_arg = info[1];
   endptr = (char **)Buffer::Data(endptr_arg.As<Object>());
 
   base = info[2]->Int32Value();
 
-  unsigned long val = strtoul(buf, endptr, base);
+  unsigned long val = strtoul(*buf, endptr, base);
 
   info.GetReturnValue().Set(Nan::New<Integer>((uint32_t)val));
 }
@@ -256,13 +256,32 @@ NAN_METHOD(CallCbAsync) {
 }
 
 
-// Race condition in threaded callback invocation testing, see #153
+// Race condition in threaded callback invocation testing
+// https://github.com/node-ffi/node-ffi/issues/153
 void play_ping_pong (const char* (*callback) (const char*)) {
   const char * response;
   do {
     response = callback("ping");
   } while (strcmp(response, "pong") == 0);
 }
+
+
+// https://github.com/node-ffi/node-ffi/issues/169
+int test_169(char* dst, int len) {
+  const char src[] = "sample str\0";
+  strncpy(dst, src, len);
+  return fmin(len, strlen(src));
+}
+
+
+// https://github.com/TooTallNate/ref/issues/56
+struct Obj56 {
+  bool traceMode;
+};
+int test_ref_56(struct Obj56 *obj) {
+  return obj->traceMode ? 1 : 0;
+}
+
 
 void wrap_pointer_cb(char *data, void *hint) {
 }
@@ -321,6 +340,8 @@ void Initialize(Handle<Object> target) {
   target->Set(Nan::New<String>("callback_func").ToLocalChecked(), WrapPointer((char *)callback_func));
   target->Set(Nan::New<String>("set_cb_func").ToLocalChecked(), WrapPointer((char *)SetCbFunc));
   target->Set(Nan::New<String>("play_ping_pong").ToLocalChecked(), WrapPointer((char *)play_ping_pong));
+  target->Set(Nan::New<String>("test_169").ToLocalChecked(), WrapPointer((char *)test_169));
+  target->Set(Nan::New<String>("test_ref_56").ToLocalChecked(), WrapPointer((char *)test_ref_56));
 }
 
 } // anonymous namespace

@@ -1,3 +1,35 @@
+2.2.0 / 2016-10-29
+==================
+
+* [[`8fc355f276`](https://github.com/node-ffi/ffi/commit/8fc355f276)] - add libffi `version` string (Nathan Rajlich)
+* [[`97d7ab12e6`](https://github.com/node-ffi/ffi/commit/97d7ab12e6)] - remove OS X 10.5 deployment target (Nathan Rajlich)
+* [[`7a928f38b1`](https://github.com/node-ffi/ffi/commit/7a928f38b1)] - **test**: add a test case for [TooTallNate/ref#56](https://github.com/TooTallNate/ref/issues/56) (Nathan Rajlich)
+
+2.1.0 / 2016-08-03
+==================
+
+* [[`a66fb8b282`](https://github.com/node-ffi/ffi/commit/a66fb8b282)] - rename History.md to CHANGELOG.md (Nathan Rajlich)
+* [[`424d6b2278`](https://github.com/node-ffi/ffi/commit/424d6b2278)] - test node v6 with CI (Nathan Rajlich)
+* [[`37dc33f10d`](https://github.com/node-ffi/ffi/commit/37dc33f10d)] - Move `errno` method implement to C++ side (Lee, SungUk)
+* [[`f0547a7535`](https://github.com/node-ffi/ffi/commit/f0547a7535)] - **test**: use full URL to issue (Nathan Rajlich)
+* [[`819c664605`](https://github.com/node-ffi/ffi/commit/819c664605)] - **appveyor, travis**: test node v5.1 (Nathan Rajlich)
+* [[`b6e8dba046`](https://github.com/node-ffi/ffi/commit/b6e8dba046)] - remove benchmark files (Nathan Rajlich)
+* [[`f5e445be91`](https://github.com/node-ffi/ffi/commit/f5e445be91)] - **test**: load Foundation first instead (Nathan Rajlich)
+* [[`529ea78029`](https://github.com/node-ffi/ffi/commit/529ea78029)] - **travis**: remove iojs v3 (Nathan Rajlich)
+* [[`c81ab1ed1e`](https://github.com/node-ffi/ffi/commit/c81ab1ed1e)] - **test**: load `Cocoa` lib for Obj-C tests (Nathan Rajlich)
+* [[`829d7dac02`](https://github.com/node-ffi/ffi/commit/829d7dac02)] - **travis**: attempt to test "osx" (Nathan Rajlich)
+* [[`979da99892`](https://github.com/node-ffi/ffi/commit/979da99892)] - **test**: fix hardcoded `strtoul()` bindings (Nathan Rajlich)
+* [[`9cc558632c`](https://github.com/node-ffi/ffi/commit/9cc558632c)] - **test**: fix comment (Nathan Rajlich)
+* [[`3d673ca2a1`](https://github.com/node-ffi/ffi/commit/3d673ca2a1)] - **test**: attempt to fix test 169 on Linux (Nathan Rajlich)
+* [[`c2e5996d9d`](https://github.com/node-ffi/ffi/commit/c2e5996d9d)] - **test**: remove .only() (Nathan Rajlich)
+* [[`1187b80f7b`](https://github.com/node-ffi/ffi/commit/1187b80f7b)] - **test**: add case for allowing Buffer backing store for "string" FFI argument (Nathan Rajlich)
+* [[`3b09d1ac09`](https://github.com/node-ffi/ffi/commit/3b09d1ac09)] - **test**: remove semis (Nathan Rajlich)
+* [[`74e29a17d0`](https://github.com/node-ffi/ffi/commit/74e29a17d0)] - **test**: whitespace fixes (Nathan Rajlich)
+* [[`6551d4ab5b`](https://github.com/node-ffi/ffi/commit/6551d4ab5b)] - **appveyor**: test node v4.1 (Nathan Rajlich)
+* [[`c0b64413fe`](https://github.com/node-ffi/ffi/commit/c0b64413fe)] - **travis**: test node v4.1 (Nathan Rajlich)
+* [[`730bd4a92f`](https://github.com/node-ffi/ffi/commit/730bd4a92f)] - **travis**: drop "iojs-" prefix from version names (Nathan Rajlich)
+* [[`0324f3be9c`](https://github.com/node-ffi/ffi/commit/0324f3be9c)] - test node v0.4 (Nathan Rajlich)
+* [[`f3e393bb55`](https://github.com/node-ffi/ffi/commit/f3e393bb55)] - remove node v0.8 from testing matrices (Nathan Rajlich)
 
 2.0.0 / 2015-09-04
 ==================
