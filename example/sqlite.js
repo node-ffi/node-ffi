@@ -78,7 +78,7 @@ var callback = ffi.Callback('int', ['void *', 'int', stringPtr, stringPtr], func
   return 0
 })
 
-var b = new Buffer('test')
+var b = Buffer.from('test')
 SQLite3.sqlite3_exec.async(db, 'SELECT * FROM foo;', callback, b, null, function (err, ret) {
   if (err) throw err
   console.log('Total Rows: %j', rowCount)

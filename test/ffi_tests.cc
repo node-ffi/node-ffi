@@ -168,7 +168,7 @@ NAN_METHOD(Strtoul) {
   Local<Value> endptr_arg = info[1];
   endptr = (char **)Buffer::Data(endptr_arg.As<Object>());
 
-  base = info[2]->Int32Value();
+  base = info[2]->Int32Value(Nan::GetCurrentContext()).ToChecked();
 
   unsigned long val = strtoul(*buf, endptr, base);
 
