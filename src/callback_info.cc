@@ -51,6 +51,9 @@ void closure_pointer_cb(char *data, void *hint) {
 
 void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parameters, bool dispatched) {
   Nan::HandleScope scope;
+  Nan::AsyncResource errorResource("CallbackInfo:worker.HandleErrorCallback");
+  Nan::AsyncResource errorResource1("CallbackInfo:worker.HandleError1Callback");
+  Nan::AsyncResource resource("CallbackInfo:worker.HandleOKCallback");
 
   static const char* errorMessage = "ffi fatal: callback has been garbage collected!";
 
@@ -60,7 +63,7 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
     if (dispatched) {
         Local<Value> errorFunctionArgv[1];
         errorFunctionArgv[0] = Nan::New<String>(errorMessage).ToLocalChecked();
-        info->errorFunction->Call(1, errorFunctionArgv);
+        info->errorFunction->Call(1, errorFunctionArgv, &errorResource);
     }
     else {
       Nan::ThrowError(errorMessage);
@@ -68,14 +71,16 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
   } else {
     // invoke the registered callback function
     Local<Value> functionArgv[2];
+    MaybeLocal<Value> response;
     functionArgv[0] = WrapPointer((char *)retval, info->resultSize);
     functionArgv[1] = WrapPointer((char *)parameters, sizeof(char *) * info->argc);
-    Local<Value> e = info->function->Call(2, functionArgv);
+    response = info->function->Call(2, functionArgv, &resource);
+    Local<Value> e = response.ToLocalChecked();
     if (!e->IsUndefined()) {
       if (dispatched) {
         Local<Value> errorFunctionArgv[1];
         errorFunctionArgv[0] = e;
-        info->errorFunction->Call(1, errorFunctionArgv);
+        info->errorFunction->Call(1, errorFunctionArgv, &errorResource1);
       } else {
         Nan::ThrowError(e);
       }

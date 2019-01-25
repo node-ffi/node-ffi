@@ -10,7 +10,7 @@ describe('variadic arguments', function () {
   afterEach(gc)
 
   it('should work with vararg C functions', function () {
-    var buf = new Buffer(100)
+    var buf = Buffer.alloc(100)
     var sprintfGen = ffi.VariadicForeignFunction(sprintfPtr, 'int', [ 'pointer', 'string' ])
 
     sprintfGen()(buf, 'hello world!')

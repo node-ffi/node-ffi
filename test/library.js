@@ -78,7 +78,7 @@ describe('Library', function () {
   it('should work with "strcpy" and a 128 length string', function () {
     var lib = process.platform == 'win32' ? 'msvcrt.dll' : null;
     var ZEROS_128 = Array(128 + 1).join('0');
-    var buf = new Buffer(256);
+    var buf = Buffer.alloc(256);
     var strcpy = new Library(lib, {
         'strcpy': [ charPtr, [ charPtr, 'string' ] ]
     }).strcpy;
@@ -89,7 +89,7 @@ describe('Library', function () {
   it('should work with "strcpy" and a 2k length string', function () {
     var lib = process.platform == 'win32' ? 'msvcrt' : null;
     var ZEROS_2K = Array(2e3 + 1).join('0');
-    var buf = new Buffer(4096);
+    var buf = Buffer.from(4096);
     var strcpy = new Library(lib, {
         'strcpy': [ charPtr, [ charPtr, 'string' ] ]
     }).strcpy;
