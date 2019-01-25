@@ -25,9 +25,9 @@
   "dependencies": {
     "bindings": "~1.2.0",
     "debug": "2",
+    "nan": "^2.12.0",
     "ref": "1",
-    "ref-struct": "1",
-    "nan": "2"
+    "ref-struct": "1"
   },
   "devDependencies": {
     "fs-extra": "^0.23.1",
