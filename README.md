@@ -1,8 +1,9 @@
 node-ffi
 ========
 ### Node.js Foreign Function Interface
-[![Build Status](https://travis-ci.org/node-ffi/node-ffi.svg?branch=master)](https://travis-ci.org/node-ffi/node-ffi)
-[![Build Status](https://ci.appveyor.com/api/projects/status/n81apam1igfw8491?svg=true)](https://ci.appveyor.com/project/TooTallNate/node-ffi)
+[![Build Status](https://travis-ci.org/tagkiller/node-ffi.svg?branch=master)](https://travis-ci.org/tagkiller/node-ffi)
+
+[![Build Status](https://ci.appveyor.com/api/projects/status/59tqshtqsn1s62dy?svg=true)](https://ci.appveyor.com/project/tagkiller/node-ffi)
 
 `node-ffi` is a Node.js addon for loading and calling dynamic libraries using
 pure JavaScript. It can be used to create bindings to native libraries without
