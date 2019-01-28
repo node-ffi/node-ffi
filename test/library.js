@@ -89,7 +89,7 @@ describe('Library', function () {
   it('should work with "strcpy" and a 2k length string', function () {
     var lib = process.platform == 'win32' ? 'msvcrt' : null;
     var ZEROS_2K = Array(2e3 + 1).join('0');
-    var buf = Buffer.from(4096);
+    var buf = Buffer.alloc(4096);
     var strcpy = new Library(lib, {
         'strcpy': [ charPtr, [ charPtr, 'string' ] ]
     }).strcpy;
