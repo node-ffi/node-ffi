@@ -61,9 +61,9 @@ void CallbackInfo::DispatchToV8(callback_info *info, void *retval, void **parame
     // throw an error instead of segfaulting.
     // see: https://github.com/rbranson/node-ffi/issues/72
     if (dispatched) {
-        Local<Value> errorFunctionArgv[1];
-        errorFunctionArgv[0] = Nan::New<String>(errorMessage).ToLocalChecked();
-        info->errorFunction->Call(1, errorFunctionArgv, &errorResource);
+      Local<Value> errorFunctionArgv[1];
+      errorFunctionArgv[0] = Nan::New<String>(errorMessage).ToLocalChecked();
+      info->errorFunction->Call(1, errorFunctionArgv, &errorResource);
     }
     else {
       Nan::ThrowError(errorMessage);
@@ -114,9 +114,12 @@ NAN_METHOD(CallbackInfo::Callback) {
 
   // Args: cif pointer, JS function
   // TODO: Check args
-  ffi_cif *cif = (ffi_cif *)Buffer::Data(info[0]->ToObject());
-  size_t resultSize = info[1]->Int32Value();
-  int argc = info[2]->Int32Value();
+  Isolate* isolate = info.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+
+  ffi_cif *cif = (ffi_cif *)Buffer::Data(info[0]->ToObject(context).ToLocalChecked());
+  size_t resultSize = Nan::To<int>(info[1]).FromJust();
+  int argc = Nan::To<int>(info[2]).FromJust();
   Local<Function> errorReportCallback = Local<Function>::Cast(info[3]);
   Local<Function> callback = Local<Function>::Cast(info[4]);
 

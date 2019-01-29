@@ -99,7 +99,6 @@ describe('Callback', function () {
     var invokeCount = 0;
     var cb = ffi.Callback('void', [ ], function () {
       invokeCount++;
-      console.log(invokeCount);
     });
 
     var kill = (function (cb) {
@@ -201,7 +200,6 @@ describe('Callback', function () {
       var invokeCount = 0;
       var cb = ffi.Callback('void', [ ], function () {
         invokeCount++;
-        console.log(invokeCount);
       });
 
       var kill = (function (cb) {

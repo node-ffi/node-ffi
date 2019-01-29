@@ -185,12 +185,14 @@ NAN_METHOD(FFI::FFIPrepCif) {
   if (!Buffer::HasInstance(cif_buf)) {
     return THROW_ERROR_EXCEPTION("prepCif(): Buffer required as first arg");
   }
+  Isolate* isolate = info.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
 
   cif = Buffer::Data(cif_buf.As<Object>());
-  nargs = info[1]->Uint32Value();
-  rtype = Buffer::Data(info[2]->ToObject());
-  atypes = Buffer::Data(info[3]->ToObject());
-  abi = (ffi_abi)info[4]->Uint32Value();
+  nargs = Nan::To<int>(info[1]).FromJust();
+  rtype = Buffer::Data(info[2]->ToObject(context).ToLocalChecked());
+  atypes = Buffer::Data(info[3]->ToObject(context).ToLocalChecked());
+  abi = (ffi_abi)Nan::To<int>(info[4]).FromJust();
 
   status = ffi_prep_cif(
       (ffi_cif *)cif,
@@ -229,13 +231,15 @@ NAN_METHOD(FFI::FFIPrepCifVar) {
   if (!Buffer::HasInstance(cif_buf)) {
     return THROW_ERROR_EXCEPTION("prepCifVar(): Buffer required as first arg");
   }
+  Isolate* isolate = info.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
 
   cif = Buffer::Data(cif_buf.As<Object>());
-  fargs = info[1]->Uint32Value();
-  targs = info[2]->Uint32Value();
-  rtype = Buffer::Data(info[3]->ToObject());
-  atypes = Buffer::Data(info[4]->ToObject());
-  abi = (ffi_abi)info[5]->Uint32Value();
+  fargs = Nan::To<int>(info[1]).FromJust();
+  targs = Nan::To<int>(info[2]).FromJust();
+  rtype = Buffer::Data(info[3]->ToObject(context).ToLocalChecked());
+  atypes = Buffer::Data(info[4]->ToObject(context).ToLocalChecked());
+  abi = (ffi_abi)Nan::To<int>(info[5]).FromJust();
 
   status = ffi_prep_cif_var(
       (ffi_cif *)cif,
@@ -261,11 +265,13 @@ NAN_METHOD(FFI::FFICall) {
   if (info.Length() != 4) {
     return THROW_ERROR_EXCEPTION("ffi_call() requires 4 arguments!");
   }
+  Isolate* isolate = info.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
 
-  char *cif = Buffer::Data(info[0]->ToObject());
-  char *fn = Buffer::Data(info[1]->ToObject());
-  char *res = Buffer::Data(info[2]->ToObject());
-  char *fnargs = Buffer::Data(info[3]->ToObject());
+  char *cif = Buffer::Data(info[0]->ToObject(context).ToLocalChecked());
+  char *fn = Buffer::Data(info[1]->ToObject(context).ToLocalChecked());
+  char *res = Buffer::Data(info[2]->ToObject(context).ToLocalChecked());
+  char *fnargs = Buffer::Data(info[3]->ToObject(context).ToLocalChecked());
 
 #if __OBJC__ || __OBJC2__
     @try {
@@ -304,10 +310,13 @@ NAN_METHOD(FFI::FFICallAsync) {
   p->result = FFI_OK;
 
   // store a persistent references to all the Buffers and the callback function
-  p->cif = Buffer::Data(info[0]->ToObject());
-  p->fn = Buffer::Data(info[1]->ToObject());
-  p->res = Buffer::Data(info[2]->ToObject());
-  p->argv = Buffer::Data(info[3]->ToObject());
+  Isolate* isolate = info.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+
+  p->cif = Buffer::Data(info[0]->ToObject(context).ToLocalChecked());
+  p->fn = Buffer::Data(info[1]->ToObject(context).ToLocalChecked());
+  p->res = Buffer::Data(info[2]->ToObject(context).ToLocalChecked());
+  p->argv = Buffer::Data(info[3]->ToObject(context).ToLocalChecked());
 
   Local<Function> callback = Local<Function>::Cast(info[4]);
   p->callback = new Nan::Callback(callback);
