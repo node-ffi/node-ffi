@@ -109,9 +109,10 @@ NAN_METHOD(CallbackInfo::Callback) {
 
   // Args: cif pointer, JS function
   // TODO: Check args
-  ffi_cif *cif = (ffi_cif *)Buffer::Data(info[0]->ToObject());
-  size_t resultSize = info[1]->Int32Value();
-  int argc = info[2]->Int32Value();
+  auto context = v8::Isolate::GetCurrent()->GetCurrentContext();
+  ffi_cif *cif = (ffi_cif *)Buffer::Data(info[0]->ToObject(context).ToLocalChecked());
+  size_t resultSize = info[1]->Int32Value(context).ToChecked();
+  int argc = info[2]->Int32Value(context).ToChecked();
   Local<Function> errorReportCallback = Local<Function>::Cast(info[3]);
   Local<Function> callback = Local<Function>::Cast(info[4]);
 
@@ -205,11 +206,13 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
  * Init stuff.
  */
 
-void CallbackInfo::Initialize(Handle<Object> target) {
+void CallbackInfo::Initialize(v8::Local<Object> target) {
   Nan::HandleScope scope;
 
-	Nan::Set(target, Nan::New<String>("Callback").ToLocalChecked(),
-		Nan::New<FunctionTemplate>(Callback)->GetFunction());
+  auto context = v8::Isolate::GetCurrent()->GetCurrentContext();
+	Nan::Set(target,
+    Nan::New<String>("Callback").ToLocalChecked(),
+		Nan::New<FunctionTemplate>(Callback)->GetFunction(context).ToLocalChecked());
 
   // initialize our threaded invokation stuff
 #ifdef WIN32
