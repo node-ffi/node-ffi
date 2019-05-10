@@ -205,7 +205,7 @@ void CallbackInfo::Invoke(ffi_cif *cif, void *retval, void **parameters, void *u
  * Init stuff.
  */
 
-void CallbackInfo::Initialize(Handle<Object> target) {
+void CallbackInfo::Initialize(Local<Object> target) {
   Nan::HandleScope scope;
 
 	Nan::Set(target, Nan::New<String>("Callback").ToLocalChecked(),
