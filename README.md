@@ -52,7 +52,9 @@ tools](https://github.com/TooTallNate/node-gyp#installation) for your platform,
 then invoke:
 
 ``` bash
-$ npm install ffi
+$ npm install --python="/usr/bin/python2" ffi
+# or on Windows
+$ npm install --python="C:\Python27" ffi
 ```
 
 Source Install / Manual Compilation
