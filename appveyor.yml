@@ -5,7 +5,7 @@ environment:
   # Visual Studio Version
   MSVS_VERSION: 2019
   # Force legacy Python
-  NODE_GYP_FORCE_PYTHON=python2
+  NODE_GYP_FORCE_PYTHON: python2
   # Test against these versions of Node.js
   matrix:
     - nodejs_version: "10"
