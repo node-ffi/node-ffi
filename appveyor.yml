@@ -4,9 +4,7 @@
 environment:
   # Visual Studio Version
   MSVS_VERSION: 2019
-  # Force legacy Python
-  NODE_GYP_FORCE_PYTHON: C:\Python27  # C:\Python27-x64
-  # Test against these versions of Node.js
+ # Test against these versions of Node.js
   matrix:
     - nodejs_version: "10"
     - nodejs_version: "12"
@@ -25,7 +23,7 @@ install:
   #- IF %nodejs_version% LSS 1 (npm install -g npm@2)
   #- IF %nodejs_version% LSS 1 set PATH=%APPDATA%\npm;%PATH%
   # Typical npm stuff.
-  - npm install --msvs_version=%MSVS_VERSION%
+  - npm install --msvs_version=%MSVS_VERSION% --python="C:\Python27"  # "C:\Python27-x64"
 
 # Post-install test scripts.
 test_script:
