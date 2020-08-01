@@ -20,7 +20,7 @@ install:
   - $CXX --version
   - PATH="`npm bin`:`npm bin -g`:$PATH"
   # Install dependencies and build
-  - npm install
+  - NODE_GYP_FORCE_PYTHON=python2 npm install
 
 script:
   # Output useful info for debugging
