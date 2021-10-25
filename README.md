@@ -17,6 +17,9 @@ for an example of this use case.
 create situations where you will segfault the interpreter and unless you've got
 C debugger skills, you probably won't know what's going on.
 
+**NOTE**: node-ffi supports Node 10. For newer versions of Node.js, you may
+want to use [ffi-napi instead](https://www.npmjs.com/package/ffi-napi).
+
 Example
 -------
 
