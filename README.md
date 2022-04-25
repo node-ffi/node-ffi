@@ -68,7 +68,7 @@ $ npm install -g node-gyp
 Now you can compile `node-ffi`:
 
 ``` bash
-$ git clone git://github.com/node-ffi/node-ffi.git
+$ git clone git@github.com:node-ffi/node-ffi.git
 $ cd node-ffi
 $ node-gyp rebuild
 ```
