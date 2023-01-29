@@ -1,3 +1,15 @@
+# ⚠️ Outdated ⚠️
+
+This package is outdated and superseded by the [Node-FFI-NAPI](https://github.com/node-ffi-napi/node-ffi-napi) fork.
+
+While all the documentation remains the same, this particular fork is majorly outdated.
+
+Instead of installing `ffi`, you should `npm install ffi-napi` and `require('ffi-napi')`.
+
+See this: https://github.com/node-ffi/node-ffi/issues/511
+
+---
+
 node-ffi
 ========
 ### Node.js Foreign Function Interface
