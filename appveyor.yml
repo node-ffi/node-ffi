@@ -1,15 +1,17 @@
 # http://www.appveyor.com/docs/appveyor-yml
 
+image:
+  - Visual Studio 2022
+
 # Test against these versions of Node.js.
 environment:
   # Visual Studio Version
-  MSVS_VERSION: 2013
-  # Test against these versions of Node.js and io.js
+  MSVS_VERSION: 2023
+  # Test against these versions of Node.js
   matrix:
-    - nodejs_version: "6"
-    - nodejs_version: "8"
-    - nodejs_version: "10"
-    - nodejs_version: "11"
+    - nodejs_version: "16"
+    - nodejs_version: "18"
+    - nodejs_version: "20"
 
 platform:
   - x86
@@ -18,14 +20,14 @@ platform:
 # Install scripts. (runs after repo cloning)
 install:
   # Get the latest stable version of Node 0.STABLE.latest
-  - ps: if($env:nodejs_version -eq "0.8") {Install-Product node $env:nodejs_version}
-  - ps: if($env:nodejs_version -ne "0.8") {Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)}
+  #- ps: if($env:nodejs_version -eq "0.8") {Install-Product node $env:nodejs_version}
+  #- ps: if($env:nodejs_version -ne "0.8") {Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)}
   # Node 0.8 comes with a too obsolete npm
-  - IF %nodejs_version% == 0.8 (npm install -g npm@1.4.28)
+  #- IF %nodejs_version% == 0.8 (npm install -g npm@1.4.28)
   # Install latest NPM only for node.js versions until built in node-gyp adds io.js support
   # Update is required for node.js 0.8 because built in npm(node-gyp) does not know VS2013
-  - IF %nodejs_version% LSS 1 (npm install -g npm@2)
-  - IF %nodejs_version% LSS 1 set PATH=%APPDATA%\npm;%PATH%
+  #- IF %nodejs_version% LSS 1 (npm install -g npm@2)
+  #- IF %nodejs_version% LSS 1 set PATH=%APPDATA%\npm;%PATH%
   # Typical npm stuff.
   - npm install --msvs_version=%MSVS_VERSION%
 
